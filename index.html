@@ -2277,6 +2277,479 @@
   }
 }
   </style>
+
+<style id="kancah-moved-hotfix">
+#latest-news .news-grid{
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:18px !important;
+    align-items:stretch !important;
+  }
+  #latest-news .news-card{
+    position:relative !important;
+    display:grid !important;
+    grid-template-rows:178px 1fr !important;
+    height:360px !important;
+    min-height:360px !important;
+    max-height:360px !important;
+    background:#111 !important;
+    border:1px solid rgba(255,255,255,.16) !important;
+    border-radius:18px !important;
+    overflow:hidden !important;
+    isolation:isolate !important;
+  }
+  #latest-news .news-card__image{
+    position:relative !important;
+    inset:auto !important;
+    display:block !important;
+    width:100% !important;
+    height:178px !important;
+    min-height:178px !important;
+    max-height:178px !important;
+    overflow:hidden !important;
+    z-index:1 !important;
+    background:#191919 !important;
+  }
+  #latest-news .news-card__image::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:0 !important;
+    background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28)) !important;
+    z-index:2 !important;
+    pointer-events:none !important;
+  }
+  #latest-news .news-card__image img{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    object-position:center !important;
+  }
+  #latest-news .news-card__body{
+    position:relative !important;
+    inset:auto !important;
+    z-index:3 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
+    min-height:0 !important;
+    height:auto !important;
+    padding:14px 15px 15px !important;
+    color:#fff !important;
+    background:linear-gradient(180deg,#151515,#0d0d0d) !important;
+    border-top:1px solid rgba(255,255,255,.08) !important;
+  }
+  #latest-news .news-card__cat{
+    display:inline-flex !important;
+    align-items:center !important;
+    width:max-content !important;
+    max-width:100% !important;
+    background:#ff4d00 !important;
+    color:#070707 !important;
+    padding:6px 8px !important;
+    border-radius:999px !important;
+    font-size:9px !important;
+    line-height:1 !important;
+    font-weight:900 !important;
+    letter-spacing:.12em !important;
+    text-transform:uppercase !important;
+    margin:0 0 9px !important;
+  }
+  #latest-news .news-card h3{
+    display:-webkit-box !important;
+    -webkit-line-clamp:2 !important;
+    -webkit-box-orient:vertical !important;
+    overflow:hidden !important;
+    color:#fff !important;
+    font-size:18px !important;
+    line-height:1.08 !important;
+    font-weight:900 !important;
+    letter-spacing:-.045em !important;
+    text-transform:uppercase !important;
+    margin:0 !important;
+    text-shadow:none !important;
+  }
+  #latest-news .news-card p{
+    display:-webkit-box !important;
+    -webkit-line-clamp:2 !important;
+    -webkit-box-orient:vertical !important;
+    overflow:hidden !important;
+    color:rgba(255,255,255,.72) !important;
+    margin:8px 0 0 !important;
+    font-size:12px !important;
+    line-height:1.35 !important;
+    text-shadow:none !important;
+  }
+  #latest-news .news-card__meta{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+    margin-top:11px !important;
+    padding-top:10px !important;
+    border-top:1px solid rgba(255,255,255,.1) !important;
+    color:rgba(255,255,255,.58) !important;
+    font-size:9px !important;
+    line-height:1 !important;
+    font-weight:900 !important;
+    letter-spacing:.12em !important;
+    text-transform:uppercase !important;
+  }
+  @media(max-width:1180px){#latest-news .news-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}}
+  @media(max-width:860px){#latest-news .news-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}#latest-news .news-card{height:340px !important;min-height:340px !important;max-height:340px !important}}
+  @media(max-width:560px){#latest-news .news-grid{grid-template-columns:1fr !important}#latest-news .news-card{height:330px !important;min-height:330px !important;max-height:330px !important}}
+  /* =========================
+   FINAL MOBILE FIX KERAS
+   ========================= */
+
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .site-shell,
+  main,
+  section,
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .container {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    margin: 0 auto !important;
+  }
+
+  .main-header__inner {
+    width: 100% !important;
+    min-height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .brand__box,
+  .brand__text {
+    font-size: 18px !important;
+  }
+
+  .desktop-nav,
+  .subscribe-btn {
+    display: none !important;
+  }
+
+  .header-actions {
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .icon-button,
+  .menu-button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .breaking {
+    display: none !important;
+  }
+
+  .hero {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 12px 0 14px !important;
+    display: block !important;
+  }
+
+  .hero-grid,
+  .hero-left,
+  .hero-top,
+  .hero-small-stack,
+  .hero-strip,
+  .hero-sidebar {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 10px !important;
+  }
+
+  .headline-card {
+    width: 100% !important;
+    min-height: 330px !important;
+    height: 330px !important;
+    border-radius: 14px !important;
+  }
+
+  .headline-card__content {
+    padding: 16px !important;
+  }
+
+  .headline-title {
+    font-size: 32px !important;
+    line-height: .9 !important;
+  }
+
+  .headline-desc {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  .story-card {
+    width: 100% !important;
+    min-height: 120px !important;
+    height: 120px !important;
+    border-radius: 14px !important;
+  }
+
+  .story-card.compact .story-card__content {
+    padding: 14px !important;
+  }
+
+  .story-card h3 {
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+
+  .article-mini {
+    width: 100% !important;
+    grid-template-columns: 90px 1fr !important;
+    min-height: 90px !important;
+    border-radius: 12px !important;
+  }
+
+  .article-mini__body {
+    padding: 10px 10px 10px 0 !important;
+  }
+
+  .article-mini h4 {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+
+  .score-panel,
+  .trend-panel,
+  .editor-panel,
+  .side-panel {
+    width: 100% !important;
+    border-radius: 14px !important;
+  }
+
+  .section {
+    padding: 28px 0 !important;
+  }
+
+  .news-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .news-card {
+    width: 100% !important;
+    height: 310px !important;
+    min-height: 310px !important;
+  }
+
+  .top-ticker {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 60 !important;
+  }
+}
+</style>
+
+<style id="kancah-final-mobile-spacing-fix">
+/* =========================================================
+   KANCAH SPORTS - FINAL MOBILE SPACING FIX
+   Taruh PALING BAWAH sebelum </head>
+   ========================================================= */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    min-width: 0;
+  }
+
+  .site-shell,
+  main,
+  section {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+    padding-left: 22px !important;
+    padding-right: 22px !important;
+  }
+
+  .main-header__inner {
+    width: 100% !important;
+    min-height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding-left: 22px !important;
+    padding-right: 22px !important;
+  }
+
+  .brand__box,
+  .brand__text {
+    font-size: 18px !important;
+  }
+
+  .desktop-nav,
+  .subscribe-btn {
+    display: none !important;
+  }
+
+  .header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .icon-button,
+  .menu-button {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .breaking {
+    display: none !important;
+  }
+
+  .hero.container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    display: block !important;
+    padding: 14px 22px 16px !important;
+  }
+
+  .hero-grid,
+  .hero-left,
+  .hero-top,
+  .hero-small-stack,
+  .hero-strip,
+  .hero-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 12px !important;
+  }
+
+  .headline-card,
+  .story-card,
+  .article-mini,
+  .score-panel,
+  .trend-panel,
+  .editor-panel,
+  .side-panel,
+  .news-card,
+  .wide-card,
+  .media-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .headline-card {
+    height: 336px !important;
+    min-height: 336px !important;
+    border-radius: 15px !important;
+  }
+
+  .headline-card__content {
+    padding: 18px !important;
+  }
+
+  .headline-title {
+    font-size: 32px !important;
+    line-height: .9 !important;
+    letter-spacing: -.075em !important;
+  }
+
+  .headline-desc {
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+
+  .story-card {
+    height: 122px !important;
+    min-height: 122px !important;
+    border-radius: 15px !important;
+  }
+
+  .story-card.compact .story-card__content {
+    padding: 15px !important;
+  }
+
+  .story-card h3 {
+    font-size: 14px !important;
+    line-height: 1.08 !important;
+  }
+
+  .article-mini {
+    grid-template-columns: 90px 1fr !important;
+    min-height: 92px !important;
+    border-radius: 13px !important;
+  }
+
+  .article-mini__body {
+    padding: 10px 11px 10px 0 !important;
+  }
+
+  .article-mini h4 {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+
+  .section {
+    padding: 30px 0 !important;
+  }
+
+  .news-grid,
+  .transfer-board,
+  .layout-2,
+  .video-grid,
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .news-card {
+    height: 320px !important;
+    min-height: 320px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .container,
+  .main-header__inner {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .hero.container {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+</style>
 </head>
 <body>
   <div class="site-shell" id="top">
@@ -3063,287 +3536,3 @@
   </script>
 </body>
 </html>
-
-<!-- KANCAH HOTFIX: latest news card wajib ada info + ukuran sama -->
-<style id="kancah-news-card-final-hotfix">
-  #latest-news .news-grid{
-    display:grid !important;
-    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-    gap:18px !important;
-    align-items:stretch !important;
-  }
-  #latest-news .news-card{
-    position:relative !important;
-    display:grid !important;
-    grid-template-rows:178px 1fr !important;
-    height:360px !important;
-    min-height:360px !important;
-    max-height:360px !important;
-    background:#111 !important;
-    border:1px solid rgba(255,255,255,.16) !important;
-    border-radius:18px !important;
-    overflow:hidden !important;
-    isolation:isolate !important;
-  }
-  #latest-news .news-card__image{
-    position:relative !important;
-    inset:auto !important;
-    display:block !important;
-    width:100% !important;
-    height:178px !important;
-    min-height:178px !important;
-    max-height:178px !important;
-    overflow:hidden !important;
-    z-index:1 !important;
-    background:#191919 !important;
-  }
-  #latest-news .news-card__image::after{
-    content:"" !important;
-    position:absolute !important;
-    inset:0 !important;
-    background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28)) !important;
-    z-index:2 !important;
-    pointer-events:none !important;
-  }
-  #latest-news .news-card__image img{
-    display:block !important;
-    width:100% !important;
-    height:100% !important;
-    object-fit:cover !important;
-    object-position:center !important;
-  }
-  #latest-news .news-card__body{
-    position:relative !important;
-    inset:auto !important;
-    z-index:3 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:space-between !important;
-    min-height:0 !important;
-    height:auto !important;
-    padding:14px 15px 15px !important;
-    color:#fff !important;
-    background:linear-gradient(180deg,#151515,#0d0d0d) !important;
-    border-top:1px solid rgba(255,255,255,.08) !important;
-  }
-  #latest-news .news-card__cat{
-    display:inline-flex !important;
-    align-items:center !important;
-    width:max-content !important;
-    max-width:100% !important;
-    background:#ff4d00 !important;
-    color:#070707 !important;
-    padding:6px 8px !important;
-    border-radius:999px !important;
-    font-size:9px !important;
-    line-height:1 !important;
-    font-weight:900 !important;
-    letter-spacing:.12em !important;
-    text-transform:uppercase !important;
-    margin:0 0 9px !important;
-  }
-  #latest-news .news-card h3{
-    display:-webkit-box !important;
-    -webkit-line-clamp:2 !important;
-    -webkit-box-orient:vertical !important;
-    overflow:hidden !important;
-    color:#fff !important;
-    font-size:18px !important;
-    line-height:1.08 !important;
-    font-weight:900 !important;
-    letter-spacing:-.045em !important;
-    text-transform:uppercase !important;
-    margin:0 !important;
-    text-shadow:none !important;
-  }
-  #latest-news .news-card p{
-    display:-webkit-box !important;
-    -webkit-line-clamp:2 !important;
-    -webkit-box-orient:vertical !important;
-    overflow:hidden !important;
-    color:rgba(255,255,255,.72) !important;
-    margin:8px 0 0 !important;
-    font-size:12px !important;
-    line-height:1.35 !important;
-    text-shadow:none !important;
-  }
-  #latest-news .news-card__meta{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    gap:10px !important;
-    margin-top:11px !important;
-    padding-top:10px !important;
-    border-top:1px solid rgba(255,255,255,.1) !important;
-    color:rgba(255,255,255,.58) !important;
-    font-size:9px !important;
-    line-height:1 !important;
-    font-weight:900 !important;
-    letter-spacing:.12em !important;
-    text-transform:uppercase !important;
-  }
-  @media(max-width:1180px){#latest-news .news-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}}
-  @media(max-width:860px){#latest-news .news-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}#latest-news .news-card{height:340px !important;min-height:340px !important;max-height:340px !important}}
-  @media(max-width:560px){#latest-news .news-grid{grid-template-columns:1fr !important}#latest-news .news-card{height:330px !important;min-height:330px !important;max-height:330px !important}}
-  /* =========================
-   FINAL MOBILE FIX KERAS
-   ========================= */
-
-@media (max-width: 768px) {
-  html,
-  body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  .site-shell,
-  main,
-  section,
-  .container {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .container {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-    margin: 0 auto !important;
-  }
-
-  .main-header__inner {
-    width: 100% !important;
-    min-height: 58px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
-  }
-
-  .brand__box,
-  .brand__text {
-    font-size: 18px !important;
-  }
-
-  .desktop-nav,
-  .subscribe-btn {
-    display: none !important;
-  }
-
-  .header-actions {
-    display: flex !important;
-    gap: 8px !important;
-  }
-
-  .icon-button,
-  .menu-button {
-    width: 34px !important;
-    height: 34px !important;
-  }
-
-  .breaking {
-    display: none !important;
-  }
-
-  .hero {
-    width: 100% !important;
-    min-height: auto !important;
-    padding: 12px 0 14px !important;
-    display: block !important;
-  }
-
-  .hero-grid,
-  .hero-left,
-  .hero-top,
-  .hero-small-stack,
-  .hero-strip,
-  .hero-sidebar {
-    width: 100% !important;
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto !important;
-    gap: 10px !important;
-  }
-
-  .headline-card {
-    width: 100% !important;
-    min-height: 330px !important;
-    height: 330px !important;
-    border-radius: 14px !important;
-  }
-
-  .headline-card__content {
-    padding: 16px !important;
-  }
-
-  .headline-title {
-    font-size: 32px !important;
-    line-height: .9 !important;
-  }
-
-  .headline-desc {
-    font-size: 12px !important;
-    line-height: 1.4 !important;
-  }
-
-  .story-card {
-    width: 100% !important;
-    min-height: 120px !important;
-    height: 120px !important;
-    border-radius: 14px !important;
-  }
-
-  .story-card.compact .story-card__content {
-    padding: 14px !important;
-  }
-
-  .story-card h3 {
-    font-size: 14px !important;
-    line-height: 1.1 !important;
-  }
-
-  .article-mini {
-    width: 100% !important;
-    grid-template-columns: 90px 1fr !important;
-    min-height: 90px !important;
-    border-radius: 12px !important;
-  }
-
-  .article-mini__body {
-    padding: 10px 10px 10px 0 !important;
-  }
-
-  .article-mini h4 {
-    font-size: 12px !important;
-    line-height: 1.15 !important;
-  }
-
-  .score-panel,
-  .trend-panel,
-  .editor-panel,
-  .side-panel {
-    width: 100% !important;
-    border-radius: 14px !important;
-  }
-
-  .section {
-    padding: 28px 0 !important;
-  }
-
-  .news-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .news-card {
-    width: 100% !important;
-    height: 310px !important;
-    min-height: 310px !important;
-  }
-
-  .top-ticker {
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 60 !important;
-  }
-}
-</style>
