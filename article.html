@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Kancah Sports</title>
+  <meta name="description" content="Berita terbaru Kancah Sports." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --orange: #ff4d00;
+      --black: #070707;
+      --line: rgba(255,255,255,.12);
+      --muted: #a7a7a7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Ubuntu, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,77,0,.14), transparent 32vw),
+        var(--black);
+      color: #fff;
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(900px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(7,7,7,.88);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: -.07em;
+      text-transform: uppercase;
+      color: var(--orange);
+    }
+
+    .brand span:first-child {
+      background: var(--orange);
+      color: #050505;
+      padding: 7px 10px;
+    }
+
+    .back {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .back:hover {
+      color: var(--orange);
+    }
+
+    .article {
+      padding: 42px 0 70px;
+    }
+
+    .category {
+      display: inline-flex;
+      background: var(--orange);
+      color: #050505;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 6vw, 72px);
+      line-height: .92;
+      letter-spacing: -.07em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      margin-bottom: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      margin-bottom: 32px;
+      background: #111;
+    }
+
+    .excerpt {
+      font-size: 20px;
+      color: #ddd;
+      font-weight: 500;
+      margin-bottom: 28px;
+      border-left: 4px solid var(--orange);
+      padding-left: 18px;
+    }
+
+    .content {
+      color: #e9e9e9;
+      font-size: 17px;
+    }
+
+    .content p {
+      margin-bottom: 18px;
+    }
+
+    .loading,
+    .error {
+      padding: 70px 0;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .error {
+      color: var(--orange);
+    }
+
+    @media (max-width: 620px) {
+      .brand {
+        font-size: 22px;
+      }
+
+      .header-inner {
+        min-height: 62px;
+      }
+
+      h1 {
+        font-size: 36px;
+      }
+
+      .excerpt {
+        font-size: 16px;
+      }
+
+      .content {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span>K</span>
+        <span>Sports</span>
+      </a>
+
+      <a href="index.html" class="back">← Home</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="article-root" class="loading">Memuat artikel...</div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://tnaehvirowknfsjdsrer.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_1bbk42A04hdCCh1CBFTK1A_zES8rBia";
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const fallbackImage =
+      "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1200&auto=format&fit=crop";
+
+    function escapeHtml(text = "") {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "Terbaru";
+      return new Date(dateValue).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function contentToHtml(content = "") {
+      return escapeHtml(content)
+        .split(/\n\s*\n/)
+        .filter(Boolean)
+        .map(paragraph => `<p>${paragraph.replaceAll("\n", "<br>")}</p>`)
+        .join("");
+    }
+
+    function updateMeta(article) {
+      const title = article.seo_title || article.title || "Kancah Sports";
+      const description = article.seo_description || article.excerpt || "Berita terbaru Kancah Sports.";
+
+      document.title = `${title} | Kancah Sports`;
+
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) metaDescription.setAttribute("content", description);
+
+      const oldCanonical = document.querySelector('link[rel="canonical"]');
+      if (oldCanonical) oldCanonical.remove();
+
+      const canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      canonical.href = window.location.href;
+      document.head.appendChild(canonical);
+    }
+
+    async function loadArticle() {
+      const root = document.getElementById("article-root");
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get("slug");
+
+      if (!slug) {
+        root.className = "error";
+        root.textContent = "Slug artikel tidak ditemukan.";
+        return;
+      }
+
+     const { data, error } = await db
+  .from("articles")
+  .select("*")
+  .eq("slug", slug)
+  .maybeSingle();
+
+      if (error || !data) {
+        console.error(error);
+        root.className = "error";
+        root.textContent = "Artikel tidak ditemukan.";
+        return;
+      }
+
+      updateMeta(data);
+
+      root.className = "article";
+      root.innerHTML = `
+        <span class="category">${escapeHtml(data.category || "Football")}</span>
+
+        <h1>${escapeHtml(data.title)}</h1>
+
+        <div class="meta">
+          <span>Kancah Sports</span>
+          <span>${formatDate(data.published_at || data.created_at)}</span>
+        </div>
+
+        <img class="hero-img" src="${data.image_url || fallbackImage}" alt="${escapeHtml(data.title)}">
+
+        ${data.excerpt ? `<div class="excerpt">${escapeHtml(data.excerpt)}</div>` : ""}
+
+        <article class="content">
+          ${contentToHtml(data.content || "")}
+        </article>
+      `;
+    }
+
+    document.addEventListener("DOMContentLoaded", loadArticle);
+  </script>
+</body>
+</html>

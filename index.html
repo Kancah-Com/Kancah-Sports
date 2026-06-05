@@ -3534,5 +3534,97 @@
       closeSearchModal();
     });
   </script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+ const SUPABASE_URL = "https://tnaehvirowknfsjdsrer.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_1bbk42A04hdCCh1CBFTK1A_zES8rBia";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const fallbackImage =
+  "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1200&auto=format&fit=crop";
+
+function safeText(text = "") {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function loadLatestArticles() {
+  const grid = document.querySelector("#latest-news .news-grid");
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;text-transform:uppercase;letter-spacing:.12em;">
+      Memuat berita terbaru...
+    </div>
+  `;
+
+  const { data, error } = await db
+    .from("articles")
+    .select("*")
+    .eq("status", "published")
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error("Gagal load artikel:", error);
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;color:#ff4d00;text-align:center;padding:40px 0;font-weight:700;">
+        Gagal memuat berita.
+      </div>
+    `;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;">
+        Belum ada berita.
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = data.map(article => {
+    const title = safeText(article.title || "Berita Kancah Sports");
+    const slug = encodeURIComponent(article.slug || "");
+    const excerpt = safeText(article.excerpt || "");
+    const category = safeText(article.category || "Football");
+    const image = article.image_url || fallbackImage;
+    const date = new Date(article.published_at || article.created_at).toLocaleDateString("id-ID");
+
+    return `
+      <article class="news-card">
+        <a href="article.html?slug=${slug}" class="news-card__image">
+          <img src="${image}" alt="${title}" loading="lazy">
+        </a>
+
+        <div class="news-card__body">
+          <div>
+            <div class="news-card__cat">${category}</div>
+            <h3>
+              <a href="article.html?slug=${slug}">${title}</a>
+            </h3>
+            <p>${excerpt}</p>
+          </div>
+
+          <div class="news-card__meta">
+            <span>Kancah Sports</span>
+            <span>${date}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+document.addEventListener("DOMContentLoaded", loadLatestArticles);
+</script>
 </body>
 </html>
