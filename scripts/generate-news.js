@@ -112,13 +112,21 @@ async function main() {
     throw new Error("Environment variable belum lengkap.");
   }
 
-  const last = await apiFootball(`fixtures?league=${LEAGUE_ID}&season=${SEASON}&last=5`);
-  const next = await apiFootball(`fixtures?league=${LEAGUE_ID}&season=${SEASON}&next=5`);
+  const allFixtures = await apiFootball(`fixtures?league=${LEAGUE_ID}&season=${SEASON}`);
 
-  const matches = [
-    ...(last.response || []),
-    ...(next.response || [])
-  ];
+console.log("API errors:", allFixtures.errors);
+console.log("API results:", allFixtures.results);
+
+const now = new Date();
+
+const matches = (allFixtures.response || [])
+  .filter(match => match.fixture && match.fixture.date)
+  .sort((a, b) => {
+    const da = Math.abs(new Date(a.fixture.date) - now);
+    const db = Math.abs(new Date(b.fixture.date) - now);
+    return da - db;
+  })
+  .slice(0, 10);
 
   console.log(`Total match ditemukan: ${matches.length}`);
 
