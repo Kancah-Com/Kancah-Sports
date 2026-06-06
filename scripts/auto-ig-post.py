@@ -502,17 +502,12 @@ def generate_poster(data):
     bg_keyword = data.get("image_keyword") or data.get("headline") or "football"
     bg_img = get_background_image(bg_keyword)
 
-if bg_img is None:
-    print("Fallback background")
-    bg = Image.new(
-        "RGBA",
-        (W, H),
-        (20, 20, 20, 255)
-    )
-else:
-    bg = cover_crop(bg_img, W, H)
+    if bg_img is None:
+        print("Fallback background")
+        bg = Image.new("RGBA", (W, H), (20, 20, 20, 255))
+    else:
+        bg = cover_crop(bg_img, W, H)
 
-    # dark overlay biar teks kebaca
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 60))
     bg.alpha_composite(overlay)
 
