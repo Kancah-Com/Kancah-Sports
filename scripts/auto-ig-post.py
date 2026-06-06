@@ -80,13 +80,19 @@ Berita:
 Judul: {news["title"]}
 Ringkasan: {news["summary"]}
 
-Format JSON valid:
-{{
-  "headline": "...",
-  "subheadline": "...",
-  "caption": "...",
-  "hashtags": ["#KancahSports", "..."]
-}}
+Kembalikan HANYA JSON valid.
+Jangan gunakan markdown.
+Jangan gunakan ```json.
+Escape semua karakter newline.
+
+Format:
+
+{
+  "headline":"...",
+  "subheadline":"...",
+  "caption":"...",
+  "hashtags":["..."]
+}
 """
 
     res = requests.post(
@@ -114,7 +120,22 @@ Format JSON valid:
 
     import json
     match = re.search(r"\{.*\}", text, re.S)
+    try:
     return json.loads(match.group(0))
+except Exception as e:
+    print("RAW GROQ:")
+    print(text)
+
+    return {
+        "headline": news["title"][:60],
+        "subheadline": news["summary"][:120],
+        "caption": news["summary"],
+        "hashtags": [
+            "#KancahSports",
+            "#TimnasIndonesia",
+            "#Football"
+        ]
+    }
 
 def get_font(size, bold=True):
     paths = [
