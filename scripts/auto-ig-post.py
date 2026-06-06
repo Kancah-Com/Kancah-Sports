@@ -68,6 +68,60 @@ def clean_text(text):
 def get_latest_news():
     all_news = []
 
+    GOOD_KEYWORDS = [
+        "football",
+        "soccer",
+        "premier league",
+        "champions league",
+        "uefa",
+        "europa league",
+        "conference league",
+        "la liga",
+        "laliga",
+        "serie a",
+        "bundesliga",
+        "ligue 1",
+        "transfer",
+        "arsenal",
+        "chelsea",
+        "liverpool",
+        "man city",
+        "manchester city",
+        "manchester united",
+        "real madrid",
+        "barcelona",
+        "psg",
+        "bayern",
+        "inter milan",
+        "juventus",
+        "ac milan",
+        "timnas",
+        "timnas indonesia",
+        "indonesia",
+        "ole romeny",
+        "kevin diks",
+        "persib",
+        "persija",
+        "persebaya",
+        "liga 1",
+        "super league"
+    ]
+
+    BAD_KEYWORDS = [
+        "university",
+        "college",
+        "ncaa",
+        "athletics",
+        "american football",
+        "nfl",
+        "empty the nest",
+        "maryland",
+        "eastern michigan",
+        "high school",
+        "women's soccer",
+        "women soccer"
+    ]
+
     for rss in RSS_SOURCES:
         feed = feedparser.parse(rss)
 
@@ -78,6 +132,14 @@ def get_latest_news():
             published = item.get("published", "")
 
             if not title:
+                continue
+
+            combined = f"{title} {summary}".lower()
+
+            if any(bad in combined for bad in BAD_KEYWORDS):
+                continue
+
+            if not any(good in combined for good in GOOD_KEYWORDS):
                 continue
 
             try:
@@ -97,10 +159,17 @@ def get_latest_news():
             })
 
     if not all_news:
-        raise Exception("Tidak ada berita terbaru 24 jam terakhir")
+        raise Exception("Tidak ada berita bola terbaru 24 jam terakhir")
 
-    all_news = list({news["title"]: news for news in all_news}.values())
-    all_news.sort(key=lambda x: x["pub_date"], reverse=True)
+    all_news = list({
+        news["title"]: news
+        for news in all_news
+    }.values())
+
+    all_news.sort(
+        key=lambda x: x["pub_date"],
+        reverse=True
+    )
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
@@ -677,17 +746,16 @@ def generate_poster(data):
         headline = data.get("headline", "Update terbaru")
 
         draw_left_multiline(
-            draw,
-            headline,
-            x=58,
-            y=950,
-            max_width=970,
-            max_height=270,
-            start_size=76,
-            min_size=44,
-            fill=WHITE,
-            weight="bold"
-        )
+        draw,
+        headline,
+        x=55,
+        y=980,
+        max_width=920,
+        max_height=260,
+        start_size=82,
+        min_size=42,
+        fill=WHITE
+    )
 
     out = io.BytesIO()
     bg.convert("RGB").save(out, format="JPEG", quality=95)
