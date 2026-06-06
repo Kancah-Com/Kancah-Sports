@@ -412,13 +412,15 @@ def wrap_text(draw, text, font, max_width):
 
     return lines
 
-def fit_multiline(draw, text, max_width, max_height, start_size, min_size):
-    text = str(text).upper()
+def fit_multiline(draw, text, max_width, max_height, start_size, min_size, uppercase=False):
+    text = str(text)
+    if uppercase:
+        text = text.upper()
 
     for size in range(start_size, min_size - 1, -2):
         font = get_font(size, True)
         lines = wrap_text(draw, text, font, max_width)
-        line_height = size + 10
+        line_height = size + 4
         total = len(lines) * line_height
 
         if total <= max_height:
@@ -426,7 +428,23 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size):
 
     font = get_font(min_size, True)
     lines = wrap_text(draw, text, font, max_width)
-    return font, lines, min_size + 10
+    return font, lines, min_size + 4
+
+def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE):
+    font, lines, line_height = fit_multiline(
+        draw,
+        text,
+        max_width,
+        max_height,
+        start_size,
+        min_size,
+        uppercase=False
+    )
+
+    cy = y
+    for line in lines:
+        draw.text((x, cy), line, font=font, fill=fill)
+        cy += line_height
 
 def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_size=42, fill=WHITE):
     font, lines, line_height = fit_multiline(draw, text, max_width, max_height, start_size, min_size)
@@ -585,17 +603,17 @@ def generate_poster(data):
 
     else:
         headline = data.get("headline", "UPDATE TERBARU")
-        draw_centered(
-            draw,
-            headline,
-            x=70,
-            y=810,
-            max_width=940,
-            max_height=310,
-            start_size=78,
-            min_size=42,
-            fill=WHITE
-        )
+        draw_left_multiline(
+    draw,
+    headline,
+    x=58,
+    y=970,
+    max_width=970,
+    max_height=250,
+    start_size=72,
+    min_size=44,
+    fill=WHITE
+)
 
         out = io.BytesIO()
         bg.convert("RGB").save(out, format="JPEG", quality=95)
@@ -682,7 +700,8 @@ def main():
     data = groq_generate(news)
     print("Headline:", data["headline"])
 
-    poster = generate_poster(data)
+    data["source_link"] = news.get("link", "")
+poster = generate_poster(data)
     image_url = upload_to_supabase(poster)
 
     hashtags = " ".join(data.get("hashtags", []))
