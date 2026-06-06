@@ -492,9 +492,9 @@ def generate_poster(data):
     template_type = data.get("template_type", "breaking").lower()
 
     template_map = {
-        "breaking": "assets/Breaking-News.png",
-        "quote": "assets/Quotes.png",
-        "fulltime": "assets/Full-Time.png"
+        "breaking": "Assets/Breaking-News.png",
+        "quote": "Assets/Quotes.png",
+        "fulltime": "Assets/Full-Time.png"
     }
 
     template_path = template_map.get(template_type, template_map["breaking"])
