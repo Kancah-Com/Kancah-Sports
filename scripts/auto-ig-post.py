@@ -233,9 +233,26 @@ COUNTRY_CODES = {
 }
 
 def download_image(url):
-    r = requests.get(url, timeout=25, headers={"User-Agent": "KancahSportsBot/1.0"})
-    r.raise_for_status()
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
+    try:
+        r = requests.get(
+            url,
+            timeout=25,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            }
+        )
+
+        if r.status_code != 200:
+            print("Image download failed:", url)
+            return None
+
+        return Image.open(
+            io.BytesIO(r.content)
+        ).convert("RGBA")
+
+    except Exception as e:
+        print("Image error:", e)
+        return None
 
 def cover_crop(image, width=1080, height=1350):
     img = image.convert("RGB")
@@ -354,7 +371,7 @@ def get_background_image(keyword):
             return download_image(img)
 
     # fallback kalau gagal total
-    return download_image("https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=90&w=1600&auto=format&fit=crop")
+    return None
 
 def get_team_logo(team_name):
     name = (team_name or "").lower().strip()
@@ -483,7 +500,17 @@ def generate_poster(data):
     template_path = template_map.get(template_type, template_map["breaking"])
 
     bg_keyword = data.get("image_keyword") or data.get("headline") or "football"
-    bg = cover_crop(get_background_image(bg_keyword), W, H)
+    bg_img = get_background_image(bg_keyword)
+
+if bg_img is None:
+    print("Fallback background")
+    bg = Image.new(
+        "RGBA",
+        (W, H),
+        (20, 20, 20, 255)
+    )
+else:
+    bg = cover_crop(bg_img, W, H)
 
     # dark overlay biar teks kebaca
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 60))
