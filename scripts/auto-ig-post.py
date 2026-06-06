@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 
+
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
@@ -19,7 +20,6 @@ IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 
 BUCKET = "ig-posts"
 
-ORANGE = "#ff4d00"
 BLACK = "#050505"
 WHITE = "#ffffff"
 
@@ -37,6 +37,8 @@ RSS_SOURCES = [
     "https://news.google.com/rss/search?q=persib&hl=id&gl=ID&ceid=ID:id",
     "https://news.google.com/rss/search?q=persija&hl=id&gl=ID&ceid=ID:id",
     "https://news.google.com/rss/search?q=persebaya&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=ole+romeny&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=kevin+diks&hl=id&gl=ID&ceid=ID:id",
 ]
 
 COUNTRY_CODES = {
@@ -80,26 +82,29 @@ def get_latest_news():
 
             try:
                 pub_date = parsedate_to_datetime(published)
-                if pub_date < datetime.now(timezone.utc) - timedelta(hours=48):
-                    continue
             except Exception:
-                pass
+                pub_date = datetime(2000, 1, 1, tzinfo=timezone.utc)
+
+            if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
+                continue
 
             all_news.append({
                 "title": title,
                 "summary": summary,
                 "link": link,
-                "published": published
+                "published": published,
+                "pub_date": pub_date
             })
 
     if not all_news:
-        raise Exception("Tidak ada berita terbaru")
+        raise Exception("Tidak ada berita terbaru 24 jam terakhir")
 
     all_news = list({news["title"]: news for news in all_news}.values())
-    all_news.sort(key=lambda x: len(x["title"]), reverse=True)
+    all_news.sort(key=lambda x: x["pub_date"], reverse=True)
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
+    print("Published:", all_news[0]["published"])
 
     return all_news[0]
 
@@ -114,15 +119,17 @@ Pilih template:
 - fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
 Rules:
-- Breaking News hanya headline, tanpa subheadline
-- Headline maksimal 12 kata
-- Headline jangan ALL CAPS
-- Quote maksimal 38 kata
-- Speaker isi nama orang jika template quote
-- image_keyword harus spesifik untuk mencari foto background
-- Jangan sebut sumber berita di headline
-- Caption 2-4 paragraf pendek
-- Hashtag relevan
+- Breaking News hanya headline, tanpa subheadline.
+- Headline maksimal 12 kata.
+- Headline jangan ALL CAPS.
+- Quote maksimal 38 kata.
+- Speaker isi nama orang jika template quote.
+- image_keyword WAJIB berupa nama pemain, nama pelatih, klub, atau tim utama saja.
+- image_keyword JANGAN berupa judul berita panjang.
+- Contoh image_keyword benar: "Kevin Diks", "Thomas Tuchel", "England national football team", "Persib Bandung".
+- Jangan sebut sumber berita di headline.
+- Caption 2-4 paragraf pendek.
+- Hashtag relevan.
 
 Berita:
 Judul: {news["title"]}
@@ -170,10 +177,10 @@ Balas HANYA JSON valid:
     text = res.json()["choices"][0]["message"]["content"]
 
     try:
-        return json.loads(text)
+        data = json.loads(text)
     except Exception:
         print("RAW GROQ:", text)
-        return {
+        data = {
             "template_type": "breaking",
             "headline": news["title"][:90],
             "quote": "",
@@ -187,6 +194,20 @@ Balas HANYA JSON valid:
             "caption": news["summary"],
             "hashtags": ["#KancahSports", "#Football"]
         }
+
+    if not data.get("headline"):
+        data["headline"] = news["title"][:90]
+
+    if not data.get("image_keyword"):
+        data["image_keyword"] = data.get("headline", news["title"])
+
+    if not data.get("caption"):
+        data["caption"] = news["summary"]
+
+    if not data.get("hashtags"):
+        data["hashtags"] = ["#KancahSports", "#Football"]
+
+    return data
 
 
 def download_image(url):
@@ -211,13 +232,40 @@ def download_image(url):
         return None
 
 
+def resolve_google_news_url(url):
+    if not url or "news.google.com" not in url:
+        return url
+
+    try:
+        r = requests.get(
+            url,
+            timeout=20,
+            allow_redirects=True,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+
+        final_url = r.url
+        print("Resolved URL:", final_url)
+        return final_url
+
+    except Exception as e:
+        print("Resolve Google News URL error:", e)
+        return url
+
+
 def extract_og_image(article_url):
     if not article_url:
         return None
 
     try:
+        real_url = resolve_google_news_url(article_url)
+
+        if "news.google.com" in real_url:
+            print("Still Google News URL, skip OG")
+            return None
+
         r = requests.get(
-            article_url,
+            real_url,
             timeout=20,
             allow_redirects=True,
             headers={"User-Agent": "Mozilla/5.0"}
@@ -393,18 +441,20 @@ def cover_crop(image, width=1080, height=1350):
     return img.crop((left, top, left + width, top + height)).convert("RGBA")
 
 
-def get_font(size, bold=True):
-    paths = [
-        "Assets/Ubuntu-Bold.ttf" if bold else "Assets/Ubuntu-Regular.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"
-    ]
+def get_font(size, weight="bold"):
+    font_map = {
+        "bold": "Assets/Fonts/Ubuntu-Bold.ttf",
+        "medium": "Assets/Fonts/Ubuntu-Medium.ttf",
+        "regular": "Assets/Fonts/Ubuntu-Regular.ttf"
+    }
 
-    for path in paths:
-        if os.path.exists(path):
-            return ImageFont.truetype(path, size)
+    path = font_map.get(weight, font_map["bold"])
 
-    return ImageFont.load_default()
+    if os.path.exists(path):
+        return ImageFont.truetype(path, size)
+
+    fallback = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    return ImageFont.truetype(fallback, size)
 
 
 def wrap_text(draw, text, font, max_width):
@@ -430,13 +480,13 @@ def wrap_text(draw, text, font, max_width):
     return lines
 
 
-def fit_multiline(draw, text, max_width, max_height, start_size, min_size, uppercase=False):
+def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weight="bold", uppercase=False):
     text = str(text)
     if uppercase:
         text = text.upper()
 
     for size in range(start_size, min_size - 1, -2):
-        font = get_font(size, True)
+        font = get_font(size, weight)
         lines = wrap_text(draw, text, font, max_width)
         line_height = size + 4
         total = len(lines) * line_height
@@ -444,12 +494,12 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, upper
         if total <= max_height:
             return font, lines, line_height
 
-    font = get_font(min_size, True)
+    font = get_font(min_size, weight)
     lines = wrap_text(draw, text, font, max_width)
     return font, lines, min_size + 4
 
 
-def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE):
+def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE, weight="bold"):
     font, lines, line_height = fit_multiline(
         draw,
         text,
@@ -457,6 +507,7 @@ def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, 
         max_height,
         start_size,
         min_size,
+        weight=weight,
         uppercase=False
     )
 
@@ -466,7 +517,7 @@ def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, 
         cy += line_height
 
 
-def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_size=42, fill=WHITE):
+def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_size=42, fill=WHITE, weight="bold"):
     font, lines, line_height = fit_multiline(
         draw,
         text,
@@ -474,6 +525,7 @@ def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_si
         max_height,
         start_size,
         min_size,
+        weight=weight,
         uppercase=False
     )
 
@@ -523,7 +575,7 @@ def generate_poster(data):
     else:
         bg = cover_crop(bg_img, W, H)
 
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 35))
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 25))
     bg.alpha_composite(overlay)
 
     if os.path.exists(template_path):
@@ -547,7 +599,8 @@ def generate_poster(data):
             max_height=290,
             start_size=48,
             min_size=30,
-            fill=WHITE
+            fill=WHITE,
+            weight="regular"
         )
 
         draw_centered(
@@ -559,7 +612,8 @@ def generate_poster(data):
             max_height=90,
             start_size=34,
             min_size=24,
-            fill=BLACK
+            fill=BLACK,
+            weight="medium"
         )
 
     elif template_type == "fulltime":
@@ -586,7 +640,8 @@ def generate_poster(data):
             max_height=145,
             start_size=82,
             min_size=42,
-            fill=BLACK
+            fill=BLACK,
+            weight="bold"
         )
 
         draw_centered(
@@ -598,7 +653,8 @@ def generate_poster(data):
             max_height=80,
             start_size=36,
             min_size=24,
-            fill=BLACK
+            fill=BLACK,
+            weight="medium"
         )
 
     else:
@@ -608,12 +664,13 @@ def generate_poster(data):
             draw,
             headline,
             x=58,
-            y=965,
+            y=950,
             max_width=970,
-            max_height=260,
-            start_size=72,
+            max_height=270,
+            start_size=76,
             min_size=44,
-            fill=WHITE
+            fill=WHITE,
+            weight="bold"
         )
 
     out = io.BytesIO()
