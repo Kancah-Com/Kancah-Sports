@@ -108,7 +108,6 @@ def get_latest_news():
 
     return all_news[0]
 
-
 def groq_generate(news):
     prompt = f"""
 Buat data JSON untuk konten Instagram Kancah Sports.
@@ -122,12 +121,12 @@ Rules:
 - Breaking News hanya headline, tanpa subheadline.
 - Headline maksimal 12 kata.
 - Headline jangan ALL CAPS.
+- Jangan pakai tanda kutip dua di dalam value JSON.
+- Jika ada judul acara pakai tanda petik satu saja.
 - Quote maksimal 38 kata.
 - Speaker isi nama orang jika template quote.
-- image_keyword WAJIB berupa nama pemain, nama pelatih, klub, atau tim utama saja.
-- image_keyword JANGAN berupa judul berita panjang.
-- Contoh image_keyword benar: "Kevin Diks", "Thomas Tuchel", "England national football team", "Persib Bandung".
-- Jangan sebut sumber berita di headline.
+- image_keyword wajib berupa nama pemain, pelatih, klub, atau tim utama saja.
+- image_keyword jangan berupa judul berita panjang.
 - Caption 2-4 paragraf pendek.
 - Hashtag relevan.
 
@@ -135,7 +134,7 @@ Berita:
 Judul: {news["title"]}
 Ringkasan: {news["summary"]}
 
-Balas HANYA JSON valid:
+Balas HANYA JSON valid tanpa markdown:
 {{
   "template_type": "breaking",
   "headline": "...",
@@ -161,39 +160,32 @@ Balas HANYA JSON valid:
         json={
             "model": "llama-3.1-8b-instant",
             "messages": [
-                {"role": "system", "content": "Kamu adalah editor media olahraga. Balas hanya JSON valid."},
+                {"role": "system", "content": "Balas hanya JSON valid. Jangan markdown. Jangan pakai tanda kutip dua di dalam string."},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.5,
-            "max_tokens": 350,
-            "response_format": {"type": "json_object"}
+            "temperature": 0.3,
+            "max_tokens": 350
         },
         timeout=60
     )
 
     if res.status_code != 200:
-        raise Exception(res.text)
+        print("Groq error:", res.text)
+        return fallback_data(news)
 
     text = res.json()["choices"][0]["message"]["content"]
 
     try:
-        data = json.loads(text)
-    except Exception:
+        match = re.search(r"\{.*\}", text, re.S)
+        if not match:
+            raise ValueError("JSON tidak ditemukan")
+
+        data = json.loads(match.group(0))
+
+    except Exception as e:
         print("RAW GROQ:", text)
-        data = {
-            "template_type": "breaking",
-            "headline": news["title"][:90],
-            "quote": "",
-            "speaker": "",
-            "home_team": "",
-            "away_team": "",
-            "home_score": "",
-            "away_score": "",
-            "competition": "",
-            "image_keyword": news["title"],
-            "caption": news["summary"],
-            "hashtags": ["#KancahSports", "#Football"]
-        }
+        print("JSON parse error:", e)
+        return fallback_data(news)
 
     if not data.get("headline"):
         data["headline"] = news["title"][:90]
@@ -209,6 +201,30 @@ Balas HANYA JSON valid:
 
     return data
 
+
+def fallback_data(news):
+    title = clean_text(news.get("title", ""))
+
+    title = re.sub(r"\s*-\s*[^-]+$", "", title)
+    title = title.replace('"', "'")
+
+    words = title.split()
+    headline = " ".join(words[:12])
+
+    return {
+        "template_type": "breaking",
+        "headline": headline,
+        "quote": "",
+        "speaker": "",
+        "home_team": "",
+        "away_team": "",
+        "home_score": "",
+        "away_score": "",
+        "competition": "",
+        "image_keyword": headline,
+        "caption": clean_text(news.get("summary", "")) or headline,
+        "hashtags": ["#KancahSports", "#Football"]
+    }
 
 def download_image(url):
     if not url:
