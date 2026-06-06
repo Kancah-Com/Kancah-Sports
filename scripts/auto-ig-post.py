@@ -605,7 +605,7 @@ else:
     out = io.BytesIO()
     bg.convert("RGB").save(out, format="JPEG", quality=95)
     out.seek(0)
-    return out
+return out
 
 def upload_to_supabase(image_bytes):
     filename = f"ig-{uuid.uuid4().hex}.jpg"
