@@ -86,13 +86,12 @@ Jangan gunakan ```json.
 Escape semua karakter newline.
 
 Format:
-
-{
+{{
   "headline":"...",
   "subheadline":"...",
   "caption":"...",
   "hashtags":["..."]
-}
+}}
 """
 
     res = requests.post(
@@ -101,43 +100,48 @@ Format:
             "Authorization": f"Bearer {GROQ_API_KEY}",
             "Content-Type": "application/json"
         },
-       json={
-    "model": "llama-3.3-70b-versatile",
-    "messages": [
-        {"role": "system", "content": "Kamu adalah editor media olahraga Kancah Sports. Balas hanya JSON valid."},
-        {"role": "user", "content": prompt}
-    ],
-    "temperature": 0.7,
-    "max_tokens": 700,
-    "response_format": {"type": "json_object"}
-},
+        json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "Kamu adalah editor media olahraga Kancah Sports. Balas hanya JSON valid."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 700,
+            "response_format": {"type": "json_object"}
+        },
         timeout=60
     )
 
     if res.status_code != 200:
-    raise Exception(res.text)
+        raise Exception(res.text)
 
-text = res.json()["choices"][0]["message"]["content"]
+    text = res.json()["choices"][0]["message"]["content"]
 
-import json
-match = re.search(r"\{.*\}", text, re.S)
+    import json
 
-try:
-    return json.loads(match.group(0))
-except Exception as e:
-    print("RAW GROQ:")
-    print(text)
+    try:
+        return json.loads(text)
+    except Exception:
+        print("RAW GROQ:")
+        print(text)
 
-    return {
-        "headline": news["title"][:60],
-        "subheadline": news["summary"][:120],
-        "caption": news["summary"],
-        "hashtags": [
-            "#KancahSports",
-            "#TimnasIndonesia",
-            "#Football"
-        ]
-    }
+        return {
+            "headline": news["title"][:60],
+            "subheadline": news["summary"][:120],
+            "caption": news["summary"],
+            "hashtags": [
+                "#KancahSports",
+                "#TimnasIndonesia",
+                "#Football"
+            ]
+        }
 
 def get_font(size, bold=True):
     paths = [
