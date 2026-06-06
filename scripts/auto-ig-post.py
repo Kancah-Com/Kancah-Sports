@@ -214,7 +214,7 @@ Balas HANYA JSON valid:
 
     return data
 
-    COUNTRY_CODES = {
+COUNTRY_CODES = {
     "indonesia": "id",
     "oman": "om",
     "china": "cn",
@@ -373,7 +373,7 @@ def get_team_logo(team_name):
 
     return None
 
-    def wrap_text(draw, text, font, max_width):
+def wrap_text(draw, text, font, max_width):
     words = str(text).split()
     lines = []
     line = ""
