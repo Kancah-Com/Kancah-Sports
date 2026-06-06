@@ -1,11 +1,11 @@
 import os
 import re
 import html
+import random
 import requests
-from email.utils import parsedate_to_datetime
-from datetime import datetime, timezone, timedelta
 import feedparser
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from email.utils import parsedate_to_datetime
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SECRET_KEY = os.environ["SUPABASE_SECRET_KEY"]
@@ -13,29 +13,27 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 RSS_SOURCES = [
     {
-        "name": "Google News Football",
-        "url": "https://news.google.com/rss/search?q=football",
+        "name": "Google News Timnas",
+        "url": "https://news.google.com/rss/search?q=timnas+indonesia&hl=id&gl=ID&ceid=ID:id",
         "category": "Football"
     },
     {
         "name": "Google News Liga 1",
-        "url": "https://news.google.com/rss/search?q=super+league+indonesia",
-        "category": "Super League Indonesia"
-    },
-    {
-        "name": "Google News Timnas Indonesia",
-        "url": "https://news.google.com/rss/search?q=timnas+indonesia",
-        "category": "Timnas"
+        "url": "https://news.google.com/rss/search?q=liga+1+indonesia&hl=id&gl=ID&ceid=ID:id",
+        "category": "Football"
     }
 ]
 
 FALLBACK_IMAGES = {
-    "Football": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=90&w=1600&auto=format&fit=crop",
-    "Futsal": "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?q=90&w=1600&auto=format&fit=crop",
-    "Basketball": "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=90&w=1600&auto=format&fit=crop",
-    "Badminton": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=90&w=1600&auto=format&fit=crop",
-    "F1": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=90&w=1600&auto=format&fit=crop",
-    "Sports": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=90&w=1600&auto=format&fit=crop"
+    "Football": [
+        "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=90&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=90&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=90&w=1600&auto=format&fit=crop"
+    ],
+    "Sports": [
+        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=90&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517649763962-0c623066013b?q=90&w=1600&auto=format&fit=crop"
+    ]
 }
 
 def slugify(text):
@@ -49,45 +47,129 @@ def clean_text(text):
     text = re.sub(r"<[^>]+>", "", text or "")
     return html.unescape(text).strip()
 
+def normalize_title(title):
+    title = clean_text(title)
+    title = re.sub(r"\s+-\s+[^-]+$", "", title)
+    return title.strip()
+
 def detect_category(title, summary):
     text = f"{title} {summary}".lower()
 
-    if any(k in text for k in ["persib", "persija", "timnas", "bola", "sepak bola", "liga", "fifa", "afc"]):
+    if any(k in text for k in ["timnas", "persib", "persija", "liga", "sepak bola", "pssi", "fifa", "afc"]):
         return "Football"
-    if any(k in text for k in ["futsal"]):
-        return "Futsal"
-    if any(k in text for k in ["basket", "nba"]):
-        return "Basketball"
-    if any(k in text for k in ["badminton", "bulu tangkis"]):
-        return "Badminton"
-    if any(k in text for k in ["f1", "formula 1", "motogp"]):
-        return "F1"
 
     return "Sports"
 
 def extract_entity(title):
-    entities = [
-        "Ole Romeny", "Persib", "Persija", "Arema", "Persebaya",
-        "Timnas Indonesia", "PSSI", "Erick Thohir", "AFC",
-        "Liverpool", "Manchester United", "Real Madrid", "Barcelona",
-        "Futsal Indonesia", "SEA Games", "MotoGP", "Formula 1"
-    ]
+    lower = title.lower()
 
-    lower_title = title.lower()
+    mapping = {
+        "timnas indonesia": "Tim nasional sepak bola Indonesia",
+        "persib": "Persib Bandung",
+        "persija": "Persija Jakarta",
+        "arema": "Arema FC",
+        "persebaya": "Persebaya Surabaya",
+        "ole romeny": "Ole Romeny",
+        "erick thohir": "Erick Thohir",
+        "pssi": "PSSI",
+        "afc": "Asian Football Confederation",
+        "fifa": "FIFA"
+    }
 
-    for entity in entities:
-        if entity.lower() in lower_title:
-            return entity
+    for key, value in mapping.items():
+        if key in lower:
+            return value
 
     words = re.findall(r"[A-Za-z0-9]+", title)
     stop = {
         "dan", "yang", "dari", "dalam", "untuk", "dengan",
-        "harga", "jadwal", "profil", "mengenal", "cara",
-        "aturan", "berikut", "simak", "ini"
+        "hasil", "jadwal", "profil", "mengenal", "cara",
+        "aturan", "berikut", "simak", "ini", "pertandingan",
+        "timnas", "indonesia"
     }
 
     clean_words = [w for w in words if len(w) > 3 and w.lower() not in stop]
     return " ".join(clean_words[:4]) or title
+
+def image_already_used(image_url):
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/articles"
+        headers = {
+            "apikey": SUPABASE_SECRET_KEY,
+            "Authorization": f"Bearer {SUPABASE_SECRET_KEY}"
+        }
+
+        response = requests.get(
+            url,
+            headers=headers,
+            params={
+                "select": "id",
+                "image_url": f"eq.{image_url}",
+                "limit": 1
+            },
+            timeout=15
+        )
+
+        if response.status_code != 200:
+            return False
+
+        return len(response.json()) > 0
+
+    except Exception:
+        return False
+
+def wikipedia_image(query):
+    try:
+        headers = {
+            "User-Agent": "KancahSportsBot/1.0 (kancahcreative@gmail.com)"
+        }
+
+        search = requests.get(
+            "https://id.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "list": "search",
+                "srsearch": query,
+                "format": "json",
+                "srlimit": 1
+            },
+            headers=headers,
+            timeout=15
+        )
+
+        if search.status_code != 200:
+            return None
+
+        results = search.json().get("query", {}).get("search", [])
+        if not results:
+            return None
+
+        page_title = results[0]["title"]
+
+        image = requests.get(
+            "https://id.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "titles": page_title,
+                "prop": "pageimages",
+                "pithumbsize": 1600,
+                "format": "json"
+            },
+            headers=headers,
+            timeout=15
+        )
+
+        pages = image.json().get("query", {}).get("pages", {})
+        for page in pages.values():
+            thumb = page.get("thumbnail", {})
+            img = thumb.get("source")
+            if img:
+                return img
+
+    except Exception as e:
+        print("Wikipedia image error:", e)
+
+    return None
 
 def commons_image(query):
     try:
@@ -95,60 +177,71 @@ def commons_image(query):
             "User-Agent": "KancahSportsBot/1.0 (kancahcreative@gmail.com)"
         }
 
-        params = {
-            "action": "query",
-            "generator": "search",
-            "gsrsearch": query,
-            "gsrnamespace": 6,
-            "gsrlimit": 8,
-            "prop": "imageinfo",
-            "iiprop": "url|mime|size",
-            "format": "json"
-        }
-
-        r = requests.get(
+        response = requests.get(
             "https://commons.wikimedia.org/w/api.php",
-            params=params,
+            params={
+                "action": "query",
+                "generator": "search",
+                "gsrsearch": query,
+                "gsrnamespace": 6,
+                "gsrlimit": 8,
+                "prop": "imageinfo",
+                "iiprop": "url|mime|size",
+                "format": "json"
+            },
             headers=headers,
             timeout=15
         )
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             return None
 
-        data = r.json()
-        pages = data.get("query", {}).get("pages", {})
-
+        pages = response.json().get("query", {}).get("pages", {})
         for page in pages.values():
             info = page.get("imageinfo", [{}])[0]
-            url = info.get("url")
+            img = info.get("url")
             width = info.get("width", 0)
             mime = info.get("mime", "")
 
-            if url and width >= 700 and mime.startswith("image/"):
-                return url
+            if img and width >= 700 and mime.startswith("image/"):
+                return img
 
     except Exception as e:
         print("Commons image error:", e)
 
     return None
 
+def random_cover(category):
+    images = FALLBACK_IMAGES.get(category, FALLBACK_IMAGES["Sports"])
+    random.shuffle(images)
+
+    for img in images:
+        if not image_already_used(img):
+            return img
+
+    return random.choice(images)
+
 def get_image_url(title, category):
     entity = extract_entity(title)
 
     queries = [
+        entity,
         f"{entity} football",
         f"{entity} sport",
-        entity,
         category
     ]
 
     for q in queries:
-        img = commons_image(q)
-        if img:
+        img = wikipedia_image(q)
+        if img and not image_already_used(img):
             return img
 
-    return FALLBACK_IMAGES.get(category, FALLBACK_IMAGES["Sports"])
+    for q in queries:
+        img = commons_image(q)
+        if img and not image_already_used(img):
+            return img
+
+    return random_cover(category)
 
 def rewrite_with_groq(title, summary, category):
     if not GROQ_API_KEY:
@@ -159,26 +252,23 @@ Tulis artikel berita olahraga bahasa Indonesia gaya media profesional.
 
 Syarat:
 - Jangan copy paste sumber.
-- Jangan menyebut "berdasarkan RSS", "referensi", atau "Kancah Sports merangkum".
+- Jangan menyebut RSS, referensi, atau sumber asli.
+- Jangan menulis disclaimer.
+- Jangan memakai paragraf template.
 - Panjang 700-900 kata.
-- Gaya berita resmi, natural, SEO-friendly.
-- Struktur jelas dengan subjudul.
-- Jangan mengarang fakta spesifik yang tidak ada.
-- Gunakan informasi yang tersedia saja.
-- Jika data terbatas, kembangkan konteks umum secara aman.
-- Topik: {title}
-- Ringkasan fakta: {summary}
-- Kategori: {category}
+- SEO-friendly.
+- Gunakan gaya berita resmi.
+- Jangan mengarang fakta spesifik yang tidak tersedia.
+- Jika informasi terbatas, kembangkan konteks umum secara aman.
 
-Format:
-Paragraf pembuka berita.
-Subjudul 1.
-Isi.
-Subjudul 2.
-Isi.
-Subjudul 3.
-Isi.
-Penutup.
+Judul/topik:
+{title}
+
+Ringkasan fakta:
+{summary}
+
+Kategori:
+{category}
 """
 
     try:
@@ -189,7 +279,7 @@ Penutup.
                 "Content-Type": "application/json"
             },
             json={
-                "model": "llama-3.1-8b-instant",
+                "model": "llama-3.3-70b-versatile",
                 "messages": [
                     {
                         "role": "system",
@@ -200,10 +290,10 @@ Penutup.
                         "content": prompt
                     }
                 ],
-                "temperature": 0.7,
-                "max_tokens": 1400
+                "temperature": 0.6,
+                "max_tokens": 1800
             },
-            timeout=40
+            timeout=60
         )
 
         if res.status_code != 200:
@@ -220,39 +310,39 @@ def fallback_article(title, summary, category):
     return f"""
 {summary}
 
-## Fokus Utama
+## Latar Belakang
 
-Kabar ini menjadi perhatian karena berkaitan dengan perkembangan terbaru di dunia {category.lower()}. Informasi tersebut menarik untuk diikuti, terutama bagi pembaca yang ingin mengetahui update olahraga nasional maupun internasional secara ringkas dan mudah dipahami.
+Kabar terbaru ini menjadi perhatian karena berkaitan dengan perkembangan olahraga yang sedang ramai dibicarakan publik. Dalam dunia sepak bola dan olahraga modern, setiap informasi mengenai tim, pemain, jadwal, maupun hasil pertandingan dapat memengaruhi perhatian suporter dan pembaca.
 
-## Konteks Berita
+## Poin Penting
 
-Perkembangan olahraga tidak hanya ditentukan oleh hasil pertandingan, tetapi juga oleh jadwal, kesiapan atlet, dinamika tim, dan agenda kompetisi. Karena itu, setiap kabar terbaru dapat memberi gambaran mengenai arah persaingan dan situasi terkini di cabang olahraga terkait.
+Informasi utama dari kabar ini berpusat pada perkembangan terbaru yang menyangkut {category.lower()}. Topik tersebut menarik karena berhubungan dengan dinamika kompetisi, performa tim, serta perhatian publik terhadap agenda olahraga terkini.
 
-## Dampak untuk Penggemar
+## Dampak Berita
 
-Bagi penggemar, informasi seperti ini membantu memahami kondisi terbaru sebelum pertandingan, turnamen, atau agenda olahraga berlangsung. Perubahan jadwal, harga tiket, profil atlet, dan kabar kompetisi sering kali menjadi faktor penting bagi publik.
+Bagi penggemar, kabar seperti ini menjadi bagian penting untuk memahami situasi terbaru. Perubahan strategi, hasil pertandingan, kondisi pemain, maupun agenda kompetisi sering kali menjadi faktor yang menentukan arah pembahasan olahraga dalam beberapa hari ke depan.
 
-## Kesimpulan
+## Penutup
 
-Kabar ini menambah daftar perkembangan penting dalam dunia olahraga. Pembaca dapat terus mengikuti update berikutnya untuk mengetahui perubahan terbaru, jadwal lanjutan, dan informasi resmi yang berkaitan dengan topik ini.
+Perkembangan ini menunjukkan bahwa olahraga terus bergerak cepat dan selalu menghadirkan cerita baru. Pembaca dapat terus mengikuti pembaruan berikutnya untuk mengetahui informasi yang lebih lengkap dan terbaru.
 """.strip()
 
 def build_article(item, source):
-    original_title = clean_text(item.get("title", "Berita Olahraga Terbaru"))
+    raw_title = normalize_title(item.get("title", "Berita Olahraga Terbaru"))
     summary = clean_text(item.get("summary", ""))
     source_url = item.get("link", "")
 
-    category = detect_category(original_title, summary)
-    title = original_title
-    slug = slugify(title)
-    excerpt = summary[:220] if summary else f"Update terbaru seputar {title}."
-    image_url = get_image_url(title, category)
+    category = detect_category(raw_title, summary)
+    slug = slugify(raw_title)
+    excerpt = summary[:220] if summary else f"Update terbaru seputar {raw_title}."
+    image_url = get_image_url(raw_title, category)
 
-    ai_content = rewrite_with_groq(title, summary, category)
-    content = ai_content if ai_content else fallback_article(title, summary, category)
+    content = rewrite_with_groq(raw_title, summary, category)
+    if not content:
+        content = fallback_article(raw_title, summary, category)
 
     return {
-        "title": title,
+        "title": raw_title,
         "slug": slug,
         "excerpt": excerpt,
         "content": content,
@@ -262,7 +352,7 @@ def build_article(item, source):
         "source_url": source_url,
         "status": "published",
         "published_at": datetime.now(timezone.utc).isoformat(),
-        "seo_title": f"{title} | Kancah Sports",
+        "seo_title": f"{raw_title} | Kancah Sports",
         "seo_description": excerpt
     }
 
@@ -286,6 +376,8 @@ def upsert_article(article):
     print("Upserted:", article["title"])
 
 def main():
+    print("GROQ:", "FOUND" if GROQ_API_KEY else "NOT FOUND")
+
     for source in RSS_SOURCES:
         feed = feedparser.parse(source["url"])
 
@@ -308,5 +400,6 @@ def main():
 
             article = build_article(item, source)
             upsert_article(article)
+
 if __name__ == "__main__":
     main()
