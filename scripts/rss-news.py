@@ -294,20 +294,19 @@ def main():
         print("Total RSS items:", len(feed.entries))
 
         for item in feed.entries[:20]:
-    published = item.get("published", "")
+            published = item.get("published", "")
 
-    try:
-        pub_date = parsedate_to_datetime(published)
+            try:
+                pub_date = parsedate_to_datetime(published)
 
-        if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
-            print("Skip old article:", item.get("title"))
-            continue
+                if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
+                    print("Skip old article:", item.get("title"))
+                    continue
 
-    except Exception as e:
-        print("Date parse error:", e)
+            except Exception as e:
+                print("Date parse error:", e)
 
-    article = build_article(item, source)
-    upsert_article(article)
-
+            article = build_article(item, source)
+            upsert_article(article)
 if __name__ == "__main__":
     main()
