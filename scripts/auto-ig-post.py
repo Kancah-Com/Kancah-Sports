@@ -324,6 +324,8 @@ def upload_to_supabase(image_bytes):
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{filename}"
 
 def publish_instagram(image_url, caption):
+    import time
+
     create = requests.post(
         f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media",
         data={
@@ -338,6 +340,30 @@ def publish_instagram(image_url, caption):
         raise Exception(create.text)
 
     creation_id = create.json()["id"]
+    print("Creation ID:", creation_id)
+
+    # tunggu Meta proses media
+    for i in range(10):
+        status = requests.get(
+            f"https://graph.facebook.com/v25.0/{creation_id}",
+            params={
+                "fields": "status_code",
+                "access_token": IG_ACCESS_TOKEN
+            },
+            timeout=60
+        )
+
+        print("Media status:", status.text)
+
+        try:
+            status_code = status.json().get("status_code")
+        except:
+            status_code = None
+
+        if status_code == "FINISHED":
+            break
+
+        time.sleep(10)
 
     publish = requests.post(
         f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media_publish",
@@ -352,7 +378,7 @@ def publish_instagram(image_url, caption):
         raise Exception(publish.text)
 
     print("Instagram published:", publish.json())
-
+    
 def main():
     news = get_latest_news()
     print("News:", news["title"])
