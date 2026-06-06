@@ -178,7 +178,7 @@ def get_latest_news():
     return all_news[0]
 
 def groq_generate(news):
-    prompt = f"""
+   prompt = f"""
 Buat data JSON untuk konten Instagram Kancah Sports.
 
 Pilih template:
@@ -194,10 +194,15 @@ Rules:
 - Jika ada judul acara pakai tanda petik satu saja.
 - Quote maksimal 38 kata.
 - Speaker isi nama orang jika template quote.
-- image_keyword wajib berupa nama pemain, pelatih, klub, atau tim utama saja.
-- image_keyword jangan berupa judul berita panjang.
 - Caption 2-4 paragraf pendek.
 - Hashtag relevan.
+- image_query wajib sangat spesifik berdasarkan konteks berita.
+- Jika berita tentang pemain, gabungkan nama pemain + klub/tim yang relevan.
+- Jika berita tentang klub, gunakan nama klub + musim/tahun terbaru.
+- Jika berita tentang tim nasional, gunakan nama pemain/tim + national team.
+- Jangan pakai judul berita panjang sebagai image_query.
+- must_include berisi kata penting yang wajib cocok dengan gambar.
+- avoid berisi konteks yang harus dihindari agar gambar tidak salah.
 
 Berita:
 Judul: {news["title"]}
@@ -214,7 +219,9 @@ Balas HANYA JSON valid tanpa markdown:
   "home_score": "",
   "away_score": "",
   "competition": "",
-  "image_keyword": "...",
+  "image_query": "...",
+  "must_include": ["..."],
+  "avoid": ["..."],
   "caption": "...",
   "hashtags": ["#KancahSports"]
 }}
@@ -746,16 +753,17 @@ def generate_poster(data):
         headline = data.get("headline", "Update terbaru")
 
         draw_left_multiline(
-        draw,
-        headline,
-        x=55,
-        y=980,
-        max_width=920,
-        max_height=260,
-        start_size=82,
-        min_size=42,
-        fill=WHITE
-    )
+    draw,
+    headline,
+    x=58,
+    y=1080,
+    max_width=970,
+    max_height=190,
+    start_size=70,
+    min_size=38,
+    fill=WHITE,
+    weight="bold"
+)
 
     out = io.BytesIO()
     bg.convert("RGB").save(out, format="JPEG", quality=95)
