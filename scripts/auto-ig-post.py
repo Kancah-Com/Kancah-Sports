@@ -178,7 +178,7 @@ def get_latest_news():
     return all_news[0]
 
 def groq_generate(news):
-   prompt = f"""
+    prompt = f"""
 Buat data JSON untuk konten Instagram Kancah Sports.
 
 Pilih template:
@@ -227,7 +227,7 @@ Balas HANYA JSON valid tanpa markdown:
 }}
 """
 
-        res = requests.post(
+    res = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -261,12 +261,7 @@ Balas HANYA JSON valid tanpa markdown:
     text = res.json()["choices"][0]["message"]["content"]
 
     try:
-        match = re.search(r"\{.*\}", text, re.S)
-        if not match:
-            raise ValueError("JSON tidak ditemukan")
-
-        data = json.loads(match.group(0))
-
+        data = json.loads(text)
     except Exception as e:
         print("RAW GROQ:", text)
         print("JSON parse error:", e)
@@ -275,8 +270,8 @@ Balas HANYA JSON valid tanpa markdown:
     if not data.get("headline"):
         data["headline"] = news["title"][:90]
 
-    if not data.get("image_keyword"):
-        data["image_keyword"] = data.get("headline", news["title"])
+    if not data.get("image_query"):
+        data["image_query"] = data.get("headline", news["title"])
 
     if not data.get("caption"):
         data["caption"] = news["summary"]
@@ -667,7 +662,7 @@ def generate_poster(data):
 
     template_path = template_map.get(template_type, template_map["breaking"])
 
-    bg_keyword = data.get("image_keyword") or data.get("headline") or "football"
+    bg_keyword = data.get("image_query") or data.get("image_keyword") or data.get("headline") or "football"
     bg_img = get_background_image(bg_keyword, data.get("source_link"))
 
     if bg_img is None:
