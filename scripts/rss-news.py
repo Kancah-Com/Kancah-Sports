@@ -16,9 +16,21 @@ RSS_SOURCES = [
     }
 ]
 
+def slugify(text):
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s-]", "", text)
+    text = re.sub(r"\s+", "-", text)
+    text = re.sub(r"-+", "-", text)
+    return text.strip("-")[:120]
+
+def clean_text(text):
+    text = re.sub(r"<[^>]+>", "", text or "")
+    return html.unescape(text).strip()
+
 def get_image_url(item):
     if item.get("enclosures"):
-        return item.enclosures[0].get("href") or item.enclosures[0].get("url")
+        enclosure = item.enclosures[0]
+        return enclosure.get("href") or enclosure.get("url")
 
     media_content = item.get("media_content")
     if media_content and len(media_content) > 0:
@@ -30,17 +42,6 @@ def get_image_url(item):
         return match.group(1)
 
     return None
-
-def slugify(text):
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s-]", "", text)
-    text = re.sub(r"\s+", "-", text)
-    text = re.sub(r"-+", "-", text)
-    return text.strip("-")[:120]
-
-def clean_text(text):
-    text = re.sub(r"<[^>]+>", "", text or "")
-    return html.unescape(text).strip()
 
 def build_article(item, source):
     title = clean_text(item.get("title", "Berita Olahraga Terbaru"))
@@ -71,13 +72,13 @@ Sumber referensi: {source["name"]}
         "excerpt": excerpt,
         "content": content,
         "category": source["category"],
+        "image_url": get_image_url(item),
         "source_name": source["name"],
         "source_url": source_url,
         "status": "published",
         "published_at": datetime.now(timezone.utc).isoformat(),
         "seo_title": title,
         "seo_description": excerpt
-        "image_url": get_image_url(item),
     }
 
 def insert_article(article):
@@ -86,20 +87,24 @@ def insert_article(article):
         "apikey": SUPABASE_SECRET_KEY,
         "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates"
+        "Prefer": "return=representation"
     }
 
     response = requests.post(url, headers=headers, json=article)
 
     if response.status_code not in [200, 201, 204]:
-        print("Insert error:", response.status_code, response.text)
-    else:
-        print("Inserted:", article["title"])
+        print("Insert error:", response.status_code)
+        print(response.text)
+        raise Exception("Supabase insert failed")
+
+    print("Inserted:", article["title"])
 
 def main():
     for source in RSS_SOURCES:
         feed = feedparser.parse(source["url"])
+
         print(f"Source: {source['name']}")
+        print("Feed title:", feed.feed.get("title"))
         print(f"Total RSS items: {len(feed.entries)}")
 
         for item in feed.entries[:5]:
