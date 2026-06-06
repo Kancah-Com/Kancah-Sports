@@ -3,8 +3,8 @@ import re
 import io
 import uuid
 import html
-import textwrap
 import json
+import time
 import requests
 import feedparser
 from PIL import Image, ImageDraw, ImageFont
@@ -19,73 +19,57 @@ IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 
 BUCKET = "ig-posts"
 
-RSS_SOURCES = [
-
-    # Football Global
-    "https://news.google.com/rss/search?q=football&hl=en-US&gl=US&ceid=US:en",
-
-    # Soccer
-    "https://news.google.com/rss/search?q=soccer&hl=en-US&gl=US&ceid=US:en",
-
-    # Transfer
-    "https://news.google.com/rss/search?q=football+transfer&hl=en-US&gl=US&ceid=US:en",
-
-    # Premier League
-    "https://news.google.com/rss/search?q=premier+league&hl=en-US&gl=US&ceid=US:en",
-
-    # Champions League
-    "https://news.google.com/rss/search?q=champions+league&hl=en-US&gl=US&ceid=US:en",
-
-    # La Liga
-    "https://news.google.com/rss/search?q=la+liga&hl=en-US&gl=US&ceid=US:en",
-
-    # Serie A
-    "https://news.google.com/rss/search?q=serie+a&hl=en-US&gl=US&ceid=US:en",
-
-    # Bundesliga
-    "https://news.google.com/rss/search?q=bundesliga&hl=en-US&gl=US&ceid=US:en",
-
-    # Timnas Indonesia
-    "https://news.google.com/rss/search?q=timnas+indonesia&hl=id&gl=ID&ceid=ID:id",
-
-    # Liga Indonesia
-    "https://news.google.com/rss/search?q=liga+1+indonesia&hl=id&gl=ID&ceid=ID:id",
-
-    # Futsal
-    "https://news.google.com/rss/search?q=futsal&hl=en-US&gl=US&ceid=US:en",
-
-    # NBA
-    "https://news.google.com/rss/search?q=nba&hl=en-US&gl=US&ceid=US:en",
-
-    # Formula 1
-    "https://news.google.com/rss/search?q=formula+1&hl=en-US&gl=US&ceid=US:en",
-
-    # MotoGP
-    "https://news.google.com/rss/search?q=motogp&hl=en-US&gl=US&ceid=US:en",
-
-    # Badminton
-    "https://news.google.com/rss/search?q=badminton&hl=en-US&gl=US&ceid=US:en",
-
-]
-
 ORANGE = "#ff4d00"
 BLACK = "#050505"
 WHITE = "#ffffff"
-GRAY = "#b8b8b8"
+
+RSS_SOURCES = [
+    "https://news.google.com/rss/search?q=football&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=soccer&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=football+transfer&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=premier+league&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=champions+league&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=la+liga&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=serie+a&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=bundesliga&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=timnas+indonesia&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=liga+1+indonesia&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persib&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persija&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persebaya&hl=id&gl=ID&ceid=ID:id",
+]
+
+COUNTRY_CODES = {
+    "indonesia": "id",
+    "oman": "om",
+    "china": "cn",
+    "japan": "jp",
+    "korea selatan": "kr",
+    "australia": "au",
+    "argentina": "ar",
+    "brazil": "br",
+    "france": "fr",
+    "germany": "de",
+    "spain": "es",
+    "italy": "it",
+    "england": "gb-eng",
+    "netherlands": "nl",
+    "portugal": "pt",
+}
+
 
 def clean_text(text):
     text = re.sub(r"<[^>]+>", "", text or "")
     return html.unescape(text).strip()
 
-def get_latest_news():
 
+def get_latest_news():
     all_news = []
 
     for rss in RSS_SOURCES:
         feed = feedparser.parse(rss)
 
         for item in feed.entries[:20]:
-
             title = clean_text(item.get("title", ""))
             summary = clean_text(item.get("summary", ""))
             link = item.get("link", "")
@@ -96,11 +80,9 @@ def get_latest_news():
 
             try:
                 pub_date = parsedate_to_datetime(published)
-
                 if pub_date < datetime.now(timezone.utc) - timedelta(hours=48):
                     continue
-
-            except:
+            except Exception:
                 pass
 
             all_news.append({
@@ -113,22 +95,14 @@ def get_latest_news():
     if not all_news:
         raise Exception("Tidak ada berita terbaru")
 
-    # hapus duplikat
-    all_news = list({
-        news["title"]: news
-        for news in all_news
-    }.values())
-
-    # prioritaskan headline menarik
-    all_news.sort(
-        key=lambda x: len(x["title"]),
-        reverse=True
-    )
+    all_news = list({news["title"]: news for news in all_news}.values())
+    all_news.sort(key=lambda x: len(x["title"]), reverse=True)
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
 
     return all_news[0]
+
 
 def groq_generate(news):
     prompt = f"""
@@ -139,14 +113,16 @@ Pilih template:
 - quote: jika berita berisi pernyataan/komentar seseorang
 - fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
-Syarat:
-- headline maksimal 10 kata
-- quote maksimal 38 kata
-- speaker isi nama orang jika template quote
+Rules:
+- Breaking News hanya headline, tanpa subheadline
+- Headline maksimal 12 kata
+- Headline jangan ALL CAPS
+- Quote maksimal 38 kata
+- Speaker isi nama orang jika template quote
 - image_keyword harus spesifik untuk mencari foto background
-- jangan sebut sumber berita
-- caption 2-4 paragraf pendek
-- hashtags relevan
+- Jangan sebut sumber berita di headline
+- Caption 2-4 paragraf pendek
+- Hashtag relevan
 
 Berita:
 Judul: {news["title"]}
@@ -194,10 +170,10 @@ Balas HANYA JSON valid:
     text = res.json()["choices"][0]["message"]["content"]
 
     try:
-        data = json.loads(text)
+        return json.loads(text)
     except Exception:
         print("RAW GROQ:", text)
-        data = {
+        return {
             "template_type": "breaking",
             "headline": news["title"][:90],
             "quote": "",
@@ -212,68 +188,67 @@ Balas HANYA JSON valid:
             "hashtags": ["#KancahSports", "#Football"]
         }
 
-    return data
-
-COUNTRY_CODES = {
-    "indonesia": "id",
-    "oman": "om",
-    "china": "cn",
-    "japan": "jp",
-    "korea selatan": "kr",
-    "australia": "au",
-    "argentina": "ar",
-    "brazil": "br",
-    "france": "fr",
-    "germany": "de",
-    "spain": "es",
-    "italy": "it",
-    "england": "gb-eng",
-    "netherlands": "nl",
-    "portugal": "pt"
-}
 
 def download_image(url):
+    if not url:
+        return None
+
     try:
         r = requests.get(
             url,
             timeout=25,
-            headers={
-                "User-Agent": "Mozilla/5.0"
-            }
+            headers={"User-Agent": "Mozilla/5.0"}
         )
 
         if r.status_code != 200:
-            print("Image download failed:", url)
+            print("Image download failed:", r.status_code, url)
             return None
 
-        return Image.open(
-            io.BytesIO(r.content)
-        ).convert("RGBA")
+        return Image.open(io.BytesIO(r.content)).convert("RGBA")
 
     except Exception as e:
         print("Image error:", e)
         return None
 
-def cover_crop(image, width=1080, height=1350):
-    img = image.convert("RGB")
-    ratio = img.width / img.height
-    target = width / height
 
-    if ratio > target:
-        new_h = height
-        new_w = int(height * ratio)
-    else:
-        new_w = width
-        new_h = int(width / ratio)
+def extract_og_image(article_url):
+    if not article_url:
+        return None
 
-    img = img.resize((new_w, new_h))
-    left = (new_w - width) // 2
-    top = (new_h - height) // 2
-    return img.crop((left, top, left + width, top + height)).convert("RGBA")
+    try:
+        r = requests.get(
+            article_url,
+            timeout=20,
+            allow_redirects=True,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+
+        html_text = r.text
+
+        patterns = [
+            r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+            r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
+            r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']',
+            r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']twitter:image["\']',
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, html_text, re.I)
+            if match:
+                img = html.unescape(match.group(1))
+                print("OG image:", img)
+                return img
+
+    except Exception as e:
+        print("OG image error:", e)
+
+    return None
+
 
 def wikipedia_image(query):
     try:
-        headers = {"User-Agent": "KancahSportsBot/1.0"}
+        headers = {"User-Agent": "Mozilla/5.0"}
+
         search = requests.get(
             "https://en.wikipedia.org/w/api.php",
             params={
@@ -317,9 +292,10 @@ def wikipedia_image(query):
 
     return None
 
+
 def commons_image(query):
     try:
-        headers = {"User-Agent": "KancahSportsBot/1.0"}
+        headers = {"User-Agent": "Mozilla/5.0"}
 
         r = requests.get(
             "https://commons.wikimedia.org/w/api.php",
@@ -352,7 +328,13 @@ def commons_image(query):
 
     return None
 
-def get_background_image(keyword):
+
+def get_background_image(keyword, source_link=None):
+    og_url = extract_og_image(source_link)
+    img = download_image(og_url)
+    if img:
+        return img
+
     queries = [
         keyword,
         f"{keyword} football",
@@ -361,17 +343,19 @@ def get_background_image(keyword):
     ]
 
     for q in queries:
-        img = wikipedia_image(q)
+        img_url = wikipedia_image(q)
+        img = download_image(img_url)
         if img:
-            return download_image(img)
+            return img
 
     for q in queries:
-        img = commons_image(q)
+        img_url = commons_image(q)
+        img = download_image(img_url)
         if img:
-            return download_image(img)
+            return img
 
-    # fallback kalau gagal total
     return None
+
 
 def get_team_logo(team_name):
     name = (team_name or "").lower().strip()
@@ -380,15 +364,48 @@ def get_team_logo(team_name):
         if key in name:
             return download_image(f"https://flagcdn.com/w320/{code}.png")
 
-    img = wikipedia_image(f"{team_name} football club logo")
+    img = download_image(wikipedia_image(f"{team_name} football club logo"))
     if img:
-        return download_image(img)
+        return img
 
-    img = commons_image(f"{team_name} logo football")
+    img = download_image(commons_image(f"{team_name} logo football"))
     if img:
-        return download_image(img)
+        return img
 
     return None
+
+
+def cover_crop(image, width=1080, height=1350):
+    img = image.convert("RGB")
+    ratio = img.width / img.height
+    target = width / height
+
+    if ratio > target:
+        new_h = height
+        new_w = int(height * ratio)
+    else:
+        new_w = width
+        new_h = int(width / ratio)
+
+    img = img.resize((new_w, new_h))
+    left = (new_w - width) // 2
+    top = (new_h - height) // 2
+    return img.crop((left, top, left + width, top + height)).convert("RGBA")
+
+
+def get_font(size, bold=True):
+    paths = [
+        "Assets/Ubuntu-Bold.ttf" if bold else "Assets/Ubuntu-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"
+    ]
+
+    for path in paths:
+        if os.path.exists(path):
+            return ImageFont.truetype(path, size)
+
+    return ImageFont.load_default()
+
 
 def wrap_text(draw, text, font, max_width):
     words = str(text).split()
@@ -412,6 +429,7 @@ def wrap_text(draw, text, font, max_width):
 
     return lines
 
+
 def fit_multiline(draw, text, max_width, max_height, start_size, min_size, uppercase=False):
     text = str(text)
     if uppercase:
@@ -430,6 +448,7 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, upper
     lines = wrap_text(draw, text, font, max_width)
     return font, lines, min_size + 4
 
+
 def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE):
     font, lines, line_height = fit_multiline(
         draw,
@@ -446,8 +465,18 @@ def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, 
         draw.text((x, cy), line, font=font, fill=fill)
         cy += line_height
 
+
 def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_size=42, fill=WHITE):
-    font, lines, line_height = fit_multiline(draw, text, max_width, max_height, start_size, min_size)
+    font, lines, line_height = fit_multiline(
+        draw,
+        text,
+        max_width,
+        max_height,
+        start_size,
+        min_size,
+        uppercase=False
+    )
+
     total_height = len(lines) * line_height
     cy = y + (max_height - total_height) // 2
 
@@ -456,6 +485,7 @@ def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_si
         lw = bbox[2] - bbox[0]
         draw.text((x + (max_width - lw) // 2, cy), line, font=font, fill=fill)
         cy += line_height
+
 
 def paste_contain(base, logo, center_x, center_y, max_w, max_h):
     if logo is None:
@@ -471,39 +501,6 @@ def paste_contain(base, logo, center_x, center_y, max_w, max_h):
     y = int(center_y - nh / 2)
     base.alpha_composite(logo, (x, y))
 
-def get_font(size, bold=True):
-    paths = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"
-    ]
-
-    for path in paths:
-        if os.path.exists(path):
-            return ImageFont.truetype(path, size)
-
-    return ImageFont.load_default()
-
-def draw_wrapped(draw, text, font, x, y, max_width, fill, line_gap=10):
-    words = text.split()
-    lines = []
-    line = ""
-
-    for word in words:
-        test = f"{line} {word}".strip()
-        if draw.textbbox((0, 0), test, font=font)[2] <= max_width:
-            line = test
-        else:
-            lines.append(line)
-            line = word
-
-    if line:
-        lines.append(line)
-
-    for line in lines:
-        draw.text((x, y), line, font=font, fill=fill)
-        y += font.size + line_gap
-
-    return y
 
 def generate_poster(data):
     W, H = 1080, 1350
@@ -518,7 +515,7 @@ def generate_poster(data):
     template_path = template_map.get(template_type, template_map["breaking"])
 
     bg_keyword = data.get("image_keyword") or data.get("headline") or "football"
-    bg_img = get_background_image(bg_keyword)
+    bg_img = get_background_image(bg_keyword, data.get("source_link"))
 
     if bg_img is None:
         print("Fallback background")
@@ -526,12 +523,14 @@ def generate_poster(data):
     else:
         bg = cover_crop(bg_img, W, H)
 
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 60))
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 35))
     bg.alpha_composite(overlay)
 
     if os.path.exists(template_path):
         template = Image.open(template_path).convert("RGBA").resize((W, H))
         bg.alpha_composite(template)
+    else:
+        print("Template not found:", template_path)
 
     draw = ImageDraw.Draw(bg)
 
@@ -576,7 +575,8 @@ def generate_poster(data):
         paste_contain(bg, home_logo, 345, 740, 130, 130)
         paste_contain(bg, away_logo, 735, 740, 130, 130)
 
-        score_text = f"{hs} - {aw}" if hs and aw else data.get("headline", "FULL TIME")
+        score_text = f"{hs} - {aw}" if hs and aw else data.get("headline", "Full Time")
+
         draw_centered(
             draw,
             score_text,
@@ -602,23 +602,25 @@ def generate_poster(data):
         )
 
     else:
-        headline = data.get("headline", "UPDATE TERBARU")
-        draw_left_multiline(
-    draw,
-    headline,
-    x=58,
-    y=970,
-    max_width=970,
-    max_height=250,
-    start_size=72,
-    min_size=44,
-    fill=WHITE
-)
+        headline = data.get("headline", "Update terbaru")
 
-        out = io.BytesIO()
-        bg.convert("RGB").save(out, format="JPEG", quality=95)
-        out.seek(0)
-        return out
+        draw_left_multiline(
+            draw,
+            headline,
+            x=58,
+            y=965,
+            max_width=970,
+            max_height=260,
+            start_size=72,
+            min_size=44,
+            fill=WHITE
+        )
+
+    out = io.BytesIO()
+    bg.convert("RGB").save(out, format="JPEG", quality=95)
+    out.seek(0)
+    return out
+
 
 def upload_to_supabase(image_bytes):
     filename = f"ig-{uuid.uuid4().hex}.jpg"
@@ -637,9 +639,8 @@ def upload_to_supabase(image_bytes):
 
     return f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{filename}"
 
-def publish_instagram(image_url, caption):
-    import time
 
+def publish_instagram(image_url, caption):
     create = requests.post(
         f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media",
         data={
@@ -656,8 +657,7 @@ def publish_instagram(image_url, caption):
     creation_id = create.json()["id"]
     print("Creation ID:", creation_id)
 
-    # tunggu Meta proses media
-    for i in range(10):
+    for _ in range(10):
         status = requests.get(
             f"https://graph.facebook.com/v25.0/{creation_id}",
             params={
@@ -671,7 +671,7 @@ def publish_instagram(image_url, caption):
 
         try:
             status_code = status.json().get("status_code")
-        except:
+        except Exception:
             status_code = None
 
         if status_code == "FINISHED":
@@ -693,21 +693,24 @@ def publish_instagram(image_url, caption):
 
     print("Instagram published:", publish.json())
 
+
 def main():
     news = get_latest_news()
     print("News:", news["title"])
 
     data = groq_generate(news)
-    print("Headline:", data["headline"])
+    print("Headline:", data.get("headline", ""))
 
     data["source_link"] = news.get("link", "")
-poster = generate_poster(data)
+
+    poster = generate_poster(data)
     image_url = upload_to_supabase(poster)
 
     hashtags = " ".join(data.get("hashtags", []))
-    caption = f'{data["caption"]}\n\n{hashtags}\n\nSelengkapnya di Kancah Sports.'
+    caption = f'{data.get("caption", news["summary"])}\n\n{hashtags}\n\nSelengkapnya di Kancah Sports.'
 
     publish_instagram(image_url, caption)
+
 
 if __name__ == "__main__":
     main()
