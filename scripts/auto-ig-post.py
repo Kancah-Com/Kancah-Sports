@@ -68,58 +68,30 @@ def clean_text(text):
 def get_latest_news():
     all_news = []
 
-    GOOD_KEYWORDS = [
-        "football",
-        "soccer",
-        "premier league",
-        "champions league",
-        "uefa",
-        "europa league",
-        "conference league",
-        "la liga",
-        "laliga",
-        "serie a",
-        "bundesliga",
-        "ligue 1",
-        "transfer",
+    BIG_TEAMS = [
         "arsenal",
         "chelsea",
         "liverpool",
-        "man city",
         "manchester city",
         "manchester united",
         "real madrid",
         "barcelona",
         "psg",
         "bayern",
-        "inter milan",
+        "inter",
         "juventus",
         "ac milan",
-        "timnas",
         "timnas indonesia",
-        "indonesia",
-        "ole romeny",
-        "kevin diks",
         "persib",
         "persija",
         "persebaya",
-        "liga 1",
-        "super league"
-    ]
-
-    BAD_KEYWORDS = [
-        "university",
-        "college",
-        "ncaa",
-        "athletics",
-        "american football",
-        "nfl",
-        "empty the nest",
-        "maryland",
-        "eastern michigan",
-        "high school",
-        "women's soccer",
-        "women soccer"
+        "arema",
+        "pss sleman",
+        "bcs",
+        "the jakmania",
+        "bobotoh",
+        "ole romeny",
+        "kevin diks"
     ]
 
     for rss in RSS_SOURCES:
@@ -166,10 +138,27 @@ def get_latest_news():
         for news in all_news
     }.values())
 
-    all_news.sort(
-        key=lambda x: x["pub_date"],
-        reverse=True
-    )
+    for news in all_news:
+    score = 0
+
+    text = (
+        news["title"] + " " +
+        news["summary"]
+    ).lower()
+
+    for team in BIG_TEAMS:
+        if team in text:
+            score += 20
+
+    news["score"] = score
+
+all_news.sort(
+    key=lambda x: (
+        x["score"],
+        x["pub_date"]
+    ),
+    reverse=True
+)
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
@@ -187,6 +176,10 @@ Pilih template:
 - fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
 Rules:
+- Headline harus fokus SATU berita utama saja.
+- Jangan gabungkan banyak rumor/topik dalam satu headline.
+- Jika judul berisi beberapa topik, pilih topik pertama saja.
+- Jangan buat headline list/rangkuman seperti A, B, dan C.
 - Breaking News hanya headline, tanpa subheadline.
 - Headline maksimal 12 kata.
 - Headline jangan ALL CAPS.
@@ -281,6 +274,70 @@ Balas HANYA JSON valid tanpa markdown:
 
     return data
 
+SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
+
+def serper_image_search(query, must_include=None, avoid=None):
+    if not SERPER_API_KEY:
+        return None
+
+    must_include = [x.lower() for x in (must_include or [])]
+    avoid = [x.lower() for x in (avoid or [])]
+
+    try:
+        r = requests.post(
+            "https://google.serper.dev/images",
+            headers={
+                "X-API-KEY": SERPER_API_KEY,
+                "Content-Type": "application/json"
+            },
+            json={"q": query, "num": 10},
+            timeout=20
+        )
+
+        if r.status_code != 200:
+            print("Serper error:", r.text)
+            return None
+
+        images = r.json().get("images", [])
+        best = None
+        best_score = -999
+
+        for item in images:
+            url = item.get("imageUrl", "")
+            title = item.get("title", "")
+            source = item.get("source", "")
+            haystack = f"{url} {title} {source}".lower()
+
+            if any(a in haystack for a in avoid):
+                continue
+
+            score = 0
+
+            for m in must_include:
+                if m in haystack:
+                    score += 5
+
+            width = item.get("imageWidth") or 0
+            height = item.get("imageHeight") or 0
+
+            if width >= 800 and height >= 800:
+                score += 3
+
+            if width >= 1080 or height >= 1080:
+                score += 2
+
+            if score > best_score:
+                best_score = score
+                best = url
+
+        if best:
+            print("Serper image:", best)
+            return best
+
+    except Exception as e:
+        print("Serper image error:", e)
+
+    return None
 
 def fallback_data(news):
     title = clean_text(news.get("title", ""))
@@ -301,7 +358,7 @@ def fallback_data(news):
         "home_score": "",
         "away_score": "",
         "competition": "",
-        "image_keyword": headline,
+        "image_query": headline,
         "caption": clean_text(news.get("summary", "")) or headline,
         "hashtags": ["#KancahSports", "#Football"]
     }
@@ -474,7 +531,19 @@ def commons_image(query):
 
 
 def get_background_image(keyword, source_link=None):
+
+    serper_url = serper_image_search(
+        keyword,
+        must_include=[],
+        avoid=["logo", "icon", "fifa card", "pes", "fc 25"]
+    )
+
+    img = download_image(serper_url)
+    if img:
+        return img
+
     og_url = extract_og_image(source_link)
+
     img = download_image(og_url)
     if img:
         return img
@@ -663,7 +732,10 @@ def generate_poster(data):
     template_path = template_map.get(template_type, template_map["breaking"])
 
     bg_keyword = data.get("image_query") or data.get("image_keyword") or data.get("headline") or "football"
-    bg_img = get_background_image(bg_keyword, data.get("source_link"))
+    bg_img = get_background_image(
+    bg_keyword,
+    data.get("source_link")
+)
 
     if bg_img is None:
         print("Fallback background")
@@ -760,7 +832,7 @@ def generate_poster(data):
     draw,
     headline,
     x=58,
-    y=1080,
+    y=1020,
     max_width=970,
     max_height=190,
     start_size=70,
