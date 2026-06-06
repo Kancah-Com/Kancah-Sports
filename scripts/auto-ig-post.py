@@ -227,7 +227,7 @@ Balas HANYA JSON valid tanpa markdown:
 }}
 """
 
-    res = requests.post(
+        res = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -236,11 +236,20 @@ Balas HANYA JSON valid tanpa markdown:
         json={
             "model": "llama-3.1-8b-instant",
             "messages": [
-                {"role": "system", "content": "Balas hanya JSON valid. Jangan markdown. Jangan pakai tanda kutip dua di dalam string."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "Balas hanya JSON valid."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
             ],
+            "response_format": {
+                "type": "json_object"
+            },
             "temperature": 0.3,
-            "max_tokens": 350
+            "max_tokens": 500
         },
         timeout=60
     )
