@@ -176,13 +176,13 @@ Balas HANYA JSON valid:
             "Content-Type": "application/json"
         },
         json={
-            "model": "llama-3.3-70b-versatile",
+            "model": "llama-3.1-8b-instant",
             "messages": [
                 {"role": "system", "content": "Kamu adalah editor media olahraga. Balas hanya JSON valid."},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.6,
-            "max_tokens": 900,
+            "temperature": 0.5,
+            "max_tokens": 350,
             "response_format": {"type": "json_object"}
         },
         timeout=60
