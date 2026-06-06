@@ -10,11 +10,26 @@ SUPABASE_SECRET_KEY = os.environ["SUPABASE_SECRET_KEY"]
 
 RSS_SOURCES = [
     {
-        "name": "Bola.net",
-        "url": "https://www.bola.net/feed/",
-        "category": "Football"
+        "name": "ANTARA Olahraga",
+        "url": "https://www.antaranews.com/rss/olahraga.xml",
+        "category": "Sports"
     }
 ]
+
+def get_image_url(item):
+    if item.get("enclosures"):
+        return item.enclosures[0].get("href") or item.enclosures[0].get("url")
+
+    media_content = item.get("media_content")
+    if media_content and len(media_content) > 0:
+        return media_content[0].get("url")
+
+    summary = item.get("summary", "")
+    match = re.search(r'<img[^>]+src="([^"]+)"', summary)
+    if match:
+        return match.group(1)
+
+    return None
 
 def slugify(text):
     text = text.lower()
@@ -62,6 +77,7 @@ Sumber referensi: {source["name"]}
         "published_at": datetime.now(timezone.utc).isoformat(),
         "seo_title": title,
         "seo_description": excerpt
+        "image_url": get_image_url(item),
     }
 
 def insert_article(article):
