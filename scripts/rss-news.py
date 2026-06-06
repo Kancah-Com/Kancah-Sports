@@ -30,6 +30,10 @@ def extract_keywords(title):
 
 def commons_image(query):
     try:
+        headers = {
+            "User-Agent": "KancahSportsBot/1.0 (kancahcreative@gmail.com)"
+        }
+
         params = {
             "action": "query",
             "generator": "search",
@@ -40,17 +44,33 @@ def commons_image(query):
             "iiprop": "url|mime|size",
             "format": "json"
         }
-        r = requests.get("https://commons.wikimedia.org/w/api.php", params=params, timeout=15)
-        pages = r.json().get("query", {}).get("pages", {})
+
+        r = requests.get(
+            "https://commons.wikimedia.org/w/api.php",
+            params=params,
+            headers=headers,
+            timeout=15
+        )
+
+        if r.status_code != 200:
+            print("Commons status:", r.status_code)
+            return None
+
+        data = r.json()
+        pages = data.get("query", {}).get("pages", {})
+
         for page in pages.values():
             info = page.get("imageinfo", [{}])[0]
             url = info.get("url")
             width = info.get("width", 0)
             mime = info.get("mime", "")
+
             if url and width >= 700 and mime.startswith("image/"):
                 return url
+
     except Exception as e:
         print("Commons image error:", e)
+
     return None
 
 def rss_image(item):
@@ -133,13 +153,23 @@ def build_article(item, source):
     }
 
 def insert_article(article):
-    url = f"{SUPABASE_URL}/rest/v1/articles"
+    url = f"{SUPABASE_URL}/rest/v1/articles?on_conflict=slug"
+
     headers = {
         "apikey": SUPABASE_SECRET_KEY,
         "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "return=representation"
+        "Prefer": "resolution=merge-duplicates,return=representation"
     }
+
+    response = requests.post(url, headers=headers, json=article)
+
+    if response.status_code not in [200, 201, 204]:
+        print("Upsert error:", response.status_code)
+        print(response.text)
+        raise Exception("Supabase upsert failed")
+
+    print("Upserted:", article["title"])
 
     res = requests.post(url, headers=headers, json=article)
 
