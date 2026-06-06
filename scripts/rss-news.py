@@ -2,6 +2,8 @@ import os
 import re
 import html
 import requests
+from email.utils import parsedate_to_datetime
+from datetime import datetime, timezone, timedelta
 import feedparser
 from datetime import datetime, timezone
 
@@ -11,9 +13,19 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 RSS_SOURCES = [
     {
-        "name": "ANTARA Olahraga",
-        "url": "https://www.antaranews.com/rss/olahraga.xml",
-        "category": "Sports"
+        "name": "Google News Football",
+        "url": "https://news.google.com/rss/search?q=football",
+        "category": "Football"
+    },
+    {
+        "name": "Google News Liga 1",
+        "url": "https://news.google.com/rss/search?q=super+league+indonesia",
+        "category": "Super League Indonesia"
+    },
+    {
+        "name": "Google News Timnas Indonesia",
+        "url": "https://news.google.com/rss/search?q=timnas+indonesia",
+        "category": "Timnas"
     }
 ]
 
@@ -281,9 +293,21 @@ def main():
         print("Feed title:", feed.feed.get("title"))
         print("Total RSS items:", len(feed.entries))
 
-        for item in feed.entries[:5]:
-            article = build_article(item, source)
-            upsert_article(article)
+        for item in feed.entries[:20]:
+    published = item.get("published", "")
+
+    try:
+        pub_date = parsedate_to_datetime(published)
+
+        if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
+            print("Skip old article:", item.get("title"))
+            continue
+
+    except Exception as e:
+        print("Date parse error:", e)
+
+    article = build_article(item, source)
+    upsert_article(article)
 
 if __name__ == "__main__":
     main()
