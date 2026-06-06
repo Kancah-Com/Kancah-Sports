@@ -19,10 +19,52 @@ IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 BUCKET = "ig-posts"
 
 RSS_SOURCES = [
+
+    # Football Global
+    "https://news.google.com/rss/search?q=football&hl=en-US&gl=US&ceid=US:en",
+
+    # Soccer
+    "https://news.google.com/rss/search?q=soccer&hl=en-US&gl=US&ceid=US:en",
+
+    # Transfer
+    "https://news.google.com/rss/search?q=football+transfer&hl=en-US&gl=US&ceid=US:en",
+
+    # Premier League
+    "https://news.google.com/rss/search?q=premier+league&hl=en-US&gl=US&ceid=US:en",
+
+    # Champions League
+    "https://news.google.com/rss/search?q=champions+league&hl=en-US&gl=US&ceid=US:en",
+
+    # La Liga
+    "https://news.google.com/rss/search?q=la+liga&hl=en-US&gl=US&ceid=US:en",
+
+    # Serie A
+    "https://news.google.com/rss/search?q=serie+a&hl=en-US&gl=US&ceid=US:en",
+
+    # Bundesliga
+    "https://news.google.com/rss/search?q=bundesliga&hl=en-US&gl=US&ceid=US:en",
+
+    # Timnas Indonesia
     "https://news.google.com/rss/search?q=timnas+indonesia&hl=id&gl=ID&ceid=ID:id",
+
+    # Liga Indonesia
     "https://news.google.com/rss/search?q=liga+1+indonesia&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persib&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persija&hl=id&gl=ID&ceid=ID:id"
+
+    # Futsal
+    "https://news.google.com/rss/search?q=futsal&hl=en-US&gl=US&ceid=US:en",
+
+    # NBA
+    "https://news.google.com/rss/search?q=nba&hl=en-US&gl=US&ceid=US:en",
+
+    # Formula 1
+    "https://news.google.com/rss/search?q=formula+1&hl=en-US&gl=US&ceid=US:en",
+
+    # MotoGP
+    "https://news.google.com/rss/search?q=motogp&hl=en-US&gl=US&ceid=US:en",
+
+    # Badminton
+    "https://news.google.com/rss/search?q=badminton&hl=en-US&gl=US&ceid=US:en",
+
 ]
 
 ORANGE = "#ff4d00"
@@ -35,30 +77,57 @@ def clean_text(text):
     return html.unescape(text).strip()
 
 def get_latest_news():
+
+    all_news = []
+
     for rss in RSS_SOURCES:
         feed = feedparser.parse(rss)
 
-        for item in feed.entries[:10]:
+        for item in feed.entries[:20]:
+
             title = clean_text(item.get("title", ""))
             summary = clean_text(item.get("summary", ""))
             link = item.get("link", "")
             published = item.get("published", "")
 
+            if not title:
+                continue
+
             try:
                 pub_date = parsedate_to_datetime(published)
-                if pub_date < datetime.now(timezone.utc) - timedelta(hours=12):
+
+                if pub_date < datetime.now(timezone.utc) - timedelta(hours=48):
                     continue
+
             except:
                 pass
 
-            if title:
-                return {
-                    "title": title,
-                    "summary": summary,
-                    "link": link
-                }
+            all_news.append({
+                "title": title,
+                "summary": summary,
+                "link": link,
+                "published": published
+            })
 
-    raise Exception("Tidak ada berita terbaru <= 12 jam")
+    if not all_news:
+        raise Exception("Tidak ada berita terbaru")
+
+    # hapus duplikat
+    all_news = list({
+        news["title"]: news
+        for news in all_news
+    }.values())
+
+    # prioritaskan headline menarik
+    all_news.sort(
+        key=lambda x: len(x["title"]),
+        reverse=True
+    )
+
+    print("Total berita:", len(all_news))
+    print("Terpilih:", all_news[0]["title"])
+
+    return all_news[0]
 
 def groq_generate(news):
     prompt = f"""
@@ -75,6 +144,21 @@ Style:
 - Subheadline maksimal 16 kata
 - Caption 2-4 paragraf pendek
 - Hashtag relevan
+
+Prioritaskan:
+- Transfer pemain
+- Timnas Indonesia
+- Hasil pertandingan
+- Rekor pemain
+- Kontroversi
+- Cedera pemain
+- Trofi dan gelar
+
+Hindari:
+- Tutorial olahraga
+- Profil atlet lama
+- Cara bermain olahraga
+- Artikel edukasi
 
 Berita:
 Judul: {news["title"]}
