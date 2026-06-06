@@ -4,6 +4,7 @@ import io
 import uuid
 import html
 import textwrap
+import json
 import requests
 import feedparser
 from PIL import Image, ImageDraw, ImageFont
@@ -131,50 +132,40 @@ def get_latest_news():
 
 def groq_generate(news):
     prompt = f"""
-Buat konten Instagram berita olahraga untuk Kancah Sports.
+Buat data JSON untuk konten Instagram Kancah Sports.
 
-Style:
-- Bahasa Indonesia
-- Gaya media olahraga modern
-- Singkat, tegas, tidak lebay
-- Jangan sebut sumber berita
-- Jangan pakai disclaimer
-- Jangan copy paste judul mentah
-- Headline maksimal 7 kata
-- Subheadline maksimal 16 kata
-- Caption 2-4 paragraf pendek
-- Hashtag relevan
+Pilih template:
+- breaking: untuk berita umum, transfer, rumor, update pemain, kabar klub
+- quote: jika berita berisi pernyataan/komentar seseorang
+- fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
-Prioritaskan:
-- Transfer pemain
-- Timnas Indonesia
-- Hasil pertandingan
-- Rekor pemain
-- Kontroversi
-- Cedera pemain
-- Trofi dan gelar
-
-Hindari:
-- Tutorial olahraga
-- Profil atlet lama
-- Cara bermain olahraga
-- Artikel edukasi
+Syarat:
+- headline maksimal 10 kata
+- quote maksimal 38 kata
+- speaker isi nama orang jika template quote
+- image_keyword harus spesifik untuk mencari foto background
+- jangan sebut sumber berita
+- caption 2-4 paragraf pendek
+- hashtags relevan
 
 Berita:
 Judul: {news["title"]}
 Ringkasan: {news["summary"]}
 
-Kembalikan HANYA JSON valid.
-Jangan gunakan markdown.
-Jangan gunakan ```json.
-Escape semua karakter newline.
-
-Format:
+Balas HANYA JSON valid:
 {{
-  "headline":"...",
-  "subheadline":"...",
-  "caption":"...",
-  "hashtags":["..."]
+  "template_type": "breaking",
+  "headline": "...",
+  "quote": "",
+  "speaker": "",
+  "home_team": "",
+  "away_team": "",
+  "home_score": "",
+  "away_score": "",
+  "competition": "",
+  "image_keyword": "...",
+  "caption": "...",
+  "hashtags": ["#KancahSports"]
 }}
 """
 
@@ -187,17 +178,11 @@ Format:
         json={
             "model": "llama-3.3-70b-versatile",
             "messages": [
-                {
-                    "role": "system",
-                    "content": "Kamu adalah editor media olahraga Kancah Sports. Balas hanya JSON valid."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "system", "content": "Kamu adalah editor media olahraga. Balas hanya JSON valid."},
+                {"role": "user", "content": prompt}
             ],
-            "temperature": 0.7,
-            "max_tokens": 700,
+            "temperature": 0.6,
+            "max_tokens": 900,
             "response_format": {"type": "json_object"}
         },
         timeout=60
@@ -208,24 +193,248 @@ Format:
 
     text = res.json()["choices"][0]["message"]["content"]
 
-    import json
-
     try:
-        return json.loads(text)
+        data = json.loads(text)
     except Exception:
-        print("RAW GROQ:")
-        print(text)
-
-        return {
-            "headline": news["title"][:60],
-            "subheadline": news["summary"][:120],
+        print("RAW GROQ:", text)
+        data = {
+            "template_type": "breaking",
+            "headline": news["title"][:90],
+            "quote": "",
+            "speaker": "",
+            "home_team": "",
+            "away_team": "",
+            "home_score": "",
+            "away_score": "",
+            "competition": "",
+            "image_keyword": news["title"],
             "caption": news["summary"],
-            "hashtags": [
-                "#KancahSports",
-                "#TimnasIndonesia",
-                "#Football"
-            ]
+            "hashtags": ["#KancahSports", "#Football"]
         }
+
+    return data
+
+    COUNTRY_CODES = {
+    "indonesia": "id",
+    "oman": "om",
+    "china": "cn",
+    "japan": "jp",
+    "korea selatan": "kr",
+    "australia": "au",
+    "argentina": "ar",
+    "brazil": "br",
+    "france": "fr",
+    "germany": "de",
+    "spain": "es",
+    "italy": "it",
+    "england": "gb-eng",
+    "netherlands": "nl",
+    "portugal": "pt"
+}
+
+def download_image(url):
+    r = requests.get(url, timeout=25, headers={"User-Agent": "KancahSportsBot/1.0"})
+    r.raise_for_status()
+    return Image.open(io.BytesIO(r.content)).convert("RGBA")
+
+def cover_crop(image, width=1080, height=1350):
+    img = image.convert("RGB")
+    ratio = img.width / img.height
+    target = width / height
+
+    if ratio > target:
+        new_h = height
+        new_w = int(height * ratio)
+    else:
+        new_w = width
+        new_h = int(width / ratio)
+
+    img = img.resize((new_w, new_h))
+    left = (new_w - width) // 2
+    top = (new_h - height) // 2
+    return img.crop((left, top, left + width, top + height)).convert("RGBA")
+
+def wikipedia_image(query):
+    try:
+        headers = {"User-Agent": "KancahSportsBot/1.0"}
+        search = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "list": "search",
+                "srsearch": query,
+                "format": "json",
+                "srlimit": 1
+            },
+            headers=headers,
+            timeout=15
+        )
+
+        results = search.json().get("query", {}).get("search", [])
+        if not results:
+            return None
+
+        page_title = results[0]["title"]
+
+        img = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "titles": page_title,
+                "prop": "pageimages",
+                "pithumbsize": 1600,
+                "format": "json"
+            },
+            headers=headers,
+            timeout=15
+        )
+
+        pages = img.json().get("query", {}).get("pages", {})
+        for page in pages.values():
+            src = page.get("thumbnail", {}).get("source")
+            if src:
+                return src
+
+    except Exception as e:
+        print("Wikipedia image error:", e)
+
+    return None
+
+def commons_image(query):
+    try:
+        headers = {"User-Agent": "KancahSportsBot/1.0"}
+
+        r = requests.get(
+            "https://commons.wikimedia.org/w/api.php",
+            params={
+                "action": "query",
+                "generator": "search",
+                "gsrsearch": query,
+                "gsrnamespace": 6,
+                "gsrlimit": 8,
+                "prop": "imageinfo",
+                "iiprop": "url|mime|size",
+                "format": "json"
+            },
+            headers=headers,
+            timeout=20
+        )
+
+        pages = r.json().get("query", {}).get("pages", {})
+        for page in pages.values():
+            info = page.get("imageinfo", [{}])[0]
+            url = info.get("url")
+            mime = info.get("mime", "")
+            width = info.get("width", 0)
+
+            if url and width >= 700 and mime.startswith("image/"):
+                return url
+
+    except Exception as e:
+        print("Commons image error:", e)
+
+    return None
+
+def get_background_image(keyword):
+    queries = [
+        keyword,
+        f"{keyword} football",
+        f"{keyword} player",
+        f"{keyword} soccer"
+    ]
+
+    for q in queries:
+        img = wikipedia_image(q)
+        if img:
+            return download_image(img)
+
+    for q in queries:
+        img = commons_image(q)
+        if img:
+            return download_image(img)
+
+    # fallback kalau gagal total
+    return download_image("https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=90&w=1600&auto=format&fit=crop")
+
+def get_team_logo(team_name):
+    name = (team_name or "").lower().strip()
+
+    for key, code in COUNTRY_CODES.items():
+        if key in name:
+            return download_image(f"https://flagcdn.com/w320/{code}.png")
+
+    img = wikipedia_image(f"{team_name} football club logo")
+    if img:
+        return download_image(img)
+
+    img = commons_image(f"{team_name} logo football")
+    if img:
+        return download_image(img)
+
+    return None
+
+    def wrap_text(draw, text, font, max_width):
+    words = str(text).split()
+    lines = []
+    line = ""
+
+    for word in words:
+        test = f"{line} {word}".strip()
+        bbox = draw.textbbox((0, 0), test, font=font)
+        width = bbox[2] - bbox[0]
+
+        if width <= max_width:
+            line = test
+        else:
+            if line:
+                lines.append(line)
+            line = word
+
+    if line:
+        lines.append(line)
+
+    return lines
+
+def fit_multiline(draw, text, max_width, max_height, start_size, min_size):
+    text = str(text).upper()
+
+    for size in range(start_size, min_size - 1, -2):
+        font = get_font(size, True)
+        lines = wrap_text(draw, text, font, max_width)
+        line_height = size + 10
+        total = len(lines) * line_height
+
+        if total <= max_height:
+            return font, lines, line_height
+
+    font = get_font(min_size, True)
+    lines = wrap_text(draw, text, font, max_width)
+    return font, lines, min_size + 10
+
+def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_size=42, fill=WHITE):
+    font, lines, line_height = fit_multiline(draw, text, max_width, max_height, start_size, min_size)
+    total_height = len(lines) * line_height
+    cy = y + (max_height - total_height) // 2
+
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        lw = bbox[2] - bbox[0]
+        draw.text((x + (max_width - lw) // 2, cy), line, font=font, fill=fill)
+        cy += line_height
+
+def paste_contain(base, logo, center_x, center_y, max_w, max_h):
+    if logo is None:
+        return
+
+    logo = logo.convert("RGBA")
+    ratio = min(max_w / logo.width, max_h / logo.height)
+    nw = int(logo.width * ratio)
+    nh = int(logo.height * ratio)
+    logo = logo.resize((nw, nh))
+
+    x = int(center_x - nw / 2)
+    y = int(center_y - nh / 2)
+    base.alpha_composite(logo, (x, y))
 
 def get_font(size, bold=True):
     paths = [
@@ -263,46 +472,111 @@ def draw_wrapped(draw, text, font, x, y, max_width, fill, line_gap=10):
 
 def generate_poster(data):
     W, H = 1080, 1350
-    img = Image.new("RGB", (W, H), BLACK)
-    draw = ImageDraw.Draw(img)
+    template_type = data.get("template_type", "breaking").lower()
 
-    # background orange blocks
-    draw.rectangle((0, 0, W, 180), fill=ORANGE)
-    draw.rectangle((0, 1160, W, H), fill=ORANGE)
-    draw.rectangle((60, 240, 1020, 1120), outline=ORANGE, width=4)
+    template_map = {
+        "breaking": "assets/Breaking-News.png",
+        "quote": "assets/Quotes.png",
+        "fulltime": "assets/Full-Time.png"
+    }
 
-    # brand
-    brand_font = get_font(58)
-    small_font = get_font(26)
-    draw.text((60, 52), "KANCAH", font=brand_font, fill=BLACK)
-    draw.text((360, 67), "SPORTS.", font=get_font(42), fill=BLACK)
+    template_path = template_map.get(template_type, template_map["breaking"])
 
-    # label
-    draw.rounded_rectangle((60, 230, 260, 285), radius=28, fill=ORANGE)
-    draw.text((88, 245), "UPDATE", font=get_font(24), fill=BLACK)
+    bg_keyword = data.get("image_keyword") or data.get("headline") or "football"
+    bg = cover_crop(get_background_image(bg_keyword), W, H)
 
-    # headline
-    headline = data["headline"].upper()
-    subheadline = data["subheadline"]
+    # dark overlay biar teks kebaca
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 60))
+    bg.alpha_composite(overlay)
 
-    y = 340
-    y = draw_wrapped(draw, headline, get_font(82), 70, y, 940, WHITE, 14)
+    if os.path.exists(template_path):
+        template = Image.open(template_path).convert("RGBA").resize((W, H))
+        bg.alpha_composite(template)
 
-    y += 28
-    draw.rectangle((70, y, 180, y + 8), fill=ORANGE)
-    y += 42
+    draw = ImageDraw.Draw(bg)
 
-    draw_wrapped(draw, subheadline, get_font(38), 70, y, 900, GRAY, 12)
+    if template_type == "quote":
+        quote = data.get("quote") or data.get("headline") or ""
+        speaker = data.get("speaker") or ""
 
-    # footer
-    draw.text((60, 1210), "Kancah Sports", font=get_font(34), fill=BLACK)
-    draw.text((60, 1260), "@kancahsports", font=get_font(26), fill=BLACK)
+        draw_centered(
+            draw,
+            f'"{quote}"',
+            x=80,
+            y=650,
+            max_width=920,
+            max_height=290,
+            start_size=48,
+            min_size=30,
+            fill=WHITE
+        )
 
-    date_text = datetime.now().strftime("%d.%m.%Y")
-    draw.text((830, 1260), date_text, font=get_font(26), fill=BLACK)
+        draw_centered(
+            draw,
+            speaker,
+            x=140,
+            y=955,
+            max_width=800,
+            max_height=90,
+            start_size=34,
+            min_size=24,
+            fill=BLACK
+        )
+
+    elif template_type == "fulltime":
+        home = data.get("home_team", "")
+        away = data.get("away_team", "")
+        hs = data.get("home_score", "")
+        aw = data.get("away_score", "")
+        comp = data.get("competition", "")
+
+        home_logo = get_team_logo(home)
+        away_logo = get_team_logo(away)
+
+        paste_contain(bg, home_logo, 345, 740, 130, 130)
+        paste_contain(bg, away_logo, 735, 740, 130, 130)
+
+        score_text = f"{hs} - {aw}" if hs and aw else data.get("headline", "FULL TIME")
+        draw_centered(
+            draw,
+            score_text,
+            x=360,
+            y=665,
+            max_width=360,
+            max_height=145,
+            start_size=82,
+            min_size=42,
+            fill=BLACK
+        )
+
+        draw_centered(
+            draw,
+            comp,
+            x=180,
+            y=855,
+            max_width=720,
+            max_height=80,
+            start_size=36,
+            min_size=24,
+            fill=BLACK
+        )
+
+    else:
+        headline = data.get("headline", "UPDATE TERBARU")
+        draw_centered(
+            draw,
+            headline,
+            x=70,
+            y=810,
+            max_width=940,
+            max_height=310,
+            start_size=78,
+            min_size=42,
+            fill=WHITE
+        )
 
     out = io.BytesIO()
-    img.save(out, format="JPEG", quality=95)
+    bg.convert("RGB").save(out, format="JPEG", quality=95)
     out.seek(0)
     return out
 
@@ -378,7 +652,7 @@ def publish_instagram(image_url, caption):
         raise Exception(publish.text)
 
     print("Instagram published:", publish.json())
-    
+
 def main():
     news = get_latest_news()
     print("News:", news["title"])
