@@ -100,7 +100,6 @@ def detect_main_entity(text):
         "arema": "Arema FC",
         "pss sleman": "PSS Sleman",
         "timnas indonesia": "Timnas Indonesia",
-        "indonesia": "Timnas Indonesia",
         "ole romeny": "Ole Romeny Timnas Indonesia",
         "kevin diks": "Kevin Diks Timnas Indonesia",
         "arsenal": "Arsenal FC",
@@ -127,30 +126,12 @@ def detect_main_entity(text):
 def get_latest_news():
     all_news = []
 
-    BIG_TEAMS = [
-        "arsenal",
-        "chelsea",
-        "liverpool",
-        "manchester city",
-        "manchester united",
-        "real madrid",
-        "barcelona",
-        "psg",
-        "bayern",
-        "inter",
-        "juventus",
-        "ac milan",
-        "timnas indonesia",
-        "persib",
-        "persija",
-        "persebaya",
-        "arema",
-        "pss sleman",
-        "bcs",
-        "the jakmania",
-        "bobotoh",
-        "ole romeny",
-        "kevin diks",
+    big_teams = [
+        "arsenal", "chelsea", "liverpool", "manchester city",
+        "manchester united", "real madrid", "barcelona", "psg",
+        "bayern", "inter", "juventus", "ac milan",
+        "timnas indonesia", "persib", "persija", "persebaya",
+        "arema", "pss sleman", "ole romeny", "kevin diks",
     ]
 
     for rss in RSS_SOURCES:
@@ -203,7 +184,7 @@ def get_latest_news():
         score = 0
         text = f'{news["title"]} {news["summary"]}'.lower()
 
-        for team in BIG_TEAMS:
+        for team in big_teams:
             if team in text:
                 score += 20
 
@@ -217,16 +198,12 @@ def get_latest_news():
             score += 15
 
         age_hours = (datetime.now(timezone.utc) - news["pub_date"]).total_seconds() / 3600
-        recency_score = max(0, 12 - age_hours)
-        score += recency_score
+        score += max(0, 12 - age_hours)
 
         news["score"] = score
 
     all_news.sort(
-        key=lambda x: (
-            x["score"],
-            x["pub_date"],
-        ),
+        key=lambda x: (x["score"], x["pub_date"]),
         reverse=True,
     )
 
@@ -264,13 +241,14 @@ def fallback_data(news):
         "must_include": [main_entity],
         "avoid": ["logo", "game", "fifa card", "pes", "fc 25"],
         "caption": (
-            f"🔥 Lagi ramai dibahas! {headline}\n\n"
-            f"Kabar ini jadi salah satu update yang menarik perhatian pecinta sepak bola, "
-            f"terutama karena berkaitan dengan perkembangan terbaru yang sedang jadi sorotan.\n\n"
-            f"Situasinya masih terus bergerak dan bisa berdampak pada langkah tim maupun pemain terkait ke depannya.\n\n"
-            f"Menurut kamu, kabar ini bakal jadi momentum besar atau cuma sekadar lewat saja?"
+            f"{headline}\n\n"
+            f"Kabar ini menjadi salah satu perkembangan terbaru di sepak bola yang cukup menarik untuk diikuti. "
+            f"Situasi tersebut berkaitan langsung dengan dinamika tim dan keputusan yang bisa berdampak pada langkah berikutnya.\n\n"
+            f"Dengan perkembangan ini, pihak terkait diperkirakan masih akan memantau kondisi sebelum mengambil keputusan final. "
+            f"Update lanjutan akan menjadi penentu arah kabar ini dalam beberapa waktu ke depan.\n\n"
+            f"_\n#KancahSports #FuelTheGame #KancahFootball"
         ),
-        "hashtags": ["#KancahSports", "#Football", "#SepakBola"],
+        "hashtags": ["#KancahSports", "#FuelTheGame", "#KancahFootball"],
     }
 
 
@@ -285,7 +263,7 @@ Pilih template:
 - quote: jika berita berisi pernyataan/komentar seseorang
 - fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
-Rules penting:
+Rules headline:
 - Gunakan bahasa Indonesia yang natural, tajam, dan cocok untuk media bola.
 - Headline wajib dibuat lebih menarik dan eksploratif.
 - Headline minimal 10 kata dan ideal 12-18 kata.
@@ -293,16 +271,24 @@ Rules penting:
 - Jangan terlalu pendek seperti judul mentah RSS.
 - Jangan ALL CAPS.
 - Jangan pakai tanda kutip dua di dalam value JSON.
-- Jika ada judul acara pakai tanda petik satu saja.
 - Jangan buat headline list/rangkuman seperti A, B, dan C.
 - Breaking News tetap hanya headline, tanpa subheadline.
 - Headline harus fokus SATU berita utama saja.
-- Caption wajib panjang, engaging, dan punya hook di kalimat pertama.
-- Caption 4-6 paragraf pendek.
-- Caption harus bikin pembaca penasaran untuk baca berita lengkap.
-- Caption jangan terlalu kaku.
-- Caption boleh pakai emoji secukupnya.
-- Hashtag relevan dan jangan terlalu banyak.
+
+Rules caption:
+- Caption ditulis seperti caption media bola Indonesia, bukan gaya AI.
+- Caption jangan pakai kalimat promosi seperti "lagi ramai dibahas", "jadi sorotan", "bikin penasaran".
+- Caption harus informatif, rapi, dan mengalir seperti contoh berita singkat.
+- Caption 3-5 paragraf pendek.
+- Paragraf pertama langsung masuk ke inti kabar.
+- Paragraf kedua menjelaskan konteks/penyebab.
+- Paragraf berikutnya menjelaskan dampak/kemungkinan lanjutan.
+- Jangan terlalu banyak emoji.
+- Jangan pakai pertanyaan retoris di akhir.
+- Jangan pakai CTA berlebihan.
+- Akhiri caption dengan format:
+_
+#KancahSports #FuelTheGame #KancahFootball
 
 Rules gambar:
 - image_query wajib sangat spesifik untuk mencari foto background yang relevan.
@@ -336,7 +322,7 @@ Balas HANYA JSON valid tanpa markdown:
   "must_include": ["{main_entity}"],
   "avoid": ["logo", "game", "fifa card"],
   "caption": "...",
-  "hashtags": ["#KancahSports", "#SepakBola"]
+  "hashtags": ["#KancahSports", "#FuelTheGame", "#KancahFootball"]
 }}
 """
 
@@ -349,18 +335,10 @@ Balas HANYA JSON valid tanpa markdown:
         json={
             "model": "llama-3.1-8b-instant",
             "messages": [
-                {
-                    "role": "system",
-                    "content": "Balas hanya JSON valid. Jangan markdown.",
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
+                {"role": "system", "content": "Balas hanya JSON valid. Jangan markdown."},
+                {"role": "user", "content": prompt},
             ],
-            "response_format": {
-                "type": "json_object",
-            },
+            "response_format": {"type": "json_object"},
             "temperature": 0.45,
             "max_tokens": 900,
         },
@@ -380,8 +358,10 @@ Balas HANYA JSON valid tanpa markdown:
         print("JSON parse error:", e)
         return fallback_data(news)
 
+    fallback = fallback_data(news)
+
     if not data.get("headline"):
-        data["headline"] = fallback_data(news)["headline"]
+        data["headline"] = fallback["headline"]
 
     if len(data["headline"].split()) < 10:
         data["headline"] = f'{data["headline"]} Jadi Sorotan Besar Pecinta Sepak Bola Hari Ini'
@@ -396,10 +376,13 @@ Balas HANYA JSON valid tanpa markdown:
         data["avoid"] = ["logo", "game", "fifa card", "pes", "fc 25"]
 
     if not data.get("caption"):
-        data["caption"] = fallback_data(news)["caption"]
+        data["caption"] = fallback["caption"]
+
+    if "#KancahSports" not in data["caption"]:
+        data["caption"] = data["caption"].rstrip() + "\n\n_\n#KancahSports #FuelTheGame #KancahFootball"
 
     if not data.get("hashtags"):
-        data["hashtags"] = ["#KancahSports", "#SepakBola", "#Football"]
+        data["hashtags"] = ["#KancahSports", "#FuelTheGame", "#KancahFootball"]
 
     return data
 
@@ -446,8 +429,7 @@ def serper_image_search(query, must_include=None, avoid=None):
                 if m and m in haystack:
                     score += 8
 
-            query_words = query.lower().split()
-            for word in query_words:
+            for word in query.lower().split():
                 if len(word) > 3 and word in haystack:
                     score += 1
 
@@ -511,10 +493,7 @@ def resolve_google_news_url(url):
             allow_redirects=True,
             headers={"User-Agent": "Mozilla/5.0"},
         )
-
-        final_url = r.url
-        print("Resolved URL:", final_url)
-        return final_url
+        return r.url
 
     except Exception as e:
         print("Resolve Google News URL error:", e)
@@ -774,7 +753,7 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weigh
     for size in range(start_size, min_size - 1, -2):
         font = get_font(size, weight)
         lines = wrap_text(draw, text, font, max_width)
-        line_height = size + 4
+        line_height = int(size * 0.92)
         total = len(lines) * line_height
 
         if total <= max_height:
@@ -782,7 +761,7 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weigh
 
     font = get_font(min_size, weight)
     lines = wrap_text(draw, text, font, max_width)
-    return font, lines, min_size + 4
+    return font, lines, int(min_size * 0.92)
 
 
 def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE, weight="bold"):
@@ -961,11 +940,11 @@ def generate_poster(data):
             draw,
             headline,
             x=58,
-            y=955,
+            y=1035,
             max_width=970,
-            max_height=260,
-            start_size=62,
-            min_size=34,
+            max_height=210,
+            start_size=56,
+            min_size=32,
             fill=WHITE,
             weight="bold",
         )
@@ -1062,8 +1041,7 @@ def main():
     poster = generate_poster(data)
     image_url = upload_to_supabase(poster)
 
-    hashtags = " ".join(data.get("hashtags", []))
-    caption = f'{data.get("caption", news["summary"])}\n\n{hashtags}\n\nSelengkapnya di Kancah Sports.'
+    caption = data.get("caption", news["summary"])
 
     publish_instagram(image_url, caption)
 
