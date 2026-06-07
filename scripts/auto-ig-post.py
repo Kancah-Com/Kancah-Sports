@@ -20,6 +20,7 @@ IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 
 BUCKET = "ig-posts"
+POSTED_FILE = "posted_news.json"
 
 BLACK = "#050505"
 WHITE = "#ffffff"
@@ -42,21 +43,21 @@ BAD_KEYWORDS = [
 ]
 
 RSS_SOURCES = [
-    "https://news.google.com/rss/search?q=football+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=soccer+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=football+transfer+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=premier+league+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=champions+league+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=la+liga+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=serie+a+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=bundesliga+when:12h&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=timnas+indonesia+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=liga+1+indonesia+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persib+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persija+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persebaya+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=ole+romeny+when:12h&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=kevin+diks+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=football+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=soccer+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=football+transfer+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=premier+league+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=champions+league+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=la+liga+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=serie+a+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=bundesliga+when:24h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=timnas+indonesia+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=liga+1+indonesia+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persib+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persija+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persebaya+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=ole+romeny+when:24h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=kevin+diks+when:24h&hl=id&gl=ID&ceid=ID:id",
 ]
 
 COUNTRY_CODES = {
@@ -88,6 +89,73 @@ def normalize_title(title):
     title = re.sub(r"\s*-\s*[^-]+$", "", title)
     title = title.replace('"', "'")
     return title.strip()
+
+
+def get_topic_key(title):
+    title = title.lower()
+    title = re.sub(r"[^a-zA-Z0-9\s]", " ", title)
+
+    stopwords = [
+        "yang", "dan", "dengan", "dalam", "dari", "untuk", "pada",
+        "akan", "jadi", "resmi", "terbaru", "kabar", "soal", "usai",
+        "the", "and", "for", "with", "from", "after", "before",
+        "this", "that", "have", "has", "will", "vs", "are", "was"
+    ]
+
+    words = [
+        w for w in title.split()
+        if len(w) > 3 and w not in stopwords
+    ]
+
+    return " ".join(words[:7])
+
+
+def load_posted_news():
+    if not os.path.exists(POSTED_FILE):
+        return []
+
+    try:
+        with open(POSTED_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_posted_news(news):
+    posted = load_posted_news()
+
+    posted.append({
+        "title": news.get("title", ""),
+        "link": news.get("link", ""),
+        "topic_key": news.get("topic_key", ""),
+        "posted_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    posted = posted[-100:]
+
+    with open(POSTED_FILE, "w", encoding="utf-8") as f:
+        json.dump(posted, f, ensure_ascii=False, indent=2)
+
+
+def is_already_posted(news):
+    posted = load_posted_news()
+
+    title = news.get("title", "").lower().strip()
+    link = news.get("link", "").strip()
+    topic_key = news.get("topic_key", "").strip()
+
+    for item in posted:
+        if link and item.get("link") == link:
+            return True
+
+        if topic_key and item.get("topic_key") == topic_key:
+            return True
+
+        old_title = item.get("title", "").lower().strip()
+        if old_title and old_title == title:
+            return True
+
+    return False
 
 
 def detect_main_entity(text):
@@ -126,18 +194,10 @@ def detect_main_entity(text):
 def get_latest_news():
     all_news = []
 
-    big_teams = [
-        "arsenal", "chelsea", "liverpool", "manchester city",
-        "manchester united", "real madrid", "barcelona", "psg",
-        "bayern", "inter", "juventus", "ac milan",
-        "timnas indonesia", "persib", "persija", "persebaya",
-        "arema", "pss sleman", "ole romeny", "kevin diks",
-    ]
-
     for rss in RSS_SOURCES:
         feed = feedparser.parse(rss)
 
-        for item in feed.entries[:20]:
+        for item in feed.entries[:30]:
             title = clean_text(item.get("title", ""))
             summary = clean_text(item.get("summary", ""))
             link = item.get("link", "")
@@ -161,11 +221,13 @@ def get_latest_news():
             except Exception:
                 pub_date = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
-            if pub_date < datetime.now(timezone.utc) - timedelta(hours=12):
+            if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
                 continue
 
+            clean_title = normalize_title(title)
+
             all_news.append({
-                "title": normalize_title(title),
+                "title": clean_title,
                 "summary": summary,
                 "link": link,
                 "published": published,
@@ -173,43 +235,52 @@ def get_latest_news():
             })
 
     if not all_news:
-        raise Exception("Tidak ada berita bola terbaru 12 jam terakhir")
+        raise Exception("Tidak ada berita bola terbaru 24 jam terakhir")
 
     all_news = list({
         news["title"]: news
         for news in all_news
     }.values())
 
+    topic_counter = {}
+
     for news in all_news:
-        score = 0
-        text = f'{news["title"]} {news["summary"]}'.lower()
+        topic_key = get_topic_key(news["title"])
+        news["topic_key"] = topic_key
+        topic_counter[topic_key] = topic_counter.get(topic_key, 0) + 1
 
-        for team in big_teams:
-            if team in text:
-                score += 20
-
-        if "transfer" in text:
-            score += 8
-
-        if "resmi" in text or "official" in text:
-            score += 8
-
-        if "persib" in text or "timnas indonesia" in text or "indonesia" in text:
-            score += 15
-
+    for news in all_news:
         age_hours = (datetime.now(timezone.utc) - news["pub_date"]).total_seconds() / 3600
-        score += max(0, 12 - age_hours)
 
-        news["score"] = score
+        trend_count = topic_counter.get(news["topic_key"], 1)
+        trend_score = trend_count * 100
+        recency_score = max(0, 24 - age_hours) * 10
+
+        news["trend_count"] = trend_count
+        news["score"] = trend_score + recency_score
+
+    all_news = [
+        news for news in all_news
+        if not is_already_posted(news)
+    ]
+
+    if not all_news:
+        raise Exception("Semua berita trending terbaru sudah pernah dipost")
 
     all_news.sort(
-        key=lambda x: (x["score"], x["pub_date"]),
+        key=lambda x: (
+            x["score"],
+            x["trend_count"],
+            x["pub_date"],
+        ),
         reverse=True,
     )
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
     print("Published:", all_news[0]["published"])
+    print("Topic:", all_news[0]["topic_key"])
+    print("Trend count:", all_news[0]["trend_count"])
     print("Score:", all_news[0]["score"])
 
     return all_news[0]
@@ -223,7 +294,7 @@ def fallback_data(news):
     base_headline = " ".join(words[:18])
 
     if len(base_headline.split()) < 10:
-        headline = f"{base_headline} Jadi Sorotan Baru di Dunia Sepak Bola Hari Ini"
+        headline = f"{base_headline} Jadi Perhatian Baru di Sepak Bola Hari Ini"
     else:
         headline = base_headline
 
@@ -277,13 +348,12 @@ Rules headline:
 
 Rules caption:
 - Caption ditulis seperti caption media bola Indonesia, bukan gaya AI.
-- Caption jangan pakai kalimat promosi seperti "lagi ramai dibahas", "jadi sorotan", "bikin penasaran".
-- Caption harus informatif, rapi, dan mengalir seperti contoh berita singkat.
+- Caption harus informatif, rapi, dan mengalir seperti berita singkat.
 - Caption 3-5 paragraf pendek.
 - Paragraf pertama langsung masuk ke inti kabar.
-- Paragraf kedua menjelaskan konteks/penyebab.
+- Paragraf kedua menjelaskan konteks.
 - Paragraf berikutnya menjelaskan dampak/kemungkinan lanjutan.
-- Jangan terlalu banyak emoji.
+- Jangan pakai emoji berlebihan.
 - Jangan pakai pertanyaan retoris di akhir.
 - Jangan pakai CTA berlebihan.
 - Akhiri caption dengan format:
@@ -364,7 +434,7 @@ Balas HANYA JSON valid tanpa markdown:
         data["headline"] = fallback["headline"]
 
     if len(data["headline"].split()) < 10:
-        data["headline"] = f'{data["headline"]} Jadi Sorotan Besar Pecinta Sepak Bola Hari Ini'
+        data["headline"] = f'{data["headline"]} Jadi Perhatian Besar Pecinta Sepak Bola Hari Ini'
 
     if not data.get("image_query"):
         data["image_query"] = f"{main_entity} football latest match"
@@ -632,7 +702,6 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     print("Must include:", must_include)
     print("Avoid:", avoid)
 
-    # 1. Coba Serper dengan filter ketat
     serper_url = serper_image_search(
         keyword,
         must_include=must_include,
@@ -643,8 +712,7 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     if img:
         return img
 
-    # 2. Coba Serper tanpa must_include biar tidak terlalu ketat
-    print("Retry Serper without must_include")
+    print("Retry Serper tanpa must_include")
     serper_url = serper_image_search(
         keyword,
         must_include=[],
@@ -655,15 +723,19 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     if img:
         return img
 
-    # 3. Coba gambar dari artikel berita
     og_url = extract_og_image(source_link)
 
     img = download_image(og_url)
     if img:
         return img
 
-    # 4. Coba query fallback
-    simple_keyword = keyword.replace("latest match", "").replace("football player", "").strip()
+    simple_keyword = (
+        keyword
+        .replace("latest match", "")
+        .replace("football player", "")
+        .replace("football club", "")
+        .strip()
+    )
 
     fallback_queries = [
         simple_keyword,
@@ -686,7 +758,6 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
         if img:
             return img
 
-    # 5. Wikipedia / Wikimedia
     for q in fallback_queries:
         img_url = wikipedia_image(q)
         img = download_image(img_url)
@@ -700,6 +771,7 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
             return img
 
     return None
+
 
 def get_team_logo(team_name):
     name = (team_name or "").lower().strip()
@@ -1075,6 +1147,8 @@ def main():
     caption = data.get("caption", news["summary"])
 
     publish_instagram(image_url, caption)
+
+    save_posted_news(news)
 
 
 if __name__ == "__main__":
