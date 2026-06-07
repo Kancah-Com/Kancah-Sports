@@ -632,6 +632,7 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     print("Must include:", must_include)
     print("Avoid:", avoid)
 
+    # 1. Coba Serper dengan filter ketat
     serper_url = serper_image_search(
         keyword,
         must_include=must_include,
@@ -642,33 +643,63 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     if img:
         return img
 
+    # 2. Coba Serper tanpa must_include biar tidak terlalu ketat
+    print("Retry Serper without must_include")
+    serper_url = serper_image_search(
+        keyword,
+        must_include=[],
+        avoid=["logo", "icon", "fifa card", "pes", "fc 25", "game"],
+    )
+
+    img = download_image(serper_url)
+    if img:
+        return img
+
+    # 3. Coba gambar dari artikel berita
     og_url = extract_og_image(source_link)
 
     img = download_image(og_url)
     if img:
         return img
 
-    queries = [
-        keyword,
-        f"{keyword} football player",
-        f"{keyword} football club",
-        f"{keyword} latest match",
+    # 4. Coba query fallback
+    simple_keyword = keyword.replace("latest match", "").replace("football player", "").strip()
+
+    fallback_queries = [
+        simple_keyword,
+        f"{simple_keyword} football",
+        f"{simple_keyword} sepak bola",
+        f"{simple_keyword} match",
+        "football stadium",
     ]
 
-    for q in queries:
+    for q in fallback_queries:
+        print("Fallback image query:", q)
+
+        serper_url = serper_image_search(
+            q,
+            must_include=[],
+            avoid=["logo", "icon", "fifa card", "pes", "fc 25", "game"],
+        )
+
+        img = download_image(serper_url)
+        if img:
+            return img
+
+    # 5. Wikipedia / Wikimedia
+    for q in fallback_queries:
         img_url = wikipedia_image(q)
         img = download_image(img_url)
         if img:
             return img
 
-    for q in queries:
+    for q in fallback_queries:
         img_url = commons_image(q)
         img = download_image(img_url)
         if img:
             return img
 
     return None
-
 
 def get_team_logo(team_name):
     name = (team_name or "").lower().strip()
