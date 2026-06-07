@@ -17,7 +17,6 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 IG_USER_ID = os.environ["IG_USER_ID"]
 IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
-
 SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 
 BUCKET = "ig-posts"
@@ -43,21 +42,21 @@ BAD_KEYWORDS = [
 ]
 
 RSS_SOURCES = [
-    "https://news.google.com/rss/search?q=football&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=soccer&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=football+transfer&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=premier+league&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=champions+league&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=la+liga&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=serie+a&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=bundesliga&hl=en-US&gl=US&ceid=US:en",
-    "https://news.google.com/rss/search?q=timnas+indonesia&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=liga+1+indonesia&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persib&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persija&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=persebaya&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=ole+romeny&hl=id&gl=ID&ceid=ID:id",
-    "https://news.google.com/rss/search?q=kevin+diks&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=football+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=soccer+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=football+transfer+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=premier+league+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=champions+league+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=la+liga+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=serie+a+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=bundesliga+when:12h&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=timnas+indonesia+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=liga+1+indonesia+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persib+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persija+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=persebaya+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=ole+romeny+when:12h&hl=id&gl=ID&ceid=ID:id",
+    "https://news.google.com/rss/search?q=kevin+diks+when:12h&hl=id&gl=ID&ceid=ID:id",
 ]
 
 COUNTRY_CODES = {
@@ -82,6 +81,47 @@ COUNTRY_CODES = {
 def clean_text(text):
     text = re.sub(r"<[^>]+>", "", text or "")
     return html.unescape(text).strip()
+
+
+def normalize_title(title):
+    title = clean_text(title)
+    title = re.sub(r"\s*-\s*[^-]+$", "", title)
+    title = title.replace('"', "'")
+    return title.strip()
+
+
+def detect_main_entity(text):
+    text = text.lower()
+
+    entity_map = {
+        "persib": "Persib Bandung",
+        "persija": "Persija Jakarta",
+        "persebaya": "Persebaya Surabaya",
+        "arema": "Arema FC",
+        "pss sleman": "PSS Sleman",
+        "timnas indonesia": "Timnas Indonesia",
+        "indonesia": "Timnas Indonesia",
+        "ole romeny": "Ole Romeny Timnas Indonesia",
+        "kevin diks": "Kevin Diks Timnas Indonesia",
+        "arsenal": "Arsenal FC",
+        "chelsea": "Chelsea FC",
+        "liverpool": "Liverpool FC",
+        "manchester city": "Manchester City",
+        "manchester united": "Manchester United",
+        "real madrid": "Real Madrid",
+        "barcelona": "FC Barcelona",
+        "psg": "Paris Saint-Germain",
+        "bayern": "Bayern Munich",
+        "inter": "Inter Milan",
+        "juventus": "Juventus",
+        "ac milan": "AC Milan",
+    }
+
+    for key, value in entity_map.items():
+        if key in text:
+            return value
+
+    return "football player"
 
 
 def get_latest_news():
@@ -140,11 +180,11 @@ def get_latest_news():
             except Exception:
                 pub_date = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
-            if pub_date < datetime.now(timezone.utc) - timedelta(hours=24):
+            if pub_date < datetime.now(timezone.utc) - timedelta(hours=12):
                 continue
 
             all_news.append({
-                "title": title,
+                "title": normalize_title(title),
                 "summary": summary,
                 "link": link,
                 "published": published,
@@ -152,7 +192,7 @@ def get_latest_news():
             })
 
     if not all_news:
-        raise Exception("Tidak ada berita bola terbaru 24 jam terakhir")
+        raise Exception("Tidak ada berita bola terbaru 12 jam terakhir")
 
     all_news = list({
         news["title"]: news
@@ -161,15 +201,24 @@ def get_latest_news():
 
     for news in all_news:
         score = 0
-
-        text = (
-            news["title"] + " " +
-            news["summary"]
-        ).lower()
+        text = f'{news["title"]} {news["summary"]}'.lower()
 
         for team in BIG_TEAMS:
             if team in text:
                 score += 20
+
+        if "transfer" in text:
+            score += 8
+
+        if "resmi" in text or "official" in text:
+            score += 8
+
+        if "persib" in text or "timnas indonesia" in text or "indonesia" in text:
+            score += 15
+
+        age_hours = (datetime.now(timezone.utc) - news["pub_date"]).total_seconds() / 3600
+        recency_score = max(0, 12 - age_hours)
+        score += recency_score
 
         news["score"] = score
 
@@ -184,18 +233,22 @@ def get_latest_news():
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
     print("Published:", all_news[0]["published"])
+    print("Score:", all_news[0]["score"])
 
     return all_news[0]
 
 
 def fallback_data(news):
-    title = clean_text(news.get("title", ""))
-
-    title = re.sub(r"\s*-\s*[^-]+$", "", title)
-    title = title.replace('"', "'")
+    title = normalize_title(news.get("title", ""))
+    main_entity = detect_main_entity(f'{title} {news.get("summary", "")}')
 
     words = title.split()
-    headline = " ".join(words[:12])
+    base_headline = " ".join(words[:18])
+
+    if len(base_headline.split()) < 10:
+        headline = f"{base_headline} Jadi Sorotan Baru di Dunia Sepak Bola Hari Ini"
+    else:
+        headline = base_headline
 
     return {
         "template_type": "breaking",
@@ -207,13 +260,23 @@ def fallback_data(news):
         "home_score": "",
         "away_score": "",
         "competition": "",
-        "image_query": headline,
-        "caption": clean_text(news.get("summary", "")) or headline,
-        "hashtags": ["#KancahSports", "#Football"],
+        "image_query": f"{main_entity} football latest match",
+        "must_include": [main_entity],
+        "avoid": ["logo", "game", "fifa card", "pes", "fc 25"],
+        "caption": (
+            f"🔥 Lagi ramai dibahas! {headline}\n\n"
+            f"Kabar ini jadi salah satu update yang menarik perhatian pecinta sepak bola, "
+            f"terutama karena berkaitan dengan perkembangan terbaru yang sedang jadi sorotan.\n\n"
+            f"Situasinya masih terus bergerak dan bisa berdampak pada langkah tim maupun pemain terkait ke depannya.\n\n"
+            f"Menurut kamu, kabar ini bakal jadi momentum besar atau cuma sekadar lewat saja?"
+        ),
+        "hashtags": ["#KancahSports", "#Football", "#SepakBola"],
     }
 
 
 def groq_generate(news):
+    main_entity = detect_main_entity(f'{news["title"]} {news["summary"]}')
+
     prompt = f"""
 Buat data JSON untuk konten Instagram Kancah Sports.
 
@@ -222,27 +285,37 @@ Pilih template:
 - quote: jika berita berisi pernyataan/komentar seseorang
 - fulltime: jika berita jelas berisi hasil akhir pertandingan dengan skor
 
-Rules:
-- Headline harus fokus SATU berita utama saja.
-- Jangan gabungkan banyak rumor/topik dalam satu headline.
-- Jika judul berisi beberapa topik, pilih topik pertama saja.
-- Jangan buat headline list/rangkuman seperti A, B, dan C.
-- Breaking News hanya headline, tanpa subheadline.
-- Headline maksimal 12 kata.
-- Headline jangan ALL CAPS.
+Rules penting:
+- Gunakan bahasa Indonesia yang natural, tajam, dan cocok untuk media bola.
+- Headline wajib dibuat lebih menarik dan eksploratif.
+- Headline minimal 10 kata dan ideal 12-18 kata.
+- Headline harus cukup panjang agar tampil minimal 2 baris di poster.
+- Jangan terlalu pendek seperti judul mentah RSS.
+- Jangan ALL CAPS.
 - Jangan pakai tanda kutip dua di dalam value JSON.
 - Jika ada judul acara pakai tanda petik satu saja.
-- Quote maksimal 38 kata.
-- Speaker isi nama orang jika template quote.
-- Caption 2-4 paragraf pendek.
-- Hashtag relevan.
-- image_query wajib sangat spesifik berdasarkan konteks berita.
-- Jika berita tentang pemain, gabungkan nama pemain + klub/tim yang relevan.
-- Jika berita tentang klub, gunakan nama klub + musim/tahun terbaru.
-- Jika berita tentang tim nasional, gunakan nama pemain/tim + national team.
-- Jangan pakai judul berita panjang sebagai image_query.
-- must_include berisi kata penting yang wajib cocok dengan gambar.
-- avoid berisi konteks yang harus dihindari agar gambar tidak salah.
+- Jangan buat headline list/rangkuman seperti A, B, dan C.
+- Breaking News tetap hanya headline, tanpa subheadline.
+- Headline harus fokus SATU berita utama saja.
+- Caption wajib panjang, engaging, dan punya hook di kalimat pertama.
+- Caption 4-6 paragraf pendek.
+- Caption harus bikin pembaca penasaran untuk baca berita lengkap.
+- Caption jangan terlalu kaku.
+- Caption boleh pakai emoji secukupnya.
+- Hashtag relevan dan jangan terlalu banyak.
+
+Rules gambar:
+- image_query wajib sangat spesifik untuk mencari foto background yang relevan.
+- Entitas utama berita terdeteksi: {main_entity}
+- Jika berita tentang Persib, image_query harus mengandung Persib Bandung.
+- Jika berita tentang Persija, image_query harus mengandung Persija Jakarta.
+- Jika berita tentang pemain, image_query harus berisi nama pemain + klub/tim.
+- Jika berita tentang klub, image_query harus berisi nama klub lengkap.
+- Jika berita tentang tim nasional, image_query harus berisi nama pemain/tim + national team.
+- Jangan pakai image_query umum seperti football atau soccer.
+- must_include wajib berisi nama klub/pemain utama.
+- avoid berisi klub/pemain/topik yang tidak relevan.
+- image_query jangan berupa judul berita panjang.
 
 Berita:
 Judul: {news["title"]}
@@ -260,10 +333,10 @@ Balas HANYA JSON valid tanpa markdown:
   "away_score": "",
   "competition": "",
   "image_query": "...",
-  "must_include": ["..."],
-  "avoid": ["..."],
+  "must_include": ["{main_entity}"],
+  "avoid": ["logo", "game", "fifa card"],
   "caption": "...",
-  "hashtags": ["#KancahSports"]
+  "hashtags": ["#KancahSports", "#SepakBola"]
 }}
 """
 
@@ -278,7 +351,7 @@ Balas HANYA JSON valid tanpa markdown:
             "messages": [
                 {
                     "role": "system",
-                    "content": "Balas hanya JSON valid.",
+                    "content": "Balas hanya JSON valid. Jangan markdown.",
                 },
                 {
                     "role": "user",
@@ -288,8 +361,8 @@ Balas HANYA JSON valid tanpa markdown:
             "response_format": {
                 "type": "json_object",
             },
-            "temperature": 0.3,
-            "max_tokens": 500,
+            "temperature": 0.45,
+            "max_tokens": 900,
         },
         timeout=60,
     )
@@ -308,22 +381,32 @@ Balas HANYA JSON valid tanpa markdown:
         return fallback_data(news)
 
     if not data.get("headline"):
-        data["headline"] = news["title"][:90]
+        data["headline"] = fallback_data(news)["headline"]
+
+    if len(data["headline"].split()) < 10:
+        data["headline"] = f'{data["headline"]} Jadi Sorotan Besar Pecinta Sepak Bola Hari Ini'
 
     if not data.get("image_query"):
-        data["image_query"] = data.get("headline", news["title"])
+        data["image_query"] = f"{main_entity} football latest match"
+
+    if not data.get("must_include"):
+        data["must_include"] = [main_entity]
+
+    if not data.get("avoid"):
+        data["avoid"] = ["logo", "game", "fifa card", "pes", "fc 25"]
 
     if not data.get("caption"):
-        data["caption"] = news["summary"]
+        data["caption"] = fallback_data(news)["caption"]
 
     if not data.get("hashtags"):
-        data["hashtags"] = ["#KancahSports", "#Football"]
+        data["hashtags"] = ["#KancahSports", "#SepakBola", "#Football"]
 
     return data
 
 
 def serper_image_search(query, must_include=None, avoid=None):
     if not SERPER_API_KEY:
+        print("SERPER_API_KEY kosong, skip Serper image search")
         return None
 
     must_include = [x.lower() for x in (must_include or [])]
@@ -360,8 +443,13 @@ def serper_image_search(query, must_include=None, avoid=None):
             score = 0
 
             for m in must_include:
-                if m in haystack:
-                    score += 5
+                if m and m in haystack:
+                    score += 8
+
+            query_words = query.lower().split()
+            for word in query_words:
+                if len(word) > 3 and word in haystack:
+                    score += 1
 
             width = item.get("imageWidth") or 0
             height = item.get("imageHeight") or 0
@@ -372,12 +460,16 @@ def serper_image_search(query, must_include=None, avoid=None):
             if width >= 1080 or height >= 1080:
                 score += 2
 
+            if "logo" in haystack or "icon" in haystack:
+                score -= 10
+
             if score > best_score:
                 best_score = score
                 best = url
 
         if best:
             print("Serper image:", best)
+            print("Image score:", best_score)
             return best
 
     except Exception as e:
@@ -553,11 +645,18 @@ def commons_image(query):
     return None
 
 
-def get_background_image(keyword, source_link=None):
+def get_background_image(keyword, source_link=None, must_include=None, avoid=None):
+    must_include = must_include or []
+    avoid = avoid or []
+
+    print("Image query:", keyword)
+    print("Must include:", must_include)
+    print("Avoid:", avoid)
+
     serper_url = serper_image_search(
         keyword,
-        must_include=[],
-        avoid=["logo", "icon", "fifa card", "pes", "fc 25"],
+        must_include=must_include,
+        avoid=avoid + ["logo", "icon", "fifa card", "pes", "fc 25", "game"],
     )
 
     img = download_image(serper_url)
@@ -572,9 +671,9 @@ def get_background_image(keyword, source_link=None):
 
     queries = [
         keyword,
-        f"{keyword} football",
-        f"{keyword} player",
-        f"{keyword} soccer",
+        f"{keyword} football player",
+        f"{keyword} football club",
+        f"{keyword} latest match",
     ]
 
     for q in queries:
@@ -757,12 +856,14 @@ def generate_poster(data):
         data.get("image_query")
         or data.get("image_keyword")
         or data.get("headline")
-        or "football"
+        or "football player"
     )
 
     bg_img = get_background_image(
         bg_keyword,
         data.get("source_link"),
+        must_include=data.get("must_include", []),
+        avoid=data.get("avoid", []),
     )
 
     if bg_img is None:
@@ -860,11 +961,11 @@ def generate_poster(data):
             draw,
             headline,
             x=58,
-            y=1020,
+            y=955,
             max_width=970,
-            max_height=190,
-            start_size=70,
-            min_size=38,
+            max_height=260,
+            start_size=62,
+            min_size=34,
             fill=WHITE,
             weight="bold",
         )
@@ -953,6 +1054,8 @@ def main():
 
     data = groq_generate(news)
     print("Headline:", data.get("headline", ""))
+    print("Image query:", data.get("image_query", ""))
+    print("Caption:", data.get("caption", ""))
 
     data["source_link"] = news.get("link", "")
 
