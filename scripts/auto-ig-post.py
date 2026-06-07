@@ -138,27 +138,27 @@ def get_latest_news():
         for news in all_news
     }.values())
 
-    for news in all_news:
-    score = 0
+        for news in all_news:
+        score = 0
 
-    text = (
-        news["title"] + " " +
-        news["summary"]
-    ).lower()
+        text = (
+            news["title"] + " " +
+            news["summary"]
+        ).lower()
 
-    for team in BIG_TEAMS:
-        if team in text:
-            score += 20
+        for team in BIG_TEAMS:
+            if team in text:
+                score += 20
 
-    news["score"] = score
+        news["score"] = score
 
-all_news.sort(
-    key=lambda x: (
-        x["score"],
-        x["pub_date"]
-    ),
-    reverse=True
-)
+    all_news.sort(
+        key=lambda x: (
+            x["score"],
+            x["pub_date"]
+        ),
+        reverse=True
+    )
 
     print("Total berita:", len(all_news))
     print("Terpilih:", all_news[0]["title"])
