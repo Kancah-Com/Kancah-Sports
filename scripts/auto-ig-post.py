@@ -308,7 +308,7 @@ def fallback_data(news):
         "home_score": "",
         "away_score": "",
         "competition": "",
-        "image_query": f"{main_entity} football latest match",
+        "image_query": f"{main_entity} football match",
         "must_include": [main_entity],
         "avoid": ["logo", "game", "fifa card", "pes", "fc 25"],
         "caption": (
@@ -437,7 +437,7 @@ Balas HANYA JSON valid tanpa markdown:
         data["headline"] = f'{data["headline"]} Jadi Perhatian Besar Pecinta Sepak Bola Hari Ini'
 
     if not data.get("image_query"):
-        data["image_query"] = f"{main_entity} football latest match"
+        data["image_query"] = f"{main_entity} football match"
 
     if not data.get("must_include"):
         data["must_include"] = [main_entity]
@@ -488,7 +488,13 @@ def serper_image_search(query, must_include=None, avoid=None):
             url = item.get("imageUrl", "")
             title = item.get("title", "")
             source = item.get("source", "")
+            width = item.get("imageWidth") or 0
+            height = item.get("imageHeight") or 0
+
             haystack = f"{url} {title} {source}".lower()
+
+            if not url:
+                continue
 
             if any(a in haystack for a in avoid):
                 continue
@@ -496,24 +502,30 @@ def serper_image_search(query, must_include=None, avoid=None):
             score = 0
 
             for m in must_include:
-                if m and m in haystack:
-                    score += 8
+                words = m.lower().split()
+                matched = 0
+
+                for w in words:
+                    if len(w) > 3 and w in haystack:
+                        matched += 1
+
+                score += matched * 4
 
             for word in query.lower().split():
                 if len(word) > 3 and word in haystack:
                     score += 1
 
-            width = item.get("imageWidth") or 0
-            height = item.get("imageHeight") or 0
-
-            if width >= 800 and height >= 800:
+            if width >= 700 and height >= 700:
                 score += 3
 
-            if width >= 1080 or height >= 1080:
+            if width >= 1000 or height >= 1000:
                 score += 2
 
             if "logo" in haystack or "icon" in haystack:
-                score -= 10
+                score -= 20
+
+            if "gettyimages" in haystack or "apnews" in haystack or "reuters" in haystack:
+                score += 2
 
             if score > best_score:
                 best_score = score
@@ -538,14 +550,30 @@ def download_image(url):
         r = requests.get(
             url,
             timeout=25,
-            headers={"User-Agent": "Mozilla/5.0"},
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+            },
+            allow_redirects=True,
         )
 
         if r.status_code != 200:
             print("Image download failed:", r.status_code, url)
             return None
 
-        return Image.open(io.BytesIO(r.content)).convert("RGBA")
+        content_type = r.headers.get("Content-Type", "").lower()
+
+        if "image" not in content_type and len(r.content) < 5000:
+            print("Not valid image response:", content_type, url)
+            return None
+
+        img = Image.open(io.BytesIO(r.content)).convert("RGBA")
+
+        if img.width < 300 or img.height < 300:
+            print("Image too small:", img.width, img.height, url)
+            return None
+
+        return img
 
     except Exception as e:
         print("Image error:", e)
@@ -576,6 +604,7 @@ def extract_og_image(article_url):
 
     try:
         real_url = resolve_google_news_url(article_url)
+        print("Resolved article URL:", real_url)
 
         if "news.google.com" in real_url:
             print("Still Google News URL, skip OG")
@@ -699,54 +728,60 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
     avoid = avoid or []
 
     print("Image query:", keyword)
+    print("Source link:", source_link)
     print("Must include:", must_include)
     print("Avoid:", avoid)
 
-    serper_url = serper_image_search(
-        keyword,
-        must_include=must_include,
-        avoid=avoid + ["logo", "icon", "fifa card", "pes", "fc 25", "game"],
-    )
+    search_queries = []
 
-    img = download_image(serper_url)
-    if img:
-        return img
-
-    print("Retry Serper tanpa must_include")
-    serper_url = serper_image_search(
-        keyword,
-        must_include=[],
-        avoid=["logo", "icon", "fifa card", "pes", "fc 25", "game"],
-    )
-
-    img = download_image(serper_url)
-    if img:
-        return img
-
-    og_url = extract_og_image(source_link)
-
-    img = download_image(og_url)
-    if img:
-        return img
+    if keyword:
+        search_queries.append(keyword)
 
     simple_keyword = (
-        keyword
+        str(keyword)
         .replace("latest match", "")
         .replace("football player", "")
         .replace("football club", "")
+        .replace("national team", "")
         .strip()
     )
 
-    fallback_queries = [
-        simple_keyword,
-        f"{simple_keyword} football",
-        f"{simple_keyword} sepak bola",
-        f"{simple_keyword} match",
-        "football stadium",
-    ]
+    if simple_keyword and simple_keyword != keyword:
+        search_queries.append(simple_keyword)
 
-    for q in fallback_queries:
-        print("Fallback image query:", q)
+    main_entity = must_include[0] if must_include else simple_keyword
+
+    if main_entity:
+        search_queries.extend([
+            f"{main_entity} football",
+            f"{main_entity} sepak bola",
+            f"{main_entity} match",
+            f"{main_entity} player",
+        ])
+
+    search_queries.extend([
+        "football match players",
+        "football stadium players",
+    ])
+
+    seen = set()
+    search_queries = [q for q in search_queries if q and not (q in seen or seen.add(q))]
+
+    for q in search_queries:
+        print("Try Serper strict:", q)
+
+        serper_url = serper_image_search(
+            q,
+            must_include=must_include,
+            avoid=avoid + ["logo", "icon", "fifa card", "pes", "fc 25", "game"],
+        )
+
+        img = download_image(serper_url)
+        if img:
+            return img
+
+    for q in search_queries:
+        print("Try Serper loose:", q)
 
         serper_url = serper_image_search(
             q,
@@ -758,13 +793,20 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
         if img:
             return img
 
-    for q in fallback_queries:
+    og_url = extract_og_image(source_link)
+    img = download_image(og_url)
+    if img:
+        return img
+
+    for q in search_queries:
+        print("Try Wikipedia:", q)
         img_url = wikipedia_image(q)
         img = download_image(img_url)
         if img:
             return img
 
-    for q in fallback_queries:
+    for q in search_queries:
+        print("Try Commons:", q)
         img_url = commons_image(q)
         img = download_image(img_url)
         if img:
@@ -789,6 +831,20 @@ def get_team_logo(team_name):
         return img
 
     return None
+
+
+def make_gradient_fallback(width=1080, height=1350):
+    bg = Image.new("RGBA", (width, height), (15, 15, 15, 255))
+    draw = ImageDraw.Draw(bg)
+
+    for y in range(height):
+        shade = int(18 + (y / height) * 45)
+        draw.line((0, y, width, y), fill=(shade, shade, shade, 255))
+
+    for i in range(0, width, 80):
+        draw.line((i, 0, i - 300, height), fill=(45, 45, 45, 90), width=3)
+
+    return bg
 
 
 def cover_crop(image, width=1080, height=1350):
@@ -938,8 +994,10 @@ def generate_poster(data):
         data.get("image_query")
         or data.get("image_keyword")
         or data.get("headline")
-        or "football player"
+        or "football match players"
     )
+
+    print("FINAL BG KEYWORD:", bg_keyword)
 
     bg_img = get_background_image(
         bg_keyword,
@@ -949,9 +1007,10 @@ def generate_poster(data):
     )
 
     if bg_img is None:
-        print("Fallback background")
-        bg = Image.new("RGBA", (W, H), (20, 20, 20, 255))
+        print("Fallback gradient background")
+        bg = make_gradient_fallback(W, H)
     else:
+        print("Background image loaded:", bg_img.width, bg_img.height)
         bg = cover_crop(bg_img, W, H)
 
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 25))
@@ -1137,6 +1196,7 @@ def main():
     data = groq_generate(news)
     print("Headline:", data.get("headline", ""))
     print("Image query:", data.get("image_query", ""))
+    print("Must include:", data.get("must_include", []))
     print("Caption:", data.get("caption", ""))
 
     data["source_link"] = news.get("link", "")
