@@ -18,10 +18,29 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 IG_USER_ID = os.environ["IG_USER_ID"]
 IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 
+SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
+
 BUCKET = "ig-posts"
 
 BLACK = "#050505"
 WHITE = "#ffffff"
+
+GOOD_KEYWORDS = [
+    "football", "soccer", "premier league", "champions league",
+    "la liga", "serie a", "bundesliga", "transfer", "rumor",
+    "arsenal", "chelsea", "liverpool", "manchester city",
+    "manchester united", "real madrid", "barcelona", "psg",
+    "bayern", "inter", "juventus", "ac milan",
+    "timnas indonesia", "liga 1", "persib", "persija",
+    "persebaya", "arema", "pss sleman", "ole romeny", "kevin diks",
+    "goal", "match", "club", "player", "coach", "manager"
+]
+
+BAD_KEYWORDS = [
+    "nfl", "american football", "rugby", "basketball", "nba",
+    "baseball", "cricket", "tennis", "golf", "ufc", "boxing",
+    "betting", "casino", "porn", "nsfw"
+]
 
 RSS_SOURCES = [
     "https://news.google.com/rss/search?q=football&hl=en-US&gl=US&ceid=US:en",
@@ -91,7 +110,7 @@ def get_latest_news():
         "the jakmania",
         "bobotoh",
         "ole romeny",
-        "kevin diks"
+        "kevin diks",
     ]
 
     for rss in RSS_SOURCES:
@@ -116,6 +135,8 @@ def get_latest_news():
 
             try:
                 pub_date = parsedate_to_datetime(published)
+                if pub_date.tzinfo is None:
+                    pub_date = pub_date.replace(tzinfo=timezone.utc)
             except Exception:
                 pub_date = datetime(2000, 1, 1, tzinfo=timezone.utc)
 
@@ -127,7 +148,7 @@ def get_latest_news():
                 "summary": summary,
                 "link": link,
                 "published": published,
-                "pub_date": pub_date
+                "pub_date": pub_date,
             })
 
     if not all_news:
@@ -138,7 +159,7 @@ def get_latest_news():
         for news in all_news
     }.values())
 
-        for news in all_news:
+    for news in all_news:
         score = 0
 
         text = (
@@ -155,9 +176,9 @@ def get_latest_news():
     all_news.sort(
         key=lambda x: (
             x["score"],
-            x["pub_date"]
+            x["pub_date"],
         ),
-        reverse=True
+        reverse=True,
     )
 
     print("Total berita:", len(all_news))
@@ -165,6 +186,32 @@ def get_latest_news():
     print("Published:", all_news[0]["published"])
 
     return all_news[0]
+
+
+def fallback_data(news):
+    title = clean_text(news.get("title", ""))
+
+    title = re.sub(r"\s*-\s*[^-]+$", "", title)
+    title = title.replace('"', "'")
+
+    words = title.split()
+    headline = " ".join(words[:12])
+
+    return {
+        "template_type": "breaking",
+        "headline": headline,
+        "quote": "",
+        "speaker": "",
+        "home_team": "",
+        "away_team": "",
+        "home_score": "",
+        "away_score": "",
+        "competition": "",
+        "image_query": headline,
+        "caption": clean_text(news.get("summary", "")) or headline,
+        "hashtags": ["#KancahSports", "#Football"],
+    }
+
 
 def groq_generate(news):
     prompt = f"""
@@ -224,27 +271,27 @@ Balas HANYA JSON valid tanpa markdown:
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {GROQ_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
         json={
             "model": "llama-3.1-8b-instant",
             "messages": [
                 {
                     "role": "system",
-                    "content": "Balas hanya JSON valid."
+                    "content": "Balas hanya JSON valid.",
                 },
                 {
                     "role": "user",
-                    "content": prompt
-                }
+                    "content": prompt,
+                },
             ],
             "response_format": {
-                "type": "json_object"
+                "type": "json_object",
             },
             "temperature": 0.3,
-            "max_tokens": 500
+            "max_tokens": 500,
         },
-        timeout=60
+        timeout=60,
     )
 
     if res.status_code != 200:
@@ -274,7 +321,6 @@ Balas HANYA JSON valid tanpa markdown:
 
     return data
 
-SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 
 def serper_image_search(query, must_include=None, avoid=None):
     if not SERPER_API_KEY:
@@ -288,10 +334,10 @@ def serper_image_search(query, must_include=None, avoid=None):
             "https://google.serper.dev/images",
             headers={
                 "X-API-KEY": SERPER_API_KEY,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={"q": query, "num": 10},
-            timeout=20
+            timeout=20,
         )
 
         if r.status_code != 200:
@@ -339,29 +385,6 @@ def serper_image_search(query, must_include=None, avoid=None):
 
     return None
 
-def fallback_data(news):
-    title = clean_text(news.get("title", ""))
-
-    title = re.sub(r"\s*-\s*[^-]+$", "", title)
-    title = title.replace('"', "'")
-
-    words = title.split()
-    headline = " ".join(words[:12])
-
-    return {
-        "template_type": "breaking",
-        "headline": headline,
-        "quote": "",
-        "speaker": "",
-        "home_team": "",
-        "away_team": "",
-        "home_score": "",
-        "away_score": "",
-        "competition": "",
-        "image_query": headline,
-        "caption": clean_text(news.get("summary", "")) or headline,
-        "hashtags": ["#KancahSports", "#Football"]
-    }
 
 def download_image(url):
     if not url:
@@ -371,7 +394,7 @@ def download_image(url):
         r = requests.get(
             url,
             timeout=25,
-            headers={"User-Agent": "Mozilla/5.0"}
+            headers={"User-Agent": "Mozilla/5.0"},
         )
 
         if r.status_code != 200:
@@ -394,7 +417,7 @@ def resolve_google_news_url(url):
             url,
             timeout=20,
             allow_redirects=True,
-            headers={"User-Agent": "Mozilla/5.0"}
+            headers={"User-Agent": "Mozilla/5.0"},
         )
 
         final_url = r.url
@@ -421,7 +444,7 @@ def extract_og_image(article_url):
             real_url,
             timeout=20,
             allow_redirects=True,
-            headers={"User-Agent": "Mozilla/5.0"}
+            headers={"User-Agent": "Mozilla/5.0"},
         )
 
         html_text = r.text
@@ -457,10 +480,10 @@ def wikipedia_image(query):
                 "list": "search",
                 "srsearch": query,
                 "format": "json",
-                "srlimit": 1
+                "srlimit": 1,
             },
             headers=headers,
-            timeout=15
+            timeout=15,
         )
 
         results = search.json().get("query", {}).get("search", [])
@@ -476,10 +499,10 @@ def wikipedia_image(query):
                 "titles": page_title,
                 "prop": "pageimages",
                 "pithumbsize": 1600,
-                "format": "json"
+                "format": "json",
             },
             headers=headers,
-            timeout=15
+            timeout=15,
         )
 
         pages = img.json().get("query", {}).get("pages", {})
@@ -508,10 +531,10 @@ def commons_image(query):
                 "gsrlimit": 8,
                 "prop": "imageinfo",
                 "iiprop": "url|mime|size",
-                "format": "json"
+                "format": "json",
             },
             headers=headers,
-            timeout=20
+            timeout=20,
         )
 
         pages = r.json().get("query", {}).get("pages", {})
@@ -531,11 +554,10 @@ def commons_image(query):
 
 
 def get_background_image(keyword, source_link=None):
-
     serper_url = serper_image_search(
         keyword,
         must_include=[],
-        avoid=["logo", "icon", "fifa card", "pes", "fc 25"]
+        avoid=["logo", "icon", "fifa card", "pes", "fc 25"],
     )
 
     img = download_image(serper_url)
@@ -552,7 +574,7 @@ def get_background_image(keyword, source_link=None):
         keyword,
         f"{keyword} football",
         f"{keyword} player",
-        f"{keyword} soccer"
+        f"{keyword} soccer",
     ]
 
     for q in queries:
@@ -610,7 +632,7 @@ def get_font(size, weight="bold"):
     font_map = {
         "bold": "Assets/Fonts/Ubuntu-Bold.ttf",
         "medium": "Assets/Fonts/Ubuntu-Medium.ttf",
-        "regular": "Assets/Fonts/Ubuntu-Regular.ttf"
+        "regular": "Assets/Fonts/Ubuntu-Regular.ttf",
     }
 
     path = font_map.get(weight, font_map["bold"])
@@ -673,7 +695,7 @@ def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, 
         start_size,
         min_size,
         weight=weight,
-        uppercase=False
+        uppercase=False,
     )
 
     cy = y
@@ -691,7 +713,7 @@ def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_si
         start_size,
         min_size,
         weight=weight,
-        uppercase=False
+        uppercase=False,
     )
 
     total_height = len(lines) * line_height
@@ -726,16 +748,22 @@ def generate_poster(data):
     template_map = {
         "breaking": "Assets/Breaking-News.png",
         "quote": "Assets/Quotes.png",
-        "fulltime": "Assets/Full-Time.png"
+        "fulltime": "Assets/Full-Time.png",
     }
 
     template_path = template_map.get(template_type, template_map["breaking"])
 
-    bg_keyword = data.get("image_query") or data.get("image_keyword") or data.get("headline") or "football"
+    bg_keyword = (
+        data.get("image_query")
+        or data.get("image_keyword")
+        or data.get("headline")
+        or "football"
+    )
+
     bg_img = get_background_image(
-    bg_keyword,
-    data.get("source_link")
-)
+        bg_keyword,
+        data.get("source_link"),
+    )
 
     if bg_img is None:
         print("Fallback background")
@@ -768,7 +796,7 @@ def generate_poster(data):
             start_size=48,
             min_size=30,
             fill=WHITE,
-            weight="regular"
+            weight="regular",
         )
 
         draw_centered(
@@ -781,7 +809,7 @@ def generate_poster(data):
             start_size=34,
             min_size=24,
             fill=BLACK,
-            weight="medium"
+            weight="medium",
         )
 
     elif template_type == "fulltime":
@@ -809,7 +837,7 @@ def generate_poster(data):
             start_size=82,
             min_size=42,
             fill=BLACK,
-            weight="bold"
+            weight="bold",
         )
 
         draw_centered(
@@ -822,24 +850,24 @@ def generate_poster(data):
             start_size=36,
             min_size=24,
             fill=BLACK,
-            weight="medium"
+            weight="medium",
         )
 
     else:
         headline = data.get("headline", "Update terbaru")
 
         draw_left_multiline(
-    draw,
-    headline,
-    x=58,
-    y=1020,
-    max_width=970,
-    max_height=190,
-    start_size=70,
-    min_size=38,
-    fill=WHITE,
-    weight="bold"
-)
+            draw,
+            headline,
+            x=58,
+            y=1020,
+            max_width=970,
+            max_height=190,
+            start_size=70,
+            min_size=38,
+            fill=WHITE,
+            weight="bold",
+        )
 
     out = io.BytesIO()
     bg.convert("RGB").save(out, format="JPEG", quality=95)
@@ -854,7 +882,7 @@ def upload_to_supabase(image_bytes):
     headers = {
         "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
         "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Content-Type": "image/jpeg"
+        "Content-Type": "image/jpeg",
     }
 
     res = requests.post(url, headers=headers, data=image_bytes.getvalue())
@@ -871,9 +899,9 @@ def publish_instagram(image_url, caption):
         data={
             "image_url": image_url,
             "caption": caption,
-            "access_token": IG_ACCESS_TOKEN
+            "access_token": IG_ACCESS_TOKEN,
         },
-        timeout=60
+        timeout=60,
     )
 
     if create.status_code != 200:
@@ -887,9 +915,9 @@ def publish_instagram(image_url, caption):
             f"https://graph.facebook.com/v25.0/{creation_id}",
             params={
                 "fields": "status_code",
-                "access_token": IG_ACCESS_TOKEN
+                "access_token": IG_ACCESS_TOKEN,
             },
-            timeout=60
+            timeout=60,
         )
 
         print("Media status:", status.text)
@@ -908,9 +936,9 @@ def publish_instagram(image_url, caption):
         f"https://graph.facebook.com/v25.0/{IG_USER_ID}/media_publish",
         data={
             "creation_id": creation_id,
-            "access_token": IG_ACCESS_TOKEN
+            "access_token": IG_ACCESS_TOKEN,
         },
-        timeout=60
+        timeout=60,
     )
 
     if publish.status_code != 200:
