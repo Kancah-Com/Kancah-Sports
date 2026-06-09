@@ -7,7 +7,7 @@ import json
 import time
 import requests
 import feedparser
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 
@@ -40,6 +40,19 @@ BAD_KEYWORDS = [
     "nfl", "american football", "rugby", "basketball", "nba",
     "baseball", "cricket", "tennis", "golf", "ufc", "boxing",
     "betting", "casino", "porn", "nsfw"
+]
+
+NEGATIVE_KEYWORDS = [
+    "tersinggung", "marah", "kesal", "sindir", "menyindir",
+    "kritik", "kritikan", "konflik", "perseteruan", "ribut",
+    "cekcok", "drama", "boikot", "serang", "menyerang",
+    "panas", "memanas", "provokasi", "kontroversi", "kontroversial"
+]
+
+STREAMING_KEYWORDS = [
+    "live streaming", "link streaming", "watch live", "siaran langsung",
+    "streaming gratis", "cara nonton", "live match", "link nonton",
+    "jadwal tv", "tayang dimana", "hak siar", "vidio", "vision+"
 ]
 
 RSS_SOURCES = [
@@ -168,8 +181,8 @@ def detect_main_entity(text):
         "arema": "Arema FC",
         "pss sleman": "PSS Sleman",
         "timnas indonesia": "Timnas Indonesia",
-        "ole romeny": "Ole Romeny",
-        "kevin diks": "Kevin Diks",
+        "ole romeny": "Ole Romeny Timnas Indonesia",
+        "kevin diks": "Kevin Diks Timnas Indonesia",
         "arsenal": "Arsenal FC",
         "chelsea": "Chelsea FC",
         "liverpool": "Liverpool FC",
@@ -209,6 +222,14 @@ def get_latest_news():
             combined = f"{title} {summary}".lower()
 
             if any(bad in combined for bad in BAD_KEYWORDS):
+                continue
+
+            if any(negative in combined for negative in NEGATIVE_KEYWORDS):
+                print("Skip negative/drama news:", title)
+                continue
+
+            if any(stream in combined for stream in STREAMING_KEYWORDS):
+                print("Skip streaming/copyright-risk news:", title)
                 continue
 
             if not any(good in combined for good in GOOD_KEYWORDS):
@@ -310,10 +331,11 @@ def fallback_data(news):
         "competition": "",
         "main_person": "",
         "main_team": main_entity,
+        "competition": "",
         "image_context": "football_news",
         "image_query": f"{main_entity} football match",
         "must_include": [main_entity],
-        "avoid": ["logo", "game", "fifa card", "pes", "fc 25", "wallpaper", "poster"],
+        "avoid": ["logo", "game", "fifa card", "pes", "fc 25"],
         "caption": (
             f"{headline}\n\n"
             f"Kabar ini menjadi salah satu perkembangan terbaru di sepak bola yang cukup menarik untuk diikuti. "
@@ -364,24 +386,17 @@ _
 #KancahSports #FuelTheGame #KancahFootball
 
 Rules gambar:
-- Ambil entity utama dari berita.
-- Jika berita tentang pemain, isi main_person dengan nama pemain.
-- Jika berita tentang klub/tim, isi main_team dengan nama klub/tim.
-- Jika berita tentang tim nasional, isi main_team dengan nama tim nasional.
-- Jika berita tentang kompetisi, isi competition.
-- image_context isi konteks singkat seperti transfer_news, contract_news, national_team, match_result, injury_news, club_news, coach_news.
-- image_query wajib spesifik berdasarkan konteks berita.
+- image_query wajib sangat spesifik untuk mencari foto background yang relevan.
+- Entitas utama berita terdeteksi: {main_entity}
+- Jika berita tentang Persib, image_query harus mengandung Persib Bandung.
+- Jika berita tentang Persija, image_query harus mengandung Persija Jakarta.
+- Jika berita tentang pemain, image_query harus berisi nama pemain + klub/tim.
+- Jika berita tentang klub, image_query harus berisi nama klub lengkap.
+- Jika berita tentang tim nasional, image_query harus berisi nama pemain/tim + national team.
 - Jangan pakai image_query umum seperti football atau soccer.
-- must_include wajib berisi entity yang harus muncul di gambar, misalnya nama pemain dan/atau nama klub/tim.
-- avoid isi hal yang tidak relevan seperti logo, game, fifa card, pes, fc 25, wallpaper, poster.
-- Jangan hardcode satu pemain atau satu klub. Sesuaikan dengan berita yang diberikan.
-
-Contoh logic:
-- Berita pemain memperpanjang kontrak di klub → main_person nama pemain, main_team nama klub.
-- Berita pemain dipanggil timnas → main_person nama pemain, main_team nama timnas.
-- Berita klub menang pertandingan → main_team nama klub, competition nama kompetisi.
-- Berita transfer pemain → main_person nama pemain, main_team klub tujuan/klub yang dibahas.
-- Berita pelatih → main_person nama pelatih, main_team klub/tim yang dibahas.
+- must_include wajib berisi nama klub/pemain utama.
+- avoid berisi klub/pemain/topik yang tidak relevan.
+- image_query jangan berupa judul berita panjang.
 
 Berita:
 Judul: {news["title"]}
@@ -398,12 +413,9 @@ Balas HANYA JSON valid tanpa markdown:
   "home_score": "",
   "away_score": "",
   "competition": "",
-  "main_person": "",
-  "main_team": "{main_entity}",
-  "image_context": "football_news",
-  "image_query": "{main_entity} football match",
+  "image_query": "...",
   "must_include": ["{main_entity}"],
-  "avoid": ["logo", "game", "fifa card", "pes", "fc 25", "wallpaper", "poster"],
+  "avoid": ["logo", "game", "fifa card"],
   "caption": "...",
   "hashtags": ["#KancahSports", "#FuelTheGame", "#KancahFootball"]
 }}
@@ -423,7 +435,7 @@ Balas HANYA JSON valid tanpa markdown:
             ],
             "response_format": {"type": "json_object"},
             "temperature": 0.45,
-            "max_tokens": 1000,
+            "max_tokens": 900,
         },
         timeout=60,
     )
@@ -443,12 +455,6 @@ Balas HANYA JSON valid tanpa markdown:
 
     fallback = fallback_data(news)
 
-    if not data.get("headline"):
-        data["headline"] = fallback["headline"]
-
-    if len(data["headline"].split()) < 10:
-        data["headline"] = f'{data["headline"]} Jadi Perhatian Besar Pecinta Sepak Bola Hari Ini'
-
     if not data.get("main_person"):
         data["main_person"] = ""
 
@@ -461,22 +467,20 @@ Balas HANYA JSON valid tanpa markdown:
     if not data.get("image_context"):
         data["image_context"] = "football_news"
 
+    if not data.get("headline"):
+        data["headline"] = fallback["headline"]
+
+    if len(data["headline"].split()) < 10:
+        data["headline"] = f'{data["headline"]} Jadi Perhatian Besar Pecinta Sepak Bola Hari Ini'
+
     if not data.get("image_query"):
-        if data.get("main_person") and data.get("main_team"):
-            data["image_query"] = f'{data["main_person"]} {data["main_team"]} football match'
-        else:
-            data["image_query"] = f"{main_entity} football match"
+        data["image_query"] = f"{main_entity} football match"
 
     if not data.get("must_include"):
-        must = []
-        if data.get("main_person"):
-            must.append(data["main_person"])
-        if data.get("main_team"):
-            must.append(data["main_team"])
-        data["must_include"] = must or [main_entity]
+        data["must_include"] = [main_entity]
 
     if not data.get("avoid"):
-        data["avoid"] = ["logo", "game", "fifa card", "pes", "fc 25", "wallpaper", "poster"]
+        data["avoid"] = ["logo", "game", "fifa card", "pes", "fc 25"]
 
     if not data.get("caption"):
         data["caption"] = fallback["caption"]
@@ -538,20 +542,15 @@ def build_smart_image_queries(data):
 
     if image_query:
         queries.append(image_query)
-
     if headline:
         queries.append(headline)
-
     if context:
         if main_person:
             queries.append(f"{main_person} {context}")
         if main_team:
             queries.append(f"{main_team} {context}")
 
-    queries.extend([
-        "football match players",
-        "football stadium players",
-    ])
+    queries.extend(["football match players", "football stadium players"])
 
     seen = set()
     return [q for q in queries if q and not (q in seen or seen.add(q))]
@@ -567,8 +566,8 @@ def serper_image_search(query, must_include=None, avoid=None):
 
     hard_bad = [
         "logo", "icon", "fifa", "fc 25", "fc25", "pes",
-        "efootball", "game", "wallpaper", "poster",
-        "transfermarkt", "sofascore", "lineup", "kit", "jersey store"
+        "efootball", "game", "wallpaper", "poster", "lineup",
+        "kit", "jersey store", "cartoon", "illustration"
     ]
 
     try:
@@ -596,7 +595,6 @@ def serper_image_search(query, must_include=None, avoid=None):
             source = item.get("source", "")
             width = item.get("imageWidth") or 0
             height = item.get("imageHeight") or 0
-
             haystack = f"{url} {title} {source}".lower()
 
             if not url:
@@ -604,13 +602,9 @@ def serper_image_search(query, must_include=None, avoid=None):
 
             score = 0
 
-            for bad in avoid:
+            for bad in avoid + hard_bad:
                 if bad and bad in haystack:
-                    score -= 80
-
-            for bad in hard_bad:
-                if bad in haystack:
-                    score -= 100
+                    score -= 90
 
             for m in must_include:
                 words = [w for w in m.split() if len(w) > 2]
@@ -621,23 +615,16 @@ def serper_image_search(query, must_include=None, avoid=None):
                 if len(word) > 3 and word in haystack:
                     score += 8
 
-            action_words = ["match", "action", "player", "training", "goal", "celebration"]
-            if any(w in haystack for w in action_words):
+            if any(w in haystack for w in ["match", "action", "player", "training", "goal", "celebration"]):
                 score += 20
 
-            trusted_sources = [
-                "gettyimages", "reuters", "apnews", "bbc", "espn",
-                "skysports", "goal", "bola", "transfer", "liga"
-            ]
-            if any(s in haystack for s in trusted_sources):
+            if any(src in haystack for src in ["gettyimages", "reuters", "apnews", "bbc", "espn", "skysports", "goal", "bola"]):
                 score += 8
 
             if width >= 700 and height >= 700:
                 score += 15
-
             if width >= 1000 or height >= 1000:
                 score += 10
-
             if height > width:
                 score += 5
 
@@ -658,7 +645,6 @@ def serper_image_search(query, must_include=None, avoid=None):
         print("Serper image error:", e)
 
     return None
-
 
 def download_image(url):
     if not url:
@@ -861,44 +847,46 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
 
     print("SMART QUERIES:", search_queries)
 
+    # 1. Serper smart dulu, supaya gambar paling relevan dengan entity berita
+    for q in search_queries:
+        print("Try Serper smart:", q)
+        serper_url = serper_image_search(
+            q,
+            must_include=must_include,
+            avoid=avoid + ["logo", "icon", "fifa card", "pes", "fc 25", "game", "wallpaper", "poster"],
+        )
+        img = download_image(serper_url)
+        if img:
+            print("Using Serper image")
+            return img
+
+    # 2. OG image artikel
     og_url = extract_og_image(source_link)
     img = download_image(og_url)
     if img:
         print("Using OG image")
         return img
 
-    for q in search_queries:
-        print("Try Serper smart:", q)
-
-        serper_url = serper_image_search(
-            q,
-            must_include=must_include,
-            avoid=avoid + [
-                "logo", "icon", "fifa card", "pes", "fc 25",
-                "game", "wallpaper", "poster"
-            ],
-        )
-
-        img = download_image(serper_url)
-        if img:
-            return img
-
+    # 3. Wikipedia
     for q in search_queries:
         print("Try Wikipedia:", q)
         img_url = wikipedia_image(q)
         img = download_image(img_url)
         if img:
+            print("Using Wikipedia image")
             return img
 
+    # 4. Wikimedia Commons
     for q in search_queries:
         print("Try Commons:", q)
         img_url = commons_image(q)
         img = download_image(img_url)
         if img:
+            print("Using Commons image")
             return img
 
+    print("NO IMAGE FOUND")
     return None
-
 
 def get_team_logo(team_name):
     name = (team_name or "").lower().strip()
@@ -926,8 +914,20 @@ def make_gradient_fallback(width=1080, height=1350):
         shade = int(18 + (y / height) * 45)
         draw.line((0, y, width, y), fill=(shade, shade, shade, 255))
 
+    # subtle pattern supaya tidak terlihat kosong kalau semua sumber gambar gagal
+    for i in range(0, width, 110):
+        draw.line((i, 0, i - 260, height), fill=(40, 40, 40, 55), width=2)
+
     return bg
 
+
+def enhance_sports_image(img):
+    img = img.convert("RGBA")
+    img = ImageEnhance.Contrast(img).enhance(1.25)
+    img = ImageEnhance.Color(img).enhance(1.12)
+    img = ImageEnhance.Sharpness(img).enhance(1.35)
+    img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=220, threshold=2))
+    return img
 
 def cover_crop(image, width=1080, height=1350):
     img = image.convert("RGB")
@@ -986,7 +986,45 @@ def wrap_text(draw, text, font, max_width):
     return lines
 
 
-def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weight="bold", uppercase=False):
+def limit_text_to_lines(draw, text, font, max_width, max_lines):
+    words = str(text).split()
+    lines = []
+    line = ""
+
+    for word in words:
+        test = f"{line} {word}".strip()
+        bbox = draw.textbbox((0, 0), test, font=font)
+        width = bbox[2] - bbox[0]
+
+        if width <= max_width:
+            line = test
+        else:
+            if line:
+                lines.append(line)
+            line = word
+
+        if len(lines) == max_lines:
+            break
+
+    if len(lines) < max_lines and line:
+        lines.append(line)
+
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+
+    # kasih elipsis kalau teks kepotong
+    used = " ".join(lines).replace("...", "")
+    original = str(text).strip()
+    if len(used.split()) < len(original.split()) and lines:
+        last = lines[-1]
+        while last and draw.textbbox((0, 0), last + "...", font=font)[2] > max_width:
+            last = last[:-1].rstrip()
+        lines[-1] = last + "..."
+
+    return lines
+
+
+def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weight="bold", uppercase=False, max_lines=None):
     text = str(text)
     if uppercase:
         text = text.upper()
@@ -994,6 +1032,10 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weigh
     for size in range(start_size, min_size - 1, -2):
         font = get_font(size, weight)
         lines = wrap_text(draw, text, font, max_width)
+
+        if max_lines and len(lines) > max_lines:
+            continue
+
         line_height = int(size * 0.92)
         total = len(lines) * line_height
 
@@ -1001,11 +1043,13 @@ def fit_multiline(draw, text, max_width, max_height, start_size, min_size, weigh
             return font, lines, line_height
 
     font = get_font(min_size, weight)
-    lines = wrap_text(draw, text, font, max_width)
+    if max_lines:
+        lines = limit_text_to_lines(draw, text, font, max_width, max_lines)
+    else:
+        lines = wrap_text(draw, text, font, max_width)
     return font, lines, int(min_size * 0.92)
 
-
-def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE, weight="bold"):
+def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, min_size=42, fill=WHITE, weight="bold", max_lines=None):
     font, lines, line_height = fit_multiline(
         draw,
         text,
@@ -1015,6 +1059,7 @@ def draw_left_multiline(draw, text, x, y, max_width, max_height, start_size=76, 
         min_size,
         weight=weight,
         uppercase=False,
+        max_lines=max_lines,
     )
 
     cy = y
@@ -1041,7 +1086,7 @@ def draw_centered(draw, text, x, y, max_width, max_height, start_size=78, min_si
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         lw = bbox[2] - bbox[0]
-        draw.text((x + (max_width - lw) // 2, cy), font=font, text=line, fill=fill)
+        draw.text((x + (max_width - lw) // 2, cy), line, font=font, fill=fill)
         cy += line_height
 
 
@@ -1074,6 +1119,7 @@ def generate_poster(data):
 
     bg_keyword = (
         data.get("image_query")
+        or data.get("image_keyword")
         or data.get("headline")
         or "football match players"
     )
@@ -1094,6 +1140,7 @@ def generate_poster(data):
     else:
         print("Background image loaded:", bg_img.width, bg_img.height)
         bg = cover_crop(bg_img, W, H)
+        bg = enhance_sports_image(bg)
 
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 25))
     bg.alpha_composite(overlay)
@@ -1162,6 +1209,7 @@ def generate_poster(data):
             min_size=42,
             fill=BLACK,
             weight="bold",
+            max_lines=3,
         )
 
         draw_centered(
@@ -1276,12 +1324,7 @@ def main():
     print("News:", news["title"])
 
     data = groq_generate(news)
-
     print("Headline:", data.get("headline", ""))
-    print("Main person:", data.get("main_person", ""))
-    print("Main team:", data.get("main_team", ""))
-    print("Competition:", data.get("competition", ""))
-    print("Image context:", data.get("image_context", ""))
     print("Image query:", data.get("image_query", ""))
     print("Must include:", data.get("must_include", []))
     print("Caption:", data.get("caption", ""))
