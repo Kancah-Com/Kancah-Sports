@@ -576,7 +576,48 @@ def serper_image_search(query, must_include=None, avoid=None):
         "logo", "icon", "fifa", "fc 25", "fc25", "pes",
         "efootball", "game", "wallpaper", "poster",
         "transfermarkt", "sofascore", "lineup", "kit", "jersey store",
-        "live streaming", "streaming", "watch live", "vidio", "youtube", "tiktok"
+        "live streaming", "streaming", "watch live", "vidio", "youtube", "tiktok",
+
+        # WATERMARK / STOCK PHOTO SOURCES
+        "gettyimages", "getty images", "getty",
+        "shutterstock",
+        "alamy",
+        "dreamstime",
+        "depositphotos",
+        "123rf",
+        "istock", "istockphoto",
+        "freepik",
+        "vectorstock",
+        "alamyimages",
+
+        # ANTARA FOTO sering ada watermark besar di tengah
+        "antarafoto",
+        "img.antarafoto.com",
+    ]
+
+    trusted_sources = [
+        "reuters",
+        "apnews",
+        "ap news",
+        "bbc",
+        "espn",
+        "skysports",
+        "sky sports",
+        "goal",
+        "fifa.com",
+        "the-afc.com",
+        "uefa.com",
+        "premierleague.com",
+        "laliga.com",
+        "seriea.com",
+        "bundesliga.com",
+        "pssi.org",
+        "persib.co.id",
+        "persija.id",
+        "kompas",
+        "detik",
+        "bola.com",
+        "tempo",
     ]
 
     try:
@@ -610,14 +651,15 @@ def serper_image_search(query, must_include=None, avoid=None):
             if not url:
                 continue
 
+            # langsung skip sumber yang rawan watermark / copyright-risk / thumbnail video
+            if any(bad in haystack for bad in hard_bad):
+                print("SKIP WATERMARK/BAD SOURCE:", title, "|", url)
+                continue
+
             score = 0
 
             for bad in avoid:
                 if bad and bad in haystack:
-                    score -= 80
-
-            for bad in hard_bad:
-                if bad in haystack:
                     score -= 100
 
             for m in must_include:
@@ -629,19 +671,23 @@ def serper_image_search(query, must_include=None, avoid=None):
                 if len(word) > 3 and word in haystack:
                     score += 8
 
-            action_words = ["match", "action", "player", "training", "goal", "celebration"]
+            action_words = [
+                "match", "action", "player", "training",
+                "goal", "celebration", "football", "soccer"
+            ]
             if any(w in haystack for w in action_words):
                 score += 20
 
-            trusted_sources = [
-                "antarafoto", "antaranews", "gettyimages", "reuters", "apnews",
-                "bbc", "espn", "skysports", "goal", "bola", "liga", "tempo"
-            ]
             if any(s in haystack for s in trusted_sources):
-                score += 12
+                score += 40
 
+            # hindari sosmed crawler karena sering gagal dibuka
             if "lookaside.instagram" in haystack or "lookaside.fbsbx" in haystack:
-                score -= 30
+                score -= 80
+
+            # hindari foto kecil
+            if width < 500 or height < 400:
+                score -= 50
 
             if width >= 700 and height >= 700:
                 score += 15
@@ -669,7 +715,6 @@ def serper_image_search(query, must_include=None, avoid=None):
         print("Serper image error:", e)
 
     return None
-
 
 def download_image(url):
     if not url:
@@ -878,10 +923,13 @@ def get_background_image(keyword, source_link=None, must_include=None, avoid=Non
         serper_url = serper_image_search(
             q,
             must_include=must_include,
-            avoid=avoid + [
-                "logo", "icon", "fifa card", "pes", "fc 25",
-                "game", "wallpaper", "poster", "live streaming"
-            ],
+           avoid=avoid + [
+                     "logo", "icon", "fifa card", "pes", "fc 25",
+                     "game", "wallpaper", "poster", "live streaming",
+                     "getty", "gettyimages", "alamy", "shutterstock",
+                     "dreamstime", "depositphotos", "istock", "freepik",
+                     "antarafoto", "img.antarafoto.com"
+                    ],
         )
 
         img = download_image(serper_url)
