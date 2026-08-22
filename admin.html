@@ -520,6 +520,17 @@
 
     <div id="homeFields"></div>
 
+    <div id="liveScoreControls" style="display:none;margin:14px 0;padding:14px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#101010">
+      <div style="font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em;font-size:12px">Kontrol Waktu Pertandingan</div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+        <button type="button" class="btn btn-ghost" id="liveStart1Btn">▶ Mulai Babak 1</button>
+        <button type="button" class="btn btn-ghost" id="liveHalfBtn">Ⅱ Half Time</button>
+        <button type="button" class="btn btn-ghost" id="liveStart2Btn">▶ Mulai Babak 2</button>
+        <button type="button" class="btn btn-ghost" id="liveFullBtn">■ Full Time</button>
+      </div>
+      <p id="liveScoreControlHint" style="margin-top:10px;color:#888;font-size:11px;line-height:1.5">Simpan pertandingan dulu. Setelah itu tombol di atas mengubah status dan timestamp secara otomatis.</p>
+    </div>
+
     <div class="home-form-note">
       <strong>Catatan:</strong> Data di sini langsung tersimpan ke Supabase dan dipakai homepage.
       Kamu tidak perlu menulis JSON atau mengubah <code>index.html</code>.
@@ -941,11 +952,16 @@
         title: 'Live Score',
         fields: [
           ['league','Kompetisi','text','Premier League'],
-          ['status','Status / Menit','text',"72'"],
           ['home','Tim Kandang','text','Arsenal'],
-          ['home_score','Skor Kandang','number','2'],
+          ['home_score','Skor Kandang','number','0'],
           ['away','Tim Tandang','text','Chelsea'],
-          ['away_score','Skor Tandang','number','1'],
+          ['away_score','Skor Tandang','number','0'],
+          ['status','Status Pertandingan','select','live'],
+          ['period','Babak','select','1'],
+          ['start_minute','Mulai dari Menit','number','1'],
+          ['period_started_at','Waktu Mulai Babak','datetime-local',''],
+          ['paused_minute','Menit Saat Jeda','text','45'],
+          ['stoppage','Tambahan Waktu','number','0'],
           ['note','Catatan','text','Live']
         ]
       },
@@ -1022,9 +1038,15 @@
       if(type === 'textarea'){
         return `<div class="field"><label>${escapeHtml(label)}</label><textarea data-home-key="${key}" placeholder="${ph}">${safe}</textarea></div>`;
       }
+      if(type === 'select'){
+        let options = '';
+        if(key === 'status') options = [['upcoming','Akan Datang'],['live','LIVE'],['halftime','HALF TIME'],['second_half','BABAK 2'],['finished','FULL TIME']];
+        if(key === 'period') options = [['1','Babak 1'],['2','Babak 2']];
+        options = options.map(([v,t])=>`<option value="${v}" ${String(value||'')===v?'selected':''}>${t}</option>`).join('');
+        return `<div class="field"><label>${escapeHtml(label)}</label><select data-home-key="${key}">${options}</select></div>`;
+      }
       return `<div class="field"><label>${escapeHtml(label)}</label><input data-home-key="${key}" type="${type}" value="${safe}" placeholder="${ph}"></div>`;
     }
-
     function renderHomeFields(section, payload = {}) {
       const schema = HOME_SCHEMAS[section] || HOME_SCHEMAS.scores;
       const fields = schema.fields;
@@ -1033,7 +1055,10 @@
       let out = '<div class="home-dynamic-grid">';
       for(let i=0;i<fields.length;i++){
         const [key,label,type,placeholder] = fields[i];
-        const val = payload[key] ?? '';
+        let val = payload[key] ?? '';
+        if(section === 'scores' && key === 'status' && !val) val = 'upcoming';
+        if(section === 'scores' && key === 'period' && !val) val = '1';
+        if(type === 'datetime-local' && val) { const d=new Date(val); if(!Number.isNaN(d.getTime())) val=d.toISOString().slice(0,16); }
         if(i % 2 === 0 && type !== 'textarea' && fields[i+1] && fields[i+1][2] !== 'textarea'){
           const next = fields[i+1];
           out += `<div class="form-row">${fieldHtml(key,label,type,placeholder,val)}${fieldHtml(next[0],next[1],next[2],next[3],payload[next[0]] ?? '')}</div>`;
@@ -1045,8 +1070,61 @@
       out += '</div>';
       container.innerHTML = out;
       document.getElementById('homeFormHint').textContent =
-        `Kelola ${schema.title}. Semua field di bawah ini tersimpan ke Supabase.`;
+        section === 'scores'
+          ? 'Atur sekali. Menit akan berjalan otomatis dari timestamp, lalu berhenti saat Half Time dan Full Time.'
+          : `Kelola ${schema.title}. Semua field di bawah ini tersimpan ke Supabase.`;
+      const controls=document.getElementById('liveScoreControls');
+      if(controls) controls.style.display = section === 'scores' ? 'block' : 'none';
     }
+
+    function nowLocalInput(){
+      const d=new Date();
+      const pad=n=>String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function setHomeField(key,value){
+      const el=document.querySelector(`#homeFields [data-home-key="${key}"]`);
+      if(el) el.value=value ?? '';
+    }
+
+    async function updateLiveScoreStatus(status, period){
+      if(!state.homeEditingId){ toast('Simpan pertandingan dulu sebelum memakai kontrol waktu.','error'); return; }
+      const {data,error}=await db.from('homepage_content').select('*').eq('id',state.homeEditingId).single();
+      if(error){toast('Gagal membaca pertandingan: '+error.message,'error');return;}
+      const p={...(data.payload||{})};
+      const now=new Date().toISOString();
+      if(status==='live'){
+        p.status='live'; p.period='1'; p.start_minute=Number(p.start_minute||1); p.period_started_at=now; p.paused_minute='';
+      } else if(status==='halftime'){
+        p.status='halftime'; p.period='1'; p.paused_minute=liveMinuteText(p); p.period_started_at='';
+      } else if(status==='second_half'){
+        p.status='second_half'; p.period='2'; p.start_minute=46; p.period_started_at=now; p.paused_minute='';
+      } else if(status==='finished'){
+        p.status='finished'; p.paused_minute=liveMinuteText(p); p.period_started_at='';
+      }
+      const {error:upErr}=await db.from('homepage_content').update({payload:p,updated_at:now}).eq('id',state.homeEditingId);
+      if(upErr){toast('Gagal memperbarui status: '+upErr.message,'error');return;}
+      renderHomeFields(data.section,p);
+      setHomeField('status',p.status); setHomeField('period',p.period); setHomeField('period_started_at',p.period_started_at ? new Date(p.period_started_at).toISOString().slice(0,16) : ''); setHomeField('paused_minute',p.paused_minute||'');
+      toast(status==='live'?'Babak 1 dimulai':status==='halftime'?'Half Time — timer berhenti':status==='second_half'?'Babak 2 dimulai':'Full Time — timer berhenti');
+      loadHomepageManager();
+    }
+
+    function liveMinuteText(p){
+      if(!p || !p.period_started_at || !['live','second_half'].includes(p.status)) return p?.paused_minute || (p?.period==='2'?'90':'45');
+      const start=Date.parse(p.period_started_at);
+      if(!Number.isFinite(start)) return p.start_minute || (p.period==='2'?46:1);
+      const elapsed=Math.max(0,Math.floor((Date.now()-start)/60000));
+      const base=Number(p.start_minute || (p.period==='2'?46:1));
+      const minute=base+elapsed;
+      return `${minute}'`;
+    }
+
+    document.getElementById('liveStart1Btn')?.addEventListener('click',()=>updateLiveScoreStatus('live',1));
+    document.getElementById('liveHalfBtn')?.addEventListener('click',()=>updateLiveScoreStatus('halftime',1));
+    document.getElementById('liveStart2Btn')?.addEventListener('click',()=>updateLiveScoreStatus('second_half',2));
+    document.getElementById('liveFullBtn')?.addEventListener('click',()=>updateLiveScoreStatus('finished',2));
 
     function readHomeFields() {
       const payload = {};
@@ -1054,6 +1132,7 @@
         const key = el.dataset.homeKey;
         let value = el.value;
         if(el.type === 'number' && value !== '') value = Number(value);
+        if(el.type === 'datetime-local' && value) { const d=new Date(value); if(!Number.isNaN(d.getTime())) value=d.toISOString(); }
         payload[key] = value;
       });
       return payload;
