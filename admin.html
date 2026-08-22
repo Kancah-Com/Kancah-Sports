@@ -255,6 +255,11 @@
   .manager-form-body{padding:18px;display:grid;gap:12px}
   .json-hint{font-size:10px;color:#777;line-height:1.5}
   .home-manager .field textarea{min-height:180px;font-family:var(--mono);font-size:11px}
+  .home-dynamic-grid{display:grid;gap:12px;}
+  .home-form-note{background:rgba(255,77,0,.07);border:1px solid rgba(255,77,0,.22);border-radius:10px;padding:12px;color:#aaa;font-size:10px;line-height:1.6;}
+  .home-form-note strong{color:#fff;}
+  .home-form-note code{font-family:var(--mono);color:var(--orange);}
+  .field .hint{font-size:9px;color:#666;line-height:1.4;margin-top:-3px;}
   @media(max-width:1100px){.content-manager{grid-template-columns:1fr}}
 
   /* ---------- CONFIRM MODAL ---------- */
@@ -475,15 +480,57 @@
             <div class="manager-items" id="homeItems"><div class="empty-state">Memuat…</div></div>
           </div>
           <div class="manager-form">
-            <div class="manager-head"><div><h2 id="homeFormTitle">Tambah Konten</h2><p class="json-hint" id="homeFormHint">Pilih section lalu isi data. Semua perubahan tampil di homepage setelah disimpan.</p></div><button class="icon-btn" id="homeClearBtn" title="Bersihkan">×</button></div>
-            <div class="manager-form-body">
-              <input type="hidden" id="home_id">
-              <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="fixtures">Jadwal</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option></select></div>
-              <div class="form-row"><div class="field"><label>Urutan</label><input type="number" id="home_sort_order" value="0" min="0"></div><div class="field"><label>Aktif</label><select id="home_active"><option value="true">Ya</option><option value="false">Tidak</option></select></div></div>
-              <div class="field"><label>Data (JSON)</label><textarea id="home_payload" spellcheck="false"></textarea></div>
-              <div class="json-hint">Contoh akan otomatis muncul sesuai section. Kamu cukup edit nama tim/pemain, angka, judul, URL gambar, probabilitas, dan sebagainya.</div>
-              <div style="display:flex;gap:10px;"><button class="btn btn-ghost" id="homeCancelBtn" style="flex:1">Batal</button><button class="btn btn-primary" id="homeSaveBtn" style="flex:1">Simpan</button></div>
-            </div>
+  <div class="manager-head">
+    <div>
+      <h2 id="homeFormTitle">Tambah Konten</h2>
+      <p class="json-hint" id="homeFormHint">Pilih section. Form akan berubah otomatis sesuai jenis konten.</p>
+    </div>
+    <button class="icon-btn" id="homeClearBtn" title="Bersihkan">×</button>
+  </div>
+
+  <div class="manager-form-body">
+    <input type="hidden" id="home_id">
+
+    <div class="field">
+      <label>Section Homepage</label>
+      <select id="home_section">
+        <option value="scores">Live Score</option>
+        <option value="trending">Trending</option>
+        <option value="editor_picks">Editor Picks</option>
+        <option value="transfer">Rumor Transfer</option>
+        <option value="fixtures">Jadwal Pertandingan</option>
+        <option value="standings">Klasemen</option>
+        <option value="top_scorers">Top Scorer</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label>Urutan Tampil</label>
+        <input type="number" id="home_sort_order" value="0" min="0">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="home_active">
+          <option value="true">Aktif</option>
+          <option value="false">Nonaktif</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="homeFields"></div>
+
+    <div class="home-form-note">
+      <strong>Catatan:</strong> Data di sini langsung tersimpan ke Supabase dan dipakai homepage.
+      Kamu tidak perlu menulis JSON atau mengubah <code>index.html</code>.
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" id="homeCancelBtn" style="flex:1">Batal</button>
+      <button class="btn btn-primary" id="homeSaveBtn" style="flex:1">Simpan</button>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </section>
@@ -888,21 +935,138 @@
 
     // ---------- HOMEPAGE MANAGER ----------
     const HOME_SECTIONS = ['scores','trending','editor_picks','transfer','fixtures','standings','top_scorers'];
-    const HOME_EXAMPLES = {
-      scores:{league:'Premier League',status:"72'",home:'Man City',home_score:3,away:'Spurs',away_score:2,note:'Live'},
-      trending:{tag:'Timnas',href:'#latest-news'},
-      editor_picks:{title:'Judul Editor Pick',category:'Analisis',excerpt:'Ringkasan singkat.',minutes:6,href:'#'},
-      transfer:{player:'Nama Pemain',from_team:'Klub A',to_team:'Klub B',probability:65,image_url:''},
-      fixtures:{time:'19.30',competition:'Premier League',home:'Arsenal',away:'Chelsea',tv:'Vidio',status:'Upcoming'},
-      standings:{league:'Premier League',position:1,team:'Arsenal',played:32,gd:'+45',points:74,form:'W W D W W'},
-      top_scorers:{player:'Nama Pemain',team:'Klub',goals:20,image_url:''}
+
+    const HOME_SCHEMAS = {
+      scores: {
+        title: 'Live Score',
+        fields: [
+          ['league','Kompetisi','text','Premier League'],
+          ['status','Status / Menit','text',"72'"],
+          ['home','Tim Kandang','text','Arsenal'],
+          ['home_score','Skor Kandang','number','2'],
+          ['away','Tim Tandang','text','Chelsea'],
+          ['away_score','Skor Tandang','number','1'],
+          ['note','Catatan','text','Live']
+        ]
+      },
+      trending: {
+        title: 'Trending',
+        fields: [
+          ['tag','Topik Trending','text','Timnas'],
+          ['href','Link','text','#latest-news']
+        ]
+      },
+      editor_picks: {
+        title: 'Editor Picks',
+        fields: [
+          ['title','Judul','text','Judul pilihan redaksi'],
+          ['category','Kategori','text','Analisis'],
+          ['excerpt','Ringkasan','textarea','Ringkasan singkat artikel'],
+          ['minutes','Waktu Baca (menit)','number','6'],
+          ['href','Link Artikel','text','article.html?slug=...'],
+          ['image_url','URL Gambar','url','https://...']
+        ]
+      },
+      transfer: {
+        title: 'Rumor Transfer',
+        fields: [
+          ['player','Nama Pemain','text','Nama Pemain'],
+          ['from_team','Dari Klub','text','Klub A'],
+          ['to_team','Ke Klub','text','Klub B'],
+          ['probability','Probabilitas (%)','number','65'],
+          ['image_url','URL Foto','url','https://...'],
+          ['note','Catatan Rumor','text','Rumor / Negosiasi']
+        ]
+      },
+      fixtures: {
+        title: 'Jadwal Pertandingan',
+        fields: [
+          ['time','Waktu','text','19.30 WIB'],
+          ['competition','Kompetisi','text','Premier League'],
+          ['home','Tim Kandang','text','Arsenal'],
+          ['away','Tim Tandang','text','Chelsea'],
+          ['tv','TV / Streaming','text','Vidio'],
+          ['status','Status','text','Upcoming']
+        ]
+      },
+      standings: {
+        title: 'Klasemen',
+        fields: [
+          ['league','Kompetisi','text','Premier League'],
+          ['position','Posisi','number','1'],
+          ['team','Nama Tim','text','Arsenal'],
+          ['played','Main','number','32'],
+          ['won','Menang','number','20'],
+          ['draw','Seri','number','5'],
+          ['lost','Kalah','number','7'],
+          ['gd','Selisih Gol','text','+45'],
+          ['points','Poin','number','74'],
+          ['form','Form 5 Laga','text','W W D W W']
+        ]
+      },
+      top_scorers: {
+        title: 'Top Scorer',
+        fields: [
+          ['player','Nama Pemain','text','Nama Pemain'],
+          ['team','Klub','text','Klub'],
+          ['goals','Gol','number','20'],
+          ['appearances','Penampilan','number','25'],
+          ['image_url','URL Foto','url','https://...']
+        ]
+      }
     };
 
-    function setHomeExample(){
-      const section=document.getElementById('home_section').value;
-      const payload=document.getElementById('home_payload');
-      if(!payload.value.trim() || state.homeEditingId===null) payload.value=JSON.stringify(HOME_EXAMPLES[section]||{},null,2);
-      document.getElementById('homeFormHint').textContent='Format data: '+section+'. Edit JSON sesuai kebutuhan lalu simpan.';
+    function fieldHtml(key, label, type, placeholder, value='') {
+      const safe = escapeHtml(value ?? '');
+      const ph = escapeHtml(placeholder || '');
+      if(type === 'textarea'){
+        return `<div class="field"><label>${escapeHtml(label)}</label><textarea data-home-key="${key}" placeholder="${ph}">${safe}</textarea></div>`;
+      }
+      return `<div class="field"><label>${escapeHtml(label)}</label><input data-home-key="${key}" type="${type}" value="${safe}" placeholder="${ph}"></div>`;
+    }
+
+    function renderHomeFields(section, payload = {}) {
+      const schema = HOME_SCHEMAS[section] || HOME_SCHEMAS.scores;
+      const fields = schema.fields;
+      const container = document.getElementById('homeFields');
+
+      let out = '<div class="home-dynamic-grid">';
+      for(let i=0;i<fields.length;i++){
+        const [key,label,type,placeholder] = fields[i];
+        const val = payload[key] ?? '';
+        if(i % 2 === 0 && type !== 'textarea' && fields[i+1] && fields[i+1][2] !== 'textarea'){
+          const next = fields[i+1];
+          out += `<div class="form-row">${fieldHtml(key,label,type,placeholder,val)}${fieldHtml(next[0],next[1],next[2],next[3],payload[next[0]] ?? '')}</div>`;
+          i++;
+        } else {
+          out += fieldHtml(key,label,type,placeholder,val);
+        }
+      }
+      out += '</div>';
+      container.innerHTML = out;
+      document.getElementById('homeFormHint').textContent =
+        `Kelola ${schema.title}. Semua field di bawah ini tersimpan ke Supabase.`;
+    }
+
+    function readHomeFields() {
+      const payload = {};
+      document.querySelectorAll('#homeFields [data-home-key]').forEach(el => {
+        const key = el.dataset.homeKey;
+        let value = el.value;
+        if(el.type === 'number' && value !== '') value = Number(value);
+        payload[key] = value;
+      });
+      return payload;
+    }
+
+    function homeLabel(row){
+      const p = row.payload || {};
+      if(row.section === 'standings') return `${p.position || '-'} · ${p.team || 'Tim'}`;
+      if(row.section === 'scores' || row.section === 'fixtures') return `${p.home || 'Home'} vs ${p.away || 'Away'}`;
+      if(row.section === 'transfer') return `${p.player || 'Pemain'} · ${p.from_team || '-'} → ${p.to_team || '-'}`;
+      if(row.section === 'top_scorers') return `${p.player || 'Pemain'} · ${p.goals ?? 0} gol`;
+      if(row.section === 'trending') return `#${p.tag || 'Trending'}`;
+      return p.title || p.player || p.team || row.section;
     }
 
     async function loadHomepageManager(){
@@ -910,11 +1074,33 @@
       let query=db.from('homepage_content').select('*').order('section').order('sort_order');
       const filter=document.getElementById('homeSectionFilter')?.value;
       if(filter) query=query.eq('section',filter);
+
       const {data,error}=await query;
-      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal memuat</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
+      if(error){
+        box.innerHTML=`<div class="empty-state">
+          <h3>Tabel Belum Ada</h3>
+          <p>${escapeHtml(error.message)}</p>
+          <p style="margin-top:12px;color:#ff9a9a">Jalankan SQL <b>homepage_content.sql</b> di Supabase SQL Editor terlebih dahulu.</p>
+        </div>`;
+        document.getElementById('homeCount').textContent='0 item';
+        return;
+      }
+
       document.getElementById('homeCount').textContent=`${(data||[]).length} item`;
-      box.innerHTML=(data||[]).map(row=>{const p=row.payload||{}; const label=p.title||p.player||p.team||p.tag||`${p.home||''} vs ${p.away||''}`||row.section; return `<div class="manager-item" data-home-id="${row.id}"><span class="manager-order">${row.sort_order}</span><div class="manager-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small></div><button class="icon-btn danger" title="Hapus" onclick="deleteHomeItem(event,'${row.id}')">×</button></div>`}).join('') || '<div class="empty-state"><h3>Belum Ada Data</h3><p>Tambahkan data dinamis homepage.</p></div>';
-      box.querySelectorAll('.manager-item').forEach(el=>el.addEventListener('click',()=>openHomeEdit(el.dataset.homeId)));
+      box.innerHTML=(data||[]).map(row=>{
+        return `<div class="manager-item" data-home-id="${row.id}">
+          <span class="manager-order">${row.sort_order}</span>
+          <div class="manager-copy">
+            <strong>${escapeHtml(homeLabel(row))}</strong>
+            <small>${escapeHtml(HOME_SCHEMAS[row.section]?.title || row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small>
+          </div>
+          <button class="icon-btn danger" title="Hapus" onclick="deleteHomeItem(event,'${row.id}')">×</button>
+        </div>`;
+      }).join('') || '<div class="empty-state"><h3>Belum Ada Data</h3><p>Klik + Konten Baru untuk menambahkan.</p></div>';
+
+      box.querySelectorAll('.manager-item').forEach(el=>{
+        el.addEventListener('click',()=>openHomeEdit(el.dataset.homeId));
+      });
     }
 
     async function openHomeEdit(id){
@@ -923,42 +1109,72 @@
       state.homeEditingId=id;
       document.getElementById('home_id').value=id;
       document.getElementById('home_section').value=data.section;
-      document.getElementById('home_sort_order').value=data.sort_order??0;
-      document.getElementById('home_active').value=String(data.is_active!==false);
-      document.getElementById('home_payload').value=JSON.stringify(data.payload||{},null,2);
-      document.getElementById('homeFormTitle').textContent='Edit '+data.section;
+      document.getElementById('home_sort_order').value=data.sort_order ?? 0;
+      document.getElementById('home_active').value=String(data.is_active !== false);
+      renderHomeFields(data.section, data.payload || {});
+      document.getElementById('homeFormTitle').textContent='Edit '+(HOME_SCHEMAS[data.section]?.title || data.section);
       document.querySelectorAll('.manager-item').forEach(x=>x.classList.toggle('active',x.dataset.homeId===id));
     }
     window.openHomeEdit=openHomeEdit;
 
     function clearHomeForm(){
-      state.homeEditingId=null; document.getElementById('home_id').value=''; document.getElementById('home_sort_order').value='0'; document.getElementById('home_active').value='true'; document.getElementById('home_section').value='scores'; document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES.scores,null,2); document.getElementById('homeFormTitle').textContent='Tambah Konten'; document.querySelectorAll('.manager-item').forEach(x=>x.classList.remove('active')); setHomeExample();
+      state.homeEditingId=null;
+      document.getElementById('home_id').value='';
+      document.getElementById('home_sort_order').value='0';
+      document.getElementById('home_active').value='true';
+      const section=document.getElementById('home_section').value || 'scores';
+      document.getElementById('home_section').value=section;
+      renderHomeFields(section, {});
+      document.getElementById('homeFormTitle').textContent='Tambah Konten';
+      document.querySelectorAll('.manager-item').forEach(x=>x.classList.remove('active'));
     }
 
     async function saveHomeItem(){
       const section=document.getElementById('home_section').value;
-      let payload;
-      try{payload=JSON.parse(document.getElementById('home_payload').value||'{}');}catch(e){toast('JSON tidak valid. Periksa tanda kurung/koma.','error');return;}
-      const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload,updated_at:new Date().toISOString()};
-      let result=state.homeEditingId?await db.from('homepage_content').update(row).eq('id',state.homeEditingId):await db.from('homepage_content').insert(row);
-      if(result.error){toast('Gagal menyimpan: '+result.error.message,'error');return;}
-      toast(state.homeEditingId?'Konten homepage diperbarui':'Konten homepage ditambahkan'); clearHomeForm(); loadHomepageManager();
+      const payload=readHomeFields();
+      const row={
+        section,
+        sort_order:Number(document.getElementById('home_sort_order').value)||0,
+        is_active:document.getElementById('home_active').value==='true',
+        payload,
+        updated_at:new Date().toISOString()
+      };
+
+      let result=state.homeEditingId
+        ? await db.from('homepage_content').update(row).eq('id',state.homeEditingId)
+        : await db.from('homepage_content').insert(row);
+
+      if(result.error){
+        toast('Gagal menyimpan: '+result.error.message,'error');
+        return;
+      }
+      toast(state.homeEditingId?'Konten homepage diperbarui':'Konten homepage ditambahkan');
+      clearHomeForm();
+      loadHomepageManager();
     }
 
     async function deleteHomeItem(event,id){
-      event.stopPropagation(); if(!confirm('Hapus konten homepage ini?')) return;
+      event.stopPropagation();
+      if(!confirm('Hapus konten homepage ini?')) return;
       const {error}=await db.from('homepage_content').delete().eq('id',id);
       if(error){toast('Gagal menghapus: '+error.message,'error');return;}
-      toast('Konten homepage dihapus'); clearHomeForm(); loadHomepageManager();
+      toast('Konten homepage dihapus');
+      clearHomeForm();
+      loadHomepageManager();
     }
     window.deleteHomeItem=deleteHomeItem;
+
     document.getElementById('newHomeBtn')?.addEventListener('click',clearHomeForm);
     document.getElementById('homeClearBtn')?.addEventListener('click',clearHomeForm);
     document.getElementById('homeCancelBtn')?.addEventListener('click',clearHomeForm);
     document.getElementById('homeSaveBtn')?.addEventListener('click',saveHomeItem);
     document.getElementById('homeSectionFilter')?.addEventListener('change',loadHomepageManager);
-    document.getElementById('home_section')?.addEventListener('change',()=>{document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES[document.getElementById('home_section').value]||{},null,2);});
-    clearHomeForm();
+    document.getElementById('home_section')?.addEventListener('change',()=>{
+      renderHomeFields(document.getElementById('home_section').value,{});
+      state.homeEditingId=null;
+      document.getElementById('homeFormTitle').textContent='Tambah Konten';
+    });
+    renderHomeFields('scores',{});
 
     // ---------- NAV ----------
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
