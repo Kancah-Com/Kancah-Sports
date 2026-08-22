@@ -1112,6 +1112,37 @@
       align-items: start;
     }
 
+    /* Timnas Hub: heading spans the full section, then the two content columns
+       start on exactly the same horizontal line. */
+    #timnas .layout-2 {
+      grid-template-columns: minmax(0, 1fr) 390px;
+      grid-template-rows: auto auto;
+      align-items: stretch;
+    }
+
+    #timnas .layout-2 > div:first-child {
+      display: contents;
+    }
+
+    #timnas .section-head {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      margin-bottom: 0;
+    }
+
+    #timnas .wide-list {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: stretch;
+    }
+
+    #timnas .side-panel {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: stretch;
+      height: 100%;
+    }
+
     .wide-list {
       display: grid;
       gap: 16px;
@@ -1867,11 +1898,33 @@
     }
 
     @media (max-width: 900px) {
-      .side-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #timnas .layout-2 {
+        display: block;
+      }
+      #timnas .layout-2 > div:first-child {
+        display: block;
+      }
+      #timnas .section-head,
+      #timnas .wide-list,
+      #timnas .side-panel {
+        grid-column: auto;
+        grid-row: auto;
+      }
+      #timnas .section-head {
+        margin-bottom: 22px;
+      }
+      #timnas .side-panel {
+        height: auto;
+        margin-top: 18px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .side-list { grid-template-columns: 1fr; grid-template-rows:repeat(4,minmax(0,1fr)); }
     }
 
     @media (max-width: 620px) {
-      .side-list { grid-template-columns: 1fr; }
+      .side-list { grid-template-columns: 1fr; grid-template-rows:none; }
       .container {
         width: min(100% - 22px, var(--container));
       }
@@ -2998,7 +3051,9 @@
 }
 
 #timnas .side-panel{
-  margin-top:104px !important;
+  margin-top:0 !important;
+  height:568px !important;
+  min-height:568px !important;
   padding:0 !important;
   overflow:hidden !important;
   border-radius:18px !important;
@@ -3015,9 +3070,10 @@
 
 #timnas .side-list{
   display:grid !important;
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:12px !important;
-  padding:14px !important;
+  grid-template-columns:1fr !important;
+  grid-template-rows:repeat(4,minmax(0,1fr)) !important;
+  gap:0 !important;
+  padding:0 !important;
 }
 
 #timnas .side-item{
@@ -3025,24 +3081,26 @@
   flex-direction:column !important;
   min-width:0 !important;
   min-height:0 !important;
-  background:rgba(255,255,255,.035) !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  border-radius:14px !important;
+  background:transparent !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(255,255,255,.10) !important;
+  border-radius:0 !important;
   overflow:hidden !important;
   transition:transform .2s ease,border-color .2s ease,background .2s ease !important;
 }
 
 #timnas .side-item:hover{
-  transform:translateY(-2px) !important;
-  border-color:rgba(255,77,0,.55) !important;
   background:rgba(255,77,0,.06) !important;
 }
 
 #timnas .side-item__img{
   display:block !important;
   width:100% !important;
-  height:112px !important;
-  min-height:112px !important;
+  width:92px !important;
+  height:64px !important;
+  min-height:64px !important;
+  margin:14px 0 14px 16px !important;
+  border-radius:8px !important;
   overflow:hidden !important;
   flex:none !important;
 }
@@ -3062,9 +3120,10 @@
 #timnas .side-item > div{
   display:flex !important;
   flex-direction:column !important;
+  justify-content:center !important;
   min-width:0 !important;
-  padding:12px 13px 13px !important;
-  gap:7px !important;
+  padding:12px 16px 12px 14px !important;
+  gap:6px !important;
 }
 
 #timnas .side-item h4{
@@ -3091,6 +3150,7 @@
 }
 
 @media (max-width:1180px){
+  #timnas .side-panel{height:518px !important;min-height:518px !important;}
   #timnas .layout-2{
     grid-template-columns:minmax(0,1fr) minmax(330px,.72fr) !important;
     gap:18px !important;
@@ -3102,7 +3162,7 @@
 }
 
 @media (max-width:900px){
-  #timnas .side-panel{margin-top:0 !important;}
+  #timnas .side-panel{margin-top:0 !important;height:auto !important;min-height:0 !important;}
   #timnas .layout-2{
     grid-template-columns:1fr !important;
   }
@@ -3134,6 +3194,175 @@
   }
   #timnas .side-item h4{
     font-size:14px !important;
+  }
+}
+</style>
+<style id="timnas-clean-quickread">
+/* Timnas Hub — cleaner editorial quick-read: one panel, no nested card boxes */
+#timnas .side-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0 18px !important;
+  padding: 14px 16px 16px !important;
+}
+#timnas .side-item {
+  display: grid !important;
+  grid-template-columns: 82px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  min-height: 104px !important;
+  padding: 12px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+#timnas .side-item:nth-child(3),
+#timnas .side-item:nth-child(4) {
+  border-bottom: 0 !important;
+}
+#timnas .side-item__img {
+  width: 82px !important;
+  height: 64px !important;
+  aspect-ratio: auto !important;
+  border-radius: 9px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--line) !important;
+}
+#timnas .side-item > div {
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+#timnas .side-item h4 {
+  margin: 0 !important;
+  font-size: 11px !important;
+  line-height: 1.18 !important;
+  letter-spacing: -.015em !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 4 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+#timnas .side-item p {
+  margin-top: 6px !important;
+  font-size: 8px !important;
+}
+@media (max-width: 1180px) {
+  #timnas .side-list { grid-template-columns: 1fr !important; }
+  #timnas .side-item:nth-child(3),
+  #timnas .side-item:nth-child(4) { border-bottom: 1px solid var(--line) !important; }
+  #timnas .side-item:last-child { border-bottom: 0 !important; }
+}
+@media (max-width: 768px) {
+  #timnas .side-list { grid-template-columns: 1fr !important; padding-inline: 14px !important; }
+  #timnas .side-item { grid-template-columns: 88px minmax(0, 1fr) !important; min-height: 92px !important; }
+  #timnas .side-item__img { width: 88px !important; height: 68px !important; }
+}
+</style>
+
+<style id="timnas-quickread-final">
+/* Quick Read: one compact container, 4 stories, no artificial whitespace. */
+#timnas .timnas-quick-panel {
+  align-self: start !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+#timnas .timnas-quick-panel .side-list {
+  grid-template-columns: 1fr !important;
+  padding: 8px 16px 4px !important;
+  gap: 0 !important;
+}
+#timnas .timnas-quick-panel .side-item {
+  min-height: 92px !important;
+  padding: 14px 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+#timnas .timnas-quick-panel .side-item:nth-child(4) {
+  border-bottom: 0 !important;
+}
+#timnas .timnas-quick-panel .side-item__img {
+  width: 74px !important;
+  height: 58px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+}
+#timnas .timnas-quick-panel .side-item h4 {
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
+  -webkit-line-clamp: 4 !important;
+}
+#timnas .timnas-quick-panel .side-item p {
+  font-size: 8px !important;
+  margin-top: 5px !important;
+}
+.quickread-footer {
+  border-top: 1px solid var(--line);
+  padding: 11px 16px 13px;
+  text-align: right;
+}
+.quickread-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.quickread-footer a span { color: var(--orange, #ff5a00); font-size: 14px; }
+@media (max-width: 1180px) {
+  #timnas .timnas-quick-panel .side-list { grid-template-columns: 1fr !important; }
+  #timnas .timnas-quick-panel .side-item:nth-child(3) { border-bottom: 1px solid var(--line) !important; }
+  #timnas .timnas-quick-panel .side-item:nth-child(4) { border-bottom: 0 !important; }
+}
+@media (max-width: 768px) {
+  #timnas .timnas-quick-panel .side-list { padding-inline: 14px !important; }
+  #timnas .timnas-quick-panel .side-item { min-height: 86px !important; }
+}
+</style>
+
+<style id="timnas-final-height-align">
+/* Final Timnas Hub alignment: right panel exactly matches the two left cards + gap */
+@media (min-width: 901px) {
+  #timnas .layout-2 {
+    align-items: stretch !important;
+  }
+  #timnas .wide-list {
+    height: 568px !important;
+    min-height: 568px !important;
+    grid-template-rows: repeat(2, 275px) !important;
+    gap: 18px !important;
+  }
+  #timnas .wide-card {
+    height: 275px !important;
+    min-height: 275px !important;
+  }
+  #timnas .side-panel {
+    height: 568px !important;
+    min-height: 568px !important;
+    margin-top: 0 !important;
+    align-self: stretch !important;
+  }
+}
+@media (min-width: 901px) and (max-width: 1180px) {
+  #timnas .wide-list {
+    height: 518px !important;
+    min-height: 518px !important;
+    grid-template-rows: repeat(2, 250px) !important;
+    gap: 18px !important;
+  }
+  #timnas .wide-card {
+    height: 250px !important;
+    min-height: 250px !important;
+  }
+  #timnas .side-panel {
+    height: 518px !important;
+    min-height: 518px !important;
   }
 }
 </style>
@@ -3458,14 +3687,15 @@
               </article>
             </div>
           </div>
-          <aside class="side-panel">
-            <div class="panel-head"><h2 class="panel-title">Cepat Dibaca</h2><a class="panel-link" href="#">Timnas</a></div>
+          <aside class="side-panel timnas-quick-panel">
+            <div class="panel-head"><h2 class="panel-title">Cepat Dibaca</h2><span class="panel-link">Timnas</span></div>
             <div class="side-list" id="timnasSideList">
-              <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?q=80&w=300&auto=format&fit=crop" alt="Gol" /></a><div><h4>5 Pemain yang Bisa Jadi Pembeda</h4><p>3 Jam lalu</p></div></article>
+              <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?q=80&w=300&auto=format&fit=crop" alt="Gol" /></a><div><h4>5 Pemain yang Bisa Jadi Pembeda untuk Garuda</h4><p>3 Jam lalu</p></div></article>
               <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=300&auto=format&fit=crop" alt="Fans" /></a><div><h4>Atmosfer Kandang Jadi Senjata Tambahan</h4><p>4 Jam lalu</p></div></article>
               <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=300&auto=format&fit=crop" alt="Tim" /></a><div><h4>Jadwal Padat Bikin Rotasi Jadi Kunci</h4><p>5 Jam lalu</p></div></article>
               <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?q=80&w=300&auto=format&fit=crop" alt="Kiper" /></a><div><h4>Pelatih Kiper Bicara Soal Regenerasi</h4><p>6 Jam lalu</p></div></article>
             </div>
+            <div class="quickread-footer"><a href="berita.html">Lihat Semua Berita <span aria-hidden="true">→</span></a></div>
           </aside>
         </div>
       </section>
@@ -4223,5 +4453,100 @@
       newsletterForm.reset();
     });
   </script>
+
+
+<style id="timnas-quickread-four-rows">
+/* Quick Read: 4 berita vertikal, satu baris satu berita — mengisi tinggi panel */
+@media (min-width: 1181px) {
+  #timnas .timnas-quick-panel {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    height: 568px !important;
+    min-height: 568px !important;
+  }
+  #timnas .timnas-quick-panel .side-list {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    padding: 6px 14px !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #timnas .timnas-quick-panel .side-item,
+  #timnas .timnas-quick-panel .side-item:nth-child(3),
+  #timnas .timnas-quick-panel .side-item:nth-child(4) {
+    display: grid !important;
+    grid-template-columns: 86px minmax(0, 1fr) !important;
+    align-items: center !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 8px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--line) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  #timnas .timnas-quick-panel .side-item:last-child {
+    border-bottom: 0 !important;
+  }
+  #timnas .timnas-quick-panel .side-item__img {
+    width: 86px !important;
+    height: 64px !important;
+    border-radius: 8px !important;
+  }
+  #timnas .timnas-quick-panel .side-item h4 {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    -webkit-line-clamp: 3 !important;
+  }
+  #timnas .timnas-quick-panel .side-item p {
+    margin-top: 5px !important;
+    font-size: 8px !important;
+  }
+}
+</style>
+
+<style id="timnas-quickread-spacing-fix">
+@media (min-width:1181px){
+  #timnas .timnas-quick-panel .side-list{
+    padding: 4px 14px !important;
+    gap: 0 !important;
+  }
+  #timnas .timnas-quick-panel .side-item,
+  #timnas .timnas-quick-panel .side-item:nth-child(3),
+  #timnas .timnas-quick-panel .side-item:nth-child(4){
+    display:grid !important;
+    grid-template-columns:92px minmax(0,1fr) !important;
+    align-items:center !important;
+    column-gap:14px !important;
+    padding:12px 2px !important;
+    min-height:0 !important;
+    height:auto !important;
+    box-sizing:border-box !important;
+  }
+  #timnas .timnas-quick-panel .side-item__img{
+    width:92px !important;
+    height:68px !important;
+    min-width:92px !important;
+    min-height:68px !important;
+    margin:0 !important;
+    border-radius:8px !important;
+    overflow:hidden !important;
+  }
+  #timnas .timnas-quick-panel .side-item > div{
+    min-width:0 !important;
+    padding:0 !important;
+    gap:5px !important;
+  }
+  #timnas .timnas-quick-panel .side-item h4{
+    margin:0 !important;
+    font-size:11px !important;
+    line-height:1.22 !important;
+    -webkit-line-clamp:3 !important;
+  }
+}
+</style>
+
 </body>
 </html>
