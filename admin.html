@@ -1033,15 +1033,15 @@
       const ext=(file.name.split('.').pop()||'png').toLowerCase();
       const safe=slugify(file.name.replace(/\.[^.]+$/,''))||'asset';
       const path=`${folder}/${Date.now()}-${safe}.${ext}`;
-      const {error}=await db.storage.from('team-logos').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
+      const {error}=await db.storage.from('sports-assets').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
       if(error) throw error;
-      return db.storage.from('team-logos').getPublicUrl(path).data.publicUrl;
+      return db.storage.from('sports-assets').getPublicUrl(path).data.publicUrl;
     }
     async function saveLeague(){
       const name=document.getElementById('league_name').value.trim(); if(!name){toast('Nama liga wajib diisi','error');return;}
       let logoUrl=sportsState.leagues.find(x=>String(x.id)===String(sportsState.leagueEditingId))?.logo_url||null;
       const file=document.getElementById('league_logo_file').files[0];
-      try{if(file) logoUrl=await uploadSportsAsset('league-logos',file);}catch(e){toast('Upload logo liga gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+      try{if(file) logoUrl=await uploadSportsAsset('league-logos',file);}catch(e){toast('Upload logo liga gagal: '+e.message+' Pastikan bucket sports-assets sudah dibuat.','error');return;}
       const row={name,country:document.getElementById('league_country').value.trim()||null,season:document.getElementById('league_season').value.trim()||null,logo_url:logoUrl,is_active:true,updated_at:new Date().toISOString()};
       const result=sportsState.leagueEditingId?await db.from('sports_leagues').update(row).eq('id',sportsState.leagueEditingId):await db.from('sports_leagues').insert(row);
       if(result.error){toast('Gagal menyimpan liga: '+result.error.message,'error');return;}
@@ -1071,14 +1071,14 @@
     async function uploadTeamLogo(leagueId,file){
       if(!file) return null;
       const ext=(file.name.split('.').pop()||'png').toLowerCase(); const safe=slugify(file.name.replace(/\.[^.]+$/,''))||'logo'; const path=`${leagueId}/${Date.now()}-${safe}.${ext}`;
-      const {error}=await db.storage.from('team-logos').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
+      const {error}=await db.storage.from('sports-assets').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
       if(error) throw error;
-      return db.storage.from('team-logos').getPublicUrl(path).data.publicUrl;
+      return db.storage.from('sports-assets').getPublicUrl(path).data.publicUrl;
     }
     async function saveTeam(){
       const leagueId=document.getElementById('team_league_id').value; const name=document.getElementById('team_name').value.trim(); if(!leagueId||!name){toast('Liga dan nama klub wajib diisi','error');return;}
       let logoUrl=sportsState.teams.find(x=>String(x.id)===String(sportsState.teamEditingId))?.logo_url||null; const file=document.getElementById('team_logo_file').files[0];
-      try{if(file) logoUrl=await uploadTeamLogo(leagueId,file);}catch(e){toast('Upload logo gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+      try{if(file) logoUrl=await uploadTeamLogo(leagueId,file);}catch(e){toast('Upload logo gagal: '+e.message+' Pastikan bucket sports-assets sudah dibuat.','error');return;}
       const row={league_id:leagueId,name,short_name:document.getElementById('team_short_name').value.trim()||null,logo_url:logoUrl,is_active:true,updated_at:new Date().toISOString()};
       const result=sportsState.teamEditingId?await db.from('sports_teams').update(row).eq('id',sportsState.teamEditingId):await db.from('sports_teams').insert(row);
       if(result.error){toast('Gagal menyimpan klub: '+result.error.message,'error');return;} toast(sportsState.teamEditingId?'Klub diperbarui':'Klub ditambahkan'); clearTeamForm(); await loadSportsData();
@@ -1145,7 +1145,7 @@
         const current=homepageRowsCache.find(x=>String(x.id)===String(sportsState.homeEditingId))?.payload||{};
         payload.thumbnail_url=current.thumbnail_url||'';
         const file=document.querySelector('#homeFormFields [data-home-file-key="thumbnail_file"]')?.files?.[0];
-        try{if(file) payload.thumbnail_url=await uploadSportsAsset('video-thumbnails',file);}catch(e){toast('Upload thumbnail video gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+        try{if(file) payload.thumbnail_url=await uploadSportsAsset('video-thumbnails',file);}catch(e){toast('Upload thumbnail video gagal: '+e.message+' Pastikan bucket sports-assets sudah dibuat.','error');return;}
       }
       const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload,updated_at:new Date().toISOString()};
       const result=sportsState.homeEditingId?await db.from('homepage_content').update(row).eq('id',sportsState.homeEditingId):await db.from('homepage_content').insert(row);
