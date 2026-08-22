@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -2999,7 +2998,7 @@
 }
 
 #timnas .side-panel{
-  margin-top:116px !important;
+  margin-top:104px !important;
   padding:0 !important;
   overflow:hidden !important;
   border-radius:18px !important;
@@ -3608,8 +3607,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>© 2026 Kancah Sports. All Rights Reserved.</p>
-          <p>Site by <a href="https://kancah.com">Kancah</a>.</p>
+          <p>Copyright © 2026 Kancah Sports Developed by <a href="https://kancah.com/">Kancah</a></p>
         </div>
       </div>
     </footer>
@@ -3828,12 +3826,12 @@
       ];
       const items=rows.length?rows.map(r=>r.payload||{}):fallback;
       const first=items[0]||{}; const firstId=youtubeId(first.youtube_url);
-      const img=document.getElementById('videoFeatureImage'); if(firstId) img.src=youtubeThumb(firstId); else if(first.thumbnail_url) img.src=first.thumbnail_url;
+      const img=document.getElementById('videoFeatureImage'); if(first.thumbnail_url) img.src=first.thumbnail_url; else if(firstId) img.src=youtubeThumb(firstId);
       img.alt=safeText(first.title||'Highlight pertandingan');
       document.getElementById('videoFeatureTitle').textContent=first.title||'Highlight pertandingan';
       document.getElementById('videoFeatureTag').textContent=first.category||'Watch Now';
       feature.dataset.youtubeId=firstId; feature.dataset.videoTitle=first.title||'';
-      side.innerHTML=items.slice(1,5).map((v,i)=>{const id=youtubeId(v.youtube_url);return `<article class="side-item video-side-item" data-youtube-id="${safeText(id)}" data-video-title="${safeText(v.title||'Video Kancah Sports')}"><div class="side-item__img"><img src="${safeText(youtubeThumb(id)||v.thumbnail_url||'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop')}" alt="${safeText(v.title||'Video')}" /></div><div><h4>${safeText(v.title||'Video Kancah Sports')}</h4><p>${safeText(v.duration?`Video • ${v.duration}`:'Video')}</p></div></article>`;}).join('');
+      side.innerHTML=items.slice(1,5).map((v,i)=>{const id=youtubeId(v.youtube_url);return `<article class="side-item video-side-item" data-youtube-id="${safeText(id)}" data-video-title="${safeText(v.title||'Video Kancah Sports')}"><div class="side-item__img"><img src="${safeText(v.thumbnail_url||youtubeThumb(id)||'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop')}" alt="${safeText(v.title||'Video')}" /></div><div><h4>${safeText(v.title||'Video Kancah Sports')}</h4><p>${safeText(v.duration?`Video • ${v.duration}`:'Video')}</p></div></article>`;}).join('');
       side.querySelectorAll('.video-side-item').forEach(el=>el.addEventListener('click',()=>openVideoModal(el.dataset.youtubeId,el.dataset.videoTitle)));
     }
     function openVideoModal(id,title){ if(!id)return; const modal=document.getElementById('videoModal'), frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=youtubeEmbed(id); document.getElementById('videoModalTitle').textContent=title||'Kancah Sports Video'; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('menu-open'); }
