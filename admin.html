@@ -62,7 +62,8 @@
     box-shadow:0 30px 90px rgba(0,0,0,.5);
   }
   .login-brand{display:inline-flex;align-items:center;margin-bottom:22px;}
-  .login-brand img{display:block;height:34px;width:auto;}
+  .login-brand img,
+  .brand__logo{display:block;height:34px;width:auto;}
   .login-sub{color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.06em;margin-bottom:24px;line-height:1.5;}
   .field{display:grid;gap:7px;margin-bottom:16px;}
   .field label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
@@ -261,7 +262,6 @@
   .sports-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
   .sports-toolbar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:14px;border-bottom:1px solid var(--line)}
   .sports-toolbar .compact{margin:0;min-width:180px;flex:0 1 260px}
-  .sports-toolbar .compact:nth-child(2){min-width:110px;max-width:130px}
   .week-note{padding:11px 14px;color:#888;font-size:11px;line-height:1.5;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
   .week-note b{color:#fff}
   .fixture-admin-list{padding:14px;display:grid;gap:10px;max-height:640px;overflow:auto}
@@ -367,9 +367,11 @@
   .final-box .api-override-title{color:var(--orange)}
   .api-score-pair{display:grid;grid-template-columns:1fr 16px 1fr;gap:7px;align-items:end}
   .api-score-pair label{display:block;font-size:8px;color:#666;margin-bottom:4px}
-  .api-score-pair input{width:100%;text-align:center;font-size:17px;font-weight:900;font-family:var(--mono)}
+  .api-score-pair input{width:100%;text-align:center;font-size:17px;font-weight:900;font-family:var(--mono);background:#0b0b0b;border:1px solid var(--line);border-radius:8px;padding:8px;color:#fff;outline:none}
+  .api-score-pair input:focus{border-color:var(--orange)}
   .api-score-pair>span{text-align:center;padding-bottom:8px;color:#666;font-weight:900}
-  .api-status-override{width:100%}
+  .api-status-override{width:100%;background:#0b0b0b;border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:#fff;outline:none;cursor:pointer}
+  .api-status-override:focus{border-color:var(--orange)}
   .api-timer-note{display:block;color:#666;font-size:9px;line-height:1.4;margin-top:8px}
   .api-match-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
   .api-venue{font-size:10px;color:#777}
@@ -383,7 +385,7 @@
   <div id="loginScreen">
     <div class="login-card">
       <div class="login-brand">
-        <img src="logo-kancah.png" alt="Kancah Sports" />
+        <img class="brand__logo" src="logo-kancah.png" alt="Kancah Sports" />
       </div>
       <p class="login-sub">Ruang Redaksi — masuk untuk mengelola berita, jadwal, dan konten Kancah Sports.</p>
       <div class="login-error" id="loginError"></div>
@@ -600,7 +602,6 @@
               </div>
             </div>
           </div>
-        </div>
           </div>
         </div>
         <div class="sports-panel" id="sportsContentPanel" style="display:none">
@@ -1038,10 +1039,9 @@
       if(teamError){ toast('Gagal memuat klub: '+teamError.message,'error'); return; }
       sportsState.leagues=leagues||[]; sportsState.teams=teams||[];
       renderLeagueOptions(); renderTeamLeagueOptions(); renderLeagueItems(); renderTeamItems();
-      if(!document.getElementById('fixtureLeagueSelect').value && sportsState.leagues[0]) document.getElementById('fixtureLeagueSelect').value=sportsState.leagues[0].id;
-      if(!document.getElementById('teamLeagueFilter').value && sportsState.leagues[0]) document.getElementById('teamLeagueFilter').value=sportsState.leagues[0].id;
+      if(!document.getElementById('fixtureLeagueSelect')?.value && sportsState.leagues[0]) document.getElementById('fixtureLeagueSelect').value=sportsState.leagues[0].id;
+      if(!document.getElementById('teamLeagueFilter')?.value && sportsState.leagues[0]) document.getElementById('teamLeagueFilter').value=sportsState.leagues[0].id;
       renderTeamItems();
-      loadWeekFixtures();
     }
 
     function leagueOptions(selected=''){
@@ -1243,7 +1243,7 @@
       const matches=data||[];
       apiMatchCache=matches;
       let overrides=[];
-     if(matches.length){
+      if(matches.length){
         const {data:ov,error:ovError}=await db.from('football_match_overrides').select('*').in('match_id',matches.map(m=>String(m.id)));
         if(ovError){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Override</h3><p>${escapeHtml(ovError.message)}</p><small>Pastikan SQL football_match_overrides sudah dijalankan.</small></div>`;return;}
         overrides=ov||[];
@@ -1285,15 +1285,6 @@
       await loadApiMatches();
     }
 
-    function switchSportsView(view){
-      document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));
-      document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';
-      document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';
-      document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';
-      if(view==='fixtures')loadApiMatches();
-      if(view==='teams')loadApiClubs();
-      if(view==='content')loadHomepageManager();
-    }
     const HOME_FIELD_DEFS={
       scores:[['league','Liga','text'],['status','Status','text'],['home','Tuan Rumah','text'],['home_score','Skor Home','number'],['away','Tamu','text'],['away_score','Skor Away','number'],['note','Catatan','text']],
       trending:[['tag','Tag Trending','text'],['href','Link','text']],
@@ -1338,7 +1329,7 @@
     }
     async function deleteHomeItem(id){if(!confirm('Hapus konten homepage ini?'))return;const {error}=await db.from('homepage_content').delete().eq('id',id);if(error){toast('Gagal menghapus: '+error.message,'error');return;}toast('Konten dihapus');loadHomepageManager();clearHomeForm();}
 
-    function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadWeekFixtures();if(view==='content')loadHomepageManager();}
+    function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadApiMatches();if(view==='teams')loadApiClubs();if(view==='content')loadHomepageManager();}
     document.querySelectorAll('.sports-tab').forEach(btn=>btn.addEventListener('click',()=>switchSportsView(btn.dataset.sportsView)));
     document.querySelectorAll('.subtab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active',b===btn));const leagues=btn.dataset.teamView==='leagues';document.getElementById('leagueManager').style.display=leagues?'grid':'none';document.getElementById('clubManager').style.display=leagues?'none':'grid';if(!leagues){renderTeamLeagueOptions();renderTeamItems();}}));
     document.getElementById('loadApiMatchesBtn')?.addEventListener('click',loadApiMatches);
