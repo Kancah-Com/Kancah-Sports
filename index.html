@@ -3996,28 +3996,47 @@
     }
 
     function fixtureLabelStatus(f){
-  const st = String(
-    f.status_short || f.status || ''
-  ).toUpperCase();
+      const st=String(f.status_short||f.status||'').toUpperCase();
+      if(f.is_live||['LIVE','1H','2H','ET','P','BT'].includes(st)) return 'LIVE';
+      if(f.is_half_time||st==='HT') return 'HALF TIME';
+      if(f.is_finished||['FT','FINISHED','AET','PEN'].includes(st)) return 'SELESAI';
+      if(['PST','POSTPONED','CANC','CANCELLED','ABD','AWD','WO'].includes(st)) return 'DITUNDA';
+      return 'Akan Datang';
+    }
 
-  if(['LIVE','1H','2H','ET','P','BT'].includes(st)){
-    return 'LIVE';
-  }
+    function fixtureAutomaticMinute(f){
+      const st=String(f.status_short||f.status||'').toUpperCase();
+      const isLive=f.is_live===true||['LIVE','1H','2H','ET','P','BT'].includes(st);
+      if(!isLive) return null;
+      if(f.elapsed!==null&&f.elapsed!==undefined&&Number.isFinite(Number(f.elapsed))) return Math.max(0,Math.floor(Number(f.elapsed)));
+      const started=f.live_started_at||f.fixture_date;
+      const kickoff=new Date(started);
+      if(Number.isNaN(kickoff.getTime())) return null;
+      const diff=Math.max(0,Math.floor((Date.now()-kickoff.getTime())/60000));
+      if(diff<=45) return diff;
+      if(diff<60) return 45;
+      return Math.min(90,45+(diff-60));
+    }
 
-  if(st === 'HT'){
-    return 'HALF TIME';
-  }
+    function fixtureIsAutoHalfTime(f){
+      const st=String(f.status_short||f.status||'').toUpperCase();
+      if(st==='HT'||f.is_half_time===true) return true;
+      if(f.elapsed!==null&&f.elapsed!==undefined) return false;
+      const minute=fixtureAutomaticMinute(f);
+      return f.is_live===true&&minute===45;
+    }
 
-  if(['FT','FINISHED','AET','PEN'].includes(st)){
-    return 'SELESAI';
-  }
+    function fixtureStatusHtml(f){
+      const st=String(f.status_short||f.status||'').toUpperCase();
+      const isLive=f.is_live===true||['LIVE','1H','2H','ET','P','BT'].includes(st);
+      if(isLive){
+        if(fixtureIsAutoHalfTime(f)) return `<span class="fixture-live-status fixture-half-time">⏸ HALF TIME</span>`;
+        const minute=fixtureAutomaticMinute(f);
+        return `<span class="fixture-live-status"><span class="fixture-live-dot"></span>LIVE${minute!==null?` ${safeText(minute)}'`:''}</span>`;
+      }
+      return safeText(fixtureLabelStatus(f));
+    }
 
-  if(['PST','POSTPONED','CANC','CANCELLED','ABD','AWD','WO'].includes(st)){
-    return 'DITUNDA';
-  }
-
-  return 'Akan Datang';
-}
     function teamChip(name,logo){return `<span class="fixture-team">${logo?`<img src="${safeText(logo)}" alt="">`:''}<span class="fixture-team__name">${safeText(name||'—')}</span></span>`;}
     function fixtureDateTime(f){
       const d=new Date(f.fixture_date);
@@ -4025,146 +4044,27 @@
       return {date:d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'}),time:d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',hour12:false})};
     }
     function renderHomepageFixtures(){
-  const body = document.getElementById('fixturesBody');
-  if(!body) return;
-
-  body.innerHTML = FIXTURES.map(f => {
-    const dt = fixtureDateTime(f);
-
-    const st = String(
-      f.status_short || f.status || ''
-    ).toUpperCase();
-
-    const isLive =
-      f.is_live === true ||
-      ['LIVE','1H','2H','ET','P','BT'].includes(st);
-
-    const scoreAvailable =
-      f.home_score !== null &&
-      f.home_score !== undefined &&
-      f.away_score !== null &&
-      f.away_score !== undefined;
-
-    const score = scoreAvailable
-      ? `<small style="
-          display:block;
-          color:#ff4d00;
-          margin-top:3px;
-          font-weight:800;
-        ">${safeText(f.home_score)} - ${safeText(f.away_score)}</small>`
-      : '';
-
-    const liveMinute =
-      isLive && f.elapsed !== null && f.elapsed !== undefined
-        ? `<small style="
-            display:block;
-            color:#ff4d00;
-            margin-top:2px;
-            font-weight:800;
-          ">${safeText(f.elapsed)}'</small>`
-        : '';
-
-    const statusHtml = isLive
-      ? `<span style="
-          display:inline-flex;
-          align-items:center;
-          gap:5px;
-          color:#e53935;
-          font-weight:800;
-        ">
-          <span style="
-            width:7px;
-            height:7px;
-            border-radius:50%;
-            background:#e53935;
-            display:inline-block;
-          "></span>
-          LIVE${f.elapsed !== null && f.elapsed !== undefined ? ` ${safeText(f.elapsed)}'` : ''}
-        </span>`
-      : safeText(fixtureLabelStatus(f));
-
-    return `
-      <tr>
-        <td>
-          <span class="time-badge">
-            ${safeText(dt.time)}
-          </span>
-        </td>
-
-        <td>
-          <span class="league-badge">
-            ${safeText(f.league_name || '—')}
-          </span>
-
-          <small style="
-            display:block;
-            color:#777;
-            margin-top:3px;
-          ">
-            ${safeText(dt.date)}
-          </small>
-        </td>
-
-        <td>
-          ${teamChip(
-            f.home_team_name,
-            f.home_team_logo
-          )}
-          ${score}
-          ${isLive ? liveMinute : ''}
-        </td>
-
-        <td>
-          ${teamChip(
-            f.away_team_name,
-            f.away_team_logo
-          )}
-        </td>
-
-        <td>
-          ${safeText(
-            f.venue ||
-            f.venue_city ||
-            'WIB'
-          )}
-        </td>
-
-        <td>
-          ${statusHtml}
-        </td>
-      </tr>
-    `;
-  }).join('') || `
-    <tr>
-      <td colspan="6" style="
-        text-align:center;
-        color:#777;
-        padding:30px;
-      ">
-        Belum ada jadwal pertandingan hari ini.
-      </td>
-    </tr>
-  `;
-}
-
-    function renderHomepageStandings(){
-      const tabs=document.getElementById('leagueTabs'), panels=document.getElementById('standingsPanels'); if(!tabs||!panels) return;
-      const rows=homepageRows('standings');
-      const leagues=[...new Set(rows.map(r=>r.payload?.league).filter(Boolean))];
-      tabs.innerHTML=leagues.map((l,i)=>`<button class="league-tab ${i===0?'active':''}" data-league="${safeText(slugFilter(l))}">${safeText(l)}</button>`).join('');
-      panels.innerHTML=leagues.map((league,i)=>{
-        const items=rows.filter(r=>(r.payload?.league||'')===league);
-        return `<div class="table-wrap standings-panel ${i===0?'active':''}" data-standings="${safeText(slugFilter(league))}"><table class="standings-table"><thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead><tbody>${items.map(r=>{const p=r.payload||{};return `<tr><td>${safeText(p.position??'')}</td><td>${safeText(p.team||'')}</td><td>${safeText(p.played??'')}</td><td>${safeText(p.gd??'')}</td><td>${safeText(p.points??'')}</td><td>${safeText(p.form||'')}</td></tr>`}).join('')}</tbody></table></div>`;
-      }).join('') || '<div style="padding:30px;color:#777">Belum ada data klasemen.</div>';
-      tabs.querySelectorAll('.league-tab').forEach(btn=>btn.addEventListener('click',()=>{tabs.querySelectorAll('.league-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');panels.querySelectorAll('.standings-panel').forEach(p=>p.classList.toggle('active',p.dataset.standings===btn.dataset.league));}));
-    }
-
-    function renderScheduleStrip(){
-      const strip=document.getElementById('scheduleStripList');
-      const hero=document.getElementById('heroFixturesList');
-      const items=FIXTURES.slice(0,12).map(f=>{const dt=fixtureDateTime(f);return `<article class="schedule-strip__item"><div class="schedule-strip__comp"><span>${safeText(f.league_name||'Match')}</span><span>${safeText(dt.date)}</span></div><div class="schedule-strip__teams"><span class="schedule-team">${f.home_team_logo?`<img src="${safeText(f.home_team_logo)}" alt="">`:''}${safeText(f.home_team_name||'Home')}</span><span class="schedule-strip__time">${safeText(dt.time)}</span><span class="schedule-team">${f.away_team_logo?`<img src="${safeText(f.away_team_logo)}" alt="">`:''}${safeText(f.away_team_name||'Away')}</span><span></span></div><div class="schedule-strip__status">${safeText(fixtureLabelStatus(f))}</div></article>`}).join('');
-      if(strip) strip.innerHTML=items || '<div style="padding:14px;color:#777;font-size:10px">Belum ada jadwal pertandingan.</div>';
-      if(hero) hero.innerHTML=FIXTURES.slice(0,4).map(f=>{const dt=fixtureDateTime(f);return `<article class="fixture-mini"><div class="fixture-mini__top"><span>${safeText(f.league_name||'Match')}</span><span>${safeText(dt.date)}</span></div><div class="fixture-mini__teams"><span class="schedule-team">${f.home_team_logo?`<img src="${safeText(f.home_team_logo)}" alt="">`:''}${safeText(f.home_team_name||'Home')}</span><span class="fixture-mini__time">${safeText(dt.time)}</span><span class="schedule-team">${f.away_team_logo?`<img src="${safeText(f.away_team_logo)}" alt="">`:''}${safeText(f.away_team_name||'Away')}</span><span></span></div></article>`}).join('') || '<div style="padding:14px;color:#777;font-size:10px">Belum ada jadwal.</div>';
+      const body=document.getElementById('fixturesBody');
+      if(!body) return;
+      body.innerHTML=FIXTURES.map(f=>{
+        const dt=fixtureDateTime(f);
+        const st=String(f.status_short||f.status||'').toUpperCase();
+        const isLive=f.is_live===true||['LIVE','1H','2H','ET','P','BT'].includes(st);
+        const isFinished=f.is_finished===true||['FT','FINISHED','AET','PEN'].includes(st);
+        let homeScore=null,awayScore=null;
+        if(isLive){homeScore=f.live_home_score??f.home_score??null;awayScore=f.live_away_score??f.away_score??null;}
+        else if(isFinished){homeScore=f.final_home_score??f.home_score??null;awayScore=f.final_away_score??f.away_score??null;}
+        const scoreAvailable=homeScore!==null&&homeScore!==undefined&&awayScore!==null&&awayScore!==undefined;
+        const score=scoreAvailable?`<small style="display:block;color:#ff4d00;margin-top:3px;font-weight:800;">${safeText(homeScore)} - ${safeText(awayScore)}</small>`:'';
+        return `<tr>
+          <td><span class="time-badge">${safeText(dt.time)}</span></td>
+          <td><span class="league-badge">${safeText(f.league_name||'—')}</span><small style="display:block;color:#777;margin-top:3px;">${safeText(dt.date)}</small></td>
+          <td>${teamChip(f.home_team_name,f.home_team_logo)}${score}</td>
+          <td>${teamChip(f.away_team_name,f.away_team_logo)}</td>
+          <td>${safeText(f.venue||f.venue_city||'WIB')}</td>
+          <td>${fixtureStatusHtml(f)}</td>
+        </tr>`;
+      }).join('')||`<tr><td colspan="6" style="text-align:center;color:#777;padding:30px;">Belum ada jadwal pertandingan hari ini.</td></tr>`;
     }
 
     function youtubeId(url){
@@ -4457,104 +4357,76 @@
       await loadHomepageContent();
       setInterval(updateBreakingTime, 30000);
       setInterval(loadHomepageContent, 15000);
+      setInterval(()=>{ if(Array.isArray(FIXTURES) && FIXTURES.some(f=>f.is_live===true)) { renderHomepageFixtures(); renderScheduleStrip(); } }, 30000);
     }
 
     async function loadHomepageContent(){
-  const now = new Date();
+      const now=new Date();
+      const startOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0);
+      const endOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999);
 
-  // Jadwal pertandingan HANYA berasal dari API-Football
-  // melalui tabel football_matches.
-  const startOfDay = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    0, 0, 0, 0
-  );
+      const [
+        {data,error},
+        {data:apiFixtures,error:fixtureError},
+        {data:manualFixtures,error:manualError},
+        {data:leagues,error:leagueError},
+        {data:teams,error:teamError}
+      ]=await Promise.all([
+        db.from('homepage_content').select('*').eq('is_active',true).neq('section','fixtures').order('section').order('sort_order'),
+        db.from('football_matches').select('*').gte('match_date',startOfDay.toISOString()).lte('match_date',endOfDay.toISOString()).order('match_date',{ascending:true}).limit(100),
+        db.from('sports_fixtures').select('*').gte('fixture_date',startOfDay.toISOString()).lte('fixture_date',endOfDay.toISOString()).order('fixture_date',{ascending:true}).limit(100),
+        db.from('sports_leagues').select('id,name,logo_url'),
+        db.from('sports_teams').select('id,name,short_name,logo_url,league_id')
+      ]);
 
-  const endOfDay = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    23, 59, 59, 999
-  );
+      if(error) console.error('Gagal memuat homepage_content:',error);
+      if(fixtureError) console.error('Gagal memuat football_matches:',fixtureError);
+      if(manualError) console.error('Gagal memuat sports_fixtures:',manualError);
+      if(leagueError) console.error('Gagal memuat sports_leagues:',leagueError);
+      if(teamError) console.error('Gagal memuat sports_teams:',teamError);
 
-  const [
-    { data, error },
-    { data: fixtures, error: fixtureError }
-  ] = await Promise.all([
-    db
-      .from('homepage_content')
-      .select('*')
-      .eq('is_active', true)
-      .neq('section', 'fixtures')
-      .order('section')
-      .order('sort_order'),
+      const leagueMap=new Map((leagues||[]).map(x=>[String(x.id),x]));
+      const teamMap=new Map((teams||[]).map(x=>[String(x.id),x]));
+      const normalizeName=v=>String(v||'').toLowerCase().replace(/\b(fc|afc|cf|sc|ac)\b/g,'').replace(/[^a-z0-9]+/g,'').trim();
+      const fixtureKey=(home,away,date)=>`${normalizeName(home)}|${normalizeName(away)}|${String(date||'').slice(0,10)}`;
 
-    db
-      .from('football_matches')
-      .select('*')
-      .gte('match_date', startOfDay.toISOString())
-      .lte('match_date', endOfDay.toISOString())
-      .order('match_date', { ascending: true })
-      .limit(100)
-  ]);
+      const manual=(manualFixtures||[]).map(f=>{
+        const home=teamMap.get(String(f.home_team_id))||{};
+        const away=teamMap.get(String(f.away_team_id))||{};
+        const league=leagueMap.get(String(f.league_id))||{};
+        const status=f.status||'upcoming';
+        return {
+          id:`admin-${f.id}`,fixture_date:f.fixture_date,league_name:league.name||'—',league_logo_url:league.logo_url||'',
+          home_team_name:home.name||'—',home_team_logo:home.logo_url||'',away_team_name:away.name||'—',away_team_logo:away.logo_url||'',
+          venue:f.venue||'',venue_city:'',timezone:f.timezone||'WIB',status,status_short:status,elapsed:null,
+          is_live:status==='live',is_finished:status==='finished',is_half_time:false,live_started_at:f.live_started_at||null,
+          live_home_score:f.live_home_score??null,live_away_score:f.live_away_score??null,
+          final_home_score:f.final_home_score??null,final_away_score:f.final_away_score??null,
+          home_score:status==='live'?f.live_home_score:(status==='finished'?f.final_home_score:null),
+          away_score:status==='live'?f.live_away_score:(status==='finished'?f.final_away_score:null),source:'admin',
+          _key:fixtureKey(home.name,away.name,f.fixture_date)
+        };
+      });
 
-  if(error){
-    console.error('Gagal memuat homepage_content:', error);
-  }
+      const api=(apiFixtures||[]).map(f=>({
+        ...f,id:`api-${f.id}`,fixture_date:f.match_date,league_name:f.league_name||'—',
+        home_team_name:f.home_team_name||'—',home_team_logo:f.home_team_logo||'',away_team_name:f.away_team_name||'—',away_team_logo:f.away_team_logo||'',
+        venue:f.venue_name||f.venue_city||'',timezone:'WIB',status:f.status_short||'',status_short:f.status_short||'',elapsed:f.elapsed??null,
+        is_live:f.is_live===true,is_finished:f.is_finished===true,is_half_time:String(f.status_short||'').toUpperCase()==='HT',live_started_at:null,
+        live_home_score:f.is_live===true?(f.home_goals??null):null,live_away_score:f.is_live===true?(f.away_goals??null):null,
+        final_home_score:f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null,final_away_score:f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null,
+        home_score:f.is_live===true?(f.home_goals??null):(f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null),
+        away_score:f.is_live===true?(f.away_goals??null):(f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null),source:'football-data',
+        _key:fixtureKey(f.home_team_name,f.away_team_name,f.match_date)
+      }));
 
-  if(fixtureError){
-    console.error('Gagal memuat football_matches:', fixtureError);
-    FIXTURES = [];
-  }else{
-    FIXTURES = (fixtures || []).map(f => ({
-      ...f,
+      const manualKeys=new Set(manual.map(f=>f._key));
+      FIXTURES=[...manual,...api.filter(f=>!manualKeys.has(f._key))];
 
-      // Adapter untuk renderer fixture yang sudah ada.
-      fixture_date: f.match_date,
-
-      league_name: f.league_name || '—',
-
-      home_team_name: f.home_team_name || '—',
-      home_team_logo: f.home_team_logo || '',
-
-      away_team_name: f.away_team_name || '—',
-      away_team_logo: f.away_team_logo || '',
-
-      home_score: f.home_goals ?? null,
-      away_score: f.away_goals ?? null,
-
-      venue: f.venue_name || f.venue_city || '',
-
-      timezone: 'WIB',
-
-      status: f.status_short || '',
-      status_short: f.status_short || '',
-
-      elapsed: f.elapsed ?? null,
-
-      is_live: f.is_live === true,
-      is_finished: f.is_finished === true
-    }));
-  }
-
-  HOMEPAGE = {
-    trending: [],
-    editor_picks: [],
-    transfer: [],
-    fixtures: [],
-    standings: [],
-    video: []
-  };
-
-  (data || []).forEach(row => {
-    if(HOMEPAGE[row.section]){
-      HOMEPAGE[row.section].push(row);
+      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],video:[]};
+      (data||[]).forEach(row=>{if(HOMEPAGE[row.section]) HOMEPAGE[row.section].push(row);});
+      renderAllHomepage();
     }
-  });
-
-  renderAllHomepage();
-}
 
     document.addEventListener("DOMContentLoaded", loadSiteData);
 
@@ -4760,6 +4632,12 @@
     -webkit-line-clamp:3 !important;
   }
 }
+
+    /* ================= MATCH LIVE TIMER ================= */
+    .fixture-live-status{display:inline-flex;align-items:center;gap:6px;color:#e53935;font-weight:800;white-space:nowrap}
+    .fixture-live-dot{width:7px;height:7px;border-radius:50%;background:#e53935;display:inline-block;animation:fixtureLivePulse 1.2s infinite}
+    .fixture-half-time{color:#ff9800}
+    @keyframes fixtureLivePulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}}
 </style>
 
 </body>
