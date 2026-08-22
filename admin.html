@@ -558,7 +558,7 @@
             <div class="manager-list">
               <div class="manager-head"><h2>Konten Homepage</h2><span class="date-text" id="homeCount">0 item</span></div>
               <div class="manager-toolbar"><select id="homeSectionFilter">
-                <option value="">Semua Section</option><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option>
+                <option value="">Semua Section</option><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option><option value="video">Video Highlight</option>
               </select></div>
               <div class="manager-items" id="homeItems"></div>
             </div>
@@ -566,7 +566,7 @@
               <div class="manager-head"><div><h2 id="homeFormTitle">Tambah Konten</h2><p class="form-hint">Isi lewat form. Tidak perlu input data teknis.</p></div><button class="icon-btn" id="homeClearBtn">×</button></div>
               <div class="manager-form-body">
                 <input type="hidden" id="home_id">
-                <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option></select></div>
+                <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option><option value="video">Video Highlight</option></select></div>
                 <div id="homeFormFields"></div>
                 <div class="form-row"><div class="field"><label>Urutan</label><input type="number" id="home_sort_order" value="0" min="0"></div><div class="field"><label>Aktif</label><select id="home_active"><option value="true">Ya</option><option value="false">Tidak</option></select></div></div>
                 <div class="form-row"><button class="btn btn-ghost" id="homeCancelBtn">Batal</button><button class="btn btn-primary" id="homeSaveBtn">Simpan</button></div>
@@ -1105,7 +1105,8 @@
       editor_picks:[['title','Judul','text'],['category','Kategori','text'],['excerpt','Ringkasan','textarea'],['minutes','Durasi Baca (menit)','number'],['article_id','ID Artikel (opsional)','text'],['image_url','URL Gambar','text'],['href','Link','text']],
       transfer:[['player','Pemain','text'],['from_team','Dari Klub','text'],['to_team','Ke Klub','text'],['probability','Probabilitas (%)','number'],['image_url','URL Foto','text']],
       standings:[['league','Liga','text'],['position','Posisi','number'],['team','Klub','text'],['played','Main','number'],['gd','Selisih Gol','text'],['points','Poin','number'],['form','Form','text'],['logo_url','URL Logo Klub','text']],
-      top_scorers:[['player','Pemain','text'],['team','Klub','text'],['goals','Gol','number'],['image_url','URL Foto','text']]
+      top_scorers:[['player','Pemain','text'],['team','Klub','text'],['goals','Gol','number'],['image_url','URL Foto','text']],
+      video:[['title','Judul Video','text'],['youtube_url','Link YouTube','url'],['category','Label','text'],['duration','Durasi (contoh 04:22)','text'],['description','Deskripsi Singkat','textarea'],['thumbnail_url','URL Thumbnail (opsional)','url']]
     };
     function renderHomeFormFields(values={}){const section=document.getElementById('home_section').value;const defs=HOME_FIELD_DEFS[section]||[];const wrap=document.getElementById('homeFormFields');wrap.innerHTML=defs.map(([key,label,type])=>{const v=values[key]??'';if(type==='textarea')return `<div class="field"><label>${label}</label><textarea data-home-key="${key}">${escapeHtml(v)}</textarea></div>`;return `<div class="field"><label>${label}</label><input data-home-key="${key}" type="${type}" value="${escapeHtml(v)}"></div>`;}).join('');}
     function collectHomePayload(){const p={};document.querySelectorAll('#homeFormFields [data-home-key]').forEach(el=>{let v=el.value;if(el.type==='number'&&v!=='')v=Number(v);p[el.dataset.homeKey]=v;});return p;}
