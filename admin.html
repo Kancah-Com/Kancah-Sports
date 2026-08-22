@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -527,7 +526,7 @@
                 <input type="hidden" id="league_id">
                 <div class="field"><label>Nama Liga</label><input id="league_name" placeholder="Premier League" required></div>
                 <div class="form-row"><div class="field"><label>Negara</label><input id="league_country" placeholder="Inggris"></div><div class="field"><label>Musim</label><input id="league_season" placeholder="2026/27"></div></div>
-                <div class="field"><label>Logo Liga (URL)</label><input id="league_logo_url" placeholder="https://..."><img class="team-logo-preview" id="leagueLogoPreview" alt=""></div>
+                <div class="field"><label>Logo Liga (PNG/JPG/WebP)</label><input type="file" id="league_logo_file" accept="image/png,image/jpeg,image/webp"><img class="team-logo-preview" id="leagueLogoPreview" alt=""></div>
                 <div class="form-row"><button class="btn btn-ghost" id="cancelLeagueBtn">Batal</button><button class="btn btn-primary" id="saveLeagueBtn">Simpan Liga</button></div>
               </div>
             </div>
@@ -546,7 +545,7 @@
                 <div class="field"><label>Liga</label><select id="team_league_id"></select></div>
                 <div class="field"><label>Nama Klub</label><input id="team_name" placeholder="Arsenal" required></div>
                 <div class="field"><label>Nama Singkat</label><input id="team_short_name" placeholder="ARS"></div>
-                <div class="field"><label>Logo Klub (PNG/JPG)</label><input type="file" id="team_logo_file" accept="image/png,image/jpeg,image/webp"><input id="team_logo_url" placeholder="Atau tempel URL logo" style="margin-top:8px"><img class="team-logo-preview" id="teamLogoPreview" alt=""></div>
+                <div class="field"><label>Logo Klub (PNG/JPG/WebP)</label><input type="file" id="team_logo_file" accept="image/png,image/jpeg,image/webp"><img class="team-logo-preview" id="teamLogoPreview" alt=""></div>
                 <div class="form-row"><button class="btn btn-ghost" id="cancelTeamBtn">Batal</button><button class="btn btn-primary" id="saveTeamBtn">Simpan Klub</button></div>
               </div>
             </div>
@@ -1026,12 +1025,24 @@
     async function openLeagueEdit(id){
       const l=sportsState.leagues.find(x=>String(x.id)===String(id)); if(!l) return;
       sportsState.leagueEditingId=id;
-      document.getElementById('league_id').value=id; document.getElementById('league_name').value=l.name||''; document.getElementById('league_country').value=l.country||''; document.getElementById('league_season').value=l.season||''; document.getElementById('league_logo_url').value=l.logo_url||''; updateLogoPreview('leagueLogoPreview',l.logo_url||''); document.getElementById('leagueFormTitle').textContent='Edit Liga'; renderLeagueItems();
+      document.getElementById('league_id').value=id; document.getElementById('league_name').value=l.name||''; document.getElementById('league_country').value=l.country||''; document.getElementById('league_season').value=l.season||''; document.getElementById('league_logo_file').value=''; updateLogoPreview('leagueLogoPreview',l.logo_url||''); document.getElementById('leagueFormTitle').textContent='Edit Liga'; renderLeagueItems();
     }
-    function clearLeagueForm(){ sportsState.leagueEditingId=null; document.getElementById('league_id').value=''; document.getElementById('league_name').value=''; document.getElementById('league_country').value=''; document.getElementById('league_season').value=''; document.getElementById('league_logo_url').value=''; updateLogoPreview('leagueLogoPreview',''); document.getElementById('leagueFormTitle').textContent='Tambah Liga'; renderLeagueItems(); }
+    function clearLeagueForm(){ sportsState.leagueEditingId=null; document.getElementById('league_id').value=''; document.getElementById('league_name').value=''; document.getElementById('league_country').value=''; document.getElementById('league_season').value=''; document.getElementById('league_logo_file').value=''; updateLogoPreview('leagueLogoPreview',''); document.getElementById('leagueFormTitle').textContent='Tambah Liga'; renderLeagueItems(); }
+    async function uploadSportsAsset(folder,file){
+      if(!file) return null;
+      const ext=(file.name.split('.').pop()||'png').toLowerCase();
+      const safe=slugify(file.name.replace(/\.[^.]+$/,''))||'asset';
+      const path=`${folder}/${Date.now()}-${safe}.${ext}`;
+      const {error}=await db.storage.from('team-logos').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
+      if(error) throw error;
+      return db.storage.from('team-logos').getPublicUrl(path).data.publicUrl;
+    }
     async function saveLeague(){
       const name=document.getElementById('league_name').value.trim(); if(!name){toast('Nama liga wajib diisi','error');return;}
-      const row={name,country:document.getElementById('league_country').value.trim()||null,season:document.getElementById('league_season').value.trim()||null,logo_url:document.getElementById('league_logo_url').value.trim()||null,is_active:true,updated_at:new Date().toISOString()};
+      let logoUrl=sportsState.leagues.find(x=>String(x.id)===String(sportsState.leagueEditingId))?.logo_url||null;
+      const file=document.getElementById('league_logo_file').files[0];
+      try{if(file) logoUrl=await uploadSportsAsset('league-logos',file);}catch(e){toast('Upload logo liga gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+      const row={name,country:document.getElementById('league_country').value.trim()||null,season:document.getElementById('league_season').value.trim()||null,logo_url:logoUrl,is_active:true,updated_at:new Date().toISOString()};
       const result=sportsState.leagueEditingId?await db.from('sports_leagues').update(row).eq('id',sportsState.leagueEditingId):await db.from('sports_leagues').insert(row);
       if(result.error){toast('Gagal menyimpan liga: '+result.error.message,'error');return;}
       toast(sportsState.leagueEditingId?'Liga diperbarui':'Liga ditambahkan'); clearLeagueForm(); await loadSportsData();
@@ -1054,9 +1065,9 @@
     }
     async function openTeamEdit(id){
       const t=sportsState.teams.find(x=>String(x.id)===String(id)); if(!t) return;
-      sportsState.teamEditingId=id; document.getElementById('team_id').value=id; document.getElementById('team_league_id').value=t.league_id||''; document.getElementById('team_name').value=t.name||''; document.getElementById('team_short_name').value=t.short_name||''; document.getElementById('team_logo_url').value=t.logo_url||''; document.getElementById('team_logo_file').value=''; updateLogoPreview('teamLogoPreview',t.logo_url||''); document.getElementById('teamFormTitle').textContent='Edit Klub'; renderTeamItems();
+      sportsState.teamEditingId=id; document.getElementById('team_id').value=id; document.getElementById('team_league_id').value=t.league_id||''; document.getElementById('team_name').value=t.name||''; document.getElementById('team_short_name').value=t.short_name||''; document.getElementById('team_logo_file').value=''; updateLogoPreview('teamLogoPreview',t.logo_url||''); document.getElementById('teamFormTitle').textContent='Edit Klub'; renderTeamItems();
     }
-    function clearTeamForm(){sportsState.teamEditingId=null;document.getElementById('team_id').value='';document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value||sportsState.leagues[0]?.id||'';document.getElementById('team_name').value='';document.getElementById('team_short_name').value='';document.getElementById('team_logo_url').value='';document.getElementById('team_logo_file').value='';updateLogoPreview('teamLogoPreview','');document.getElementById('teamFormTitle').textContent='Tambah Klub';renderTeamItems();}
+    function clearTeamForm(){sportsState.teamEditingId=null;document.getElementById('team_id').value='';document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value||sportsState.leagues[0]?.id||'';document.getElementById('team_name').value='';document.getElementById('team_short_name').value='';document.getElementById('team_logo_file').value='';updateLogoPreview('teamLogoPreview','');document.getElementById('teamFormTitle').textContent='Tambah Klub';renderTeamItems();}
     async function uploadTeamLogo(leagueId,file){
       if(!file) return null;
       const ext=(file.name.split('.').pop()||'png').toLowerCase(); const safe=slugify(file.name.replace(/\.[^.]+$/,''))||'logo'; const path=`${leagueId}/${Date.now()}-${safe}.${ext}`;
@@ -1066,7 +1077,7 @@
     }
     async function saveTeam(){
       const leagueId=document.getElementById('team_league_id').value; const name=document.getElementById('team_name').value.trim(); if(!leagueId||!name){toast('Liga dan nama klub wajib diisi','error');return;}
-      let logoUrl=document.getElementById('team_logo_url').value.trim()||null; const file=document.getElementById('team_logo_file').files[0];
+      let logoUrl=sportsState.teams.find(x=>String(x.id)===String(sportsState.teamEditingId))?.logo_url||null; const file=document.getElementById('team_logo_file').files[0];
       try{if(file) logoUrl=await uploadTeamLogo(leagueId,file);}catch(e){toast('Upload logo gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
       const row={league_id:leagueId,name,short_name:document.getElementById('team_short_name').value.trim()||null,logo_url:logoUrl,is_active:true,updated_at:new Date().toISOString()};
       const result=sportsState.teamEditingId?await db.from('sports_teams').update(row).eq('id',sportsState.teamEditingId):await db.from('sports_teams').insert(row);
@@ -1106,16 +1117,41 @@
       transfer:[['player','Pemain','text'],['from_team','Dari Klub','text'],['to_team','Ke Klub','text'],['probability','Probabilitas (%)','number'],['image_url','URL Foto','text']],
       standings:[['league','Liga','text'],['position','Posisi','number'],['team','Klub','text'],['played','Main','number'],['gd','Selisih Gol','text'],['points','Poin','number'],['form','Form','text'],['logo_url','URL Logo Klub','text']],
       top_scorers:[['player','Pemain','text'],['team','Klub','text'],['goals','Gol','number'],['image_url','URL Foto','text']],
-      video:[['title','Judul Video','text'],['youtube_url','Link YouTube','url'],['category','Label','text'],['duration','Durasi (contoh 04:22)','text'],['description','Deskripsi Singkat','textarea'],['thumbnail_url','URL Thumbnail (opsional)','url']]
+      video:[['title','Judul Video','text'],['youtube_url','Link YouTube','url'],['category','Label','text'],['duration','Durasi (contoh 04:22)','text'],['description','Deskripsi Singkat','textarea'],['thumbnail_file','Thumbnail Video (PNG/JPG/WebP)','file']]
     };
-    function renderHomeFormFields(values={}){const section=document.getElementById('home_section').value;const defs=HOME_FIELD_DEFS[section]||[];const wrap=document.getElementById('homeFormFields');wrap.innerHTML=defs.map(([key,label,type])=>{const v=values[key]??'';if(type==='textarea')return `<div class="field"><label>${label}</label><textarea data-home-key="${key}">${escapeHtml(v)}</textarea></div>`;return `<div class="field"><label>${label}</label><input data-home-key="${key}" type="${type}" value="${escapeHtml(v)}"></div>`;}).join('');}
+    function renderHomeFormFields(values={}){
+      const section=document.getElementById('home_section').value;
+      const defs=HOME_FIELD_DEFS[section]||[];
+      const wrap=document.getElementById('homeFormFields');
+      wrap.innerHTML=defs.map(([key,label,type])=>{
+        const v=values[key]??'';
+        if(type==='textarea') return `<div class="field"><label>${label}</label><textarea data-home-key="${key}">${escapeHtml(v)}</textarea></div>`;
+        if(type==='file') return `<div class="field"><label>${label}</label><input data-home-file-key="${key}" type="file" accept="image/png,image/jpeg,image/webp"><img class="team-logo-preview ${v?'show':''}" id="homeAssetPreview" src="${escapeHtml(v)}" alt="Thumbnail video"></div>`;
+        return `<div class="field"><label>${label}</label><input data-home-key="${key}" type="${type}" value="${escapeHtml(v)}"></div>`;
+      }).join('');
+      const file=wrap.querySelector('[data-home-file-key]');
+      file?.addEventListener('change',e=>{const f=e.target.files[0];const img=document.getElementById('homeAssetPreview');if(f&&img){img.src=URL.createObjectURL(f);img.classList.add('show');}});
+    }
     function collectHomePayload(){const p={};document.querySelectorAll('#homeFormFields [data-home-key]').forEach(el=>{let v=el.value;if(el.type==='number'&&v!=='')v=Number(v);p[el.dataset.homeKey]=v;});return p;}
     function renderHomeItems(data=[]){const box=document.getElementById('homeItems');document.getElementById('homeCount').textContent=`${data.length} item`;box.innerHTML=data.map(row=>{const p=row.payload||{},label=p.title||p.player||p.team||p.tag||`${p.home||''} vs ${p.away||''}`||row.section;return `<div class="manager-item" data-home-id="${escapeHtml(row.id)}"><span class="manager-order">${row.sort_order??0}</span><div class="manager-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small></div><button class="icon-btn danger home-delete" title="Hapus">×</button></div>`}).join('')||'<div class="empty-state"><h3>Belum Ada Data</h3><p>Tambahkan konten homepage lewat form.</p></div>';box.querySelectorAll('.manager-item').forEach(el=>{el.addEventListener('click',e=>{if(e.target.closest('.home-delete'))return;openHomeEdit(el.dataset.homeId);});el.querySelector('.home-delete')?.addEventListener('click',e=>{e.stopPropagation();deleteHomeItem(el.dataset.homeId);});});}
     let homepageRowsCache=[];
     async function loadHomepageManager(){const filter=document.getElementById('homeSectionFilter')?.value;let q=db.from('homepage_content').select('*').order('section').order('sort_order');if(filter)q=q.eq('section',filter);const {data,error}=await q;if(error){toast('Gagal memuat konten homepage: '+error.message,'error');return;}homepageRowsCache=data||[];renderHomeItems(homepageRowsCache);}
     function openHomeEdit(id){const row=homepageRowsCache.find(x=>String(x.id)===String(id));if(!row)return;sportsState.homeEditingId=id;document.getElementById('home_id').value=id;document.getElementById('home_section').value=row.section;document.getElementById('home_sort_order').value=row.sort_order??0;document.getElementById('home_active').value=String(row.is_active!==false);renderHomeFormFields(row.payload||{});document.getElementById('homeFormTitle').textContent='Edit '+row.section;}
     function clearHomeForm(){sportsState.homeEditingId=null;document.getElementById('home_id').value='';document.getElementById('home_section').value='scores';document.getElementById('home_sort_order').value='0';document.getElementById('home_active').value='true';renderHomeFormFields({});document.getElementById('homeFormTitle').textContent='Tambah Konten';}
-    async function saveHomeItem(){const section=document.getElementById('home_section').value;const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload:collectHomePayload(),updated_at:new Date().toISOString()};const result=sportsState.homeEditingId?await db.from('homepage_content').update(row).eq('id',sportsState.homeEditingId):await db.from('homepage_content').insert(row);if(result.error){toast('Gagal menyimpan konten: '+result.error.message,'error');return;}toast(sportsState.homeEditingId?'Konten diperbarui':'Konten ditambahkan');clearHomeForm();loadHomepageManager();}
+    async function saveHomeItem(){
+      const section=document.getElementById('home_section').value;
+      const payload=collectHomePayload();
+      if(section==='video'){
+        const current=homepageRowsCache.find(x=>String(x.id)===String(sportsState.homeEditingId))?.payload||{};
+        payload.thumbnail_url=current.thumbnail_url||'';
+        const file=document.querySelector('#homeFormFields [data-home-file-key="thumbnail_file"]')?.files?.[0];
+        try{if(file) payload.thumbnail_url=await uploadSportsAsset('video-thumbnails',file);}catch(e){toast('Upload thumbnail video gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+      }
+      const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload,updated_at:new Date().toISOString()};
+      const result=sportsState.homeEditingId?await db.from('homepage_content').update(row).eq('id',sportsState.homeEditingId):await db.from('homepage_content').insert(row);
+      if(result.error){toast('Gagal menyimpan konten: '+result.error.message,'error');return;}
+      toast(sportsState.homeEditingId?'Konten diperbarui':'Konten ditambahkan'); clearHomeForm(); loadHomepageManager();
+    }
     async function deleteHomeItem(id){if(!confirm('Hapus konten homepage ini?'))return;const {error}=await db.from('homepage_content').delete().eq('id',id);if(error){toast('Gagal menghapus: '+error.message,'error');return;}toast('Konten dihapus');loadHomepageManager();clearHomeForm();}
 
     function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadWeekFixtures();if(view==='content')loadHomepageManager();}
@@ -1128,8 +1164,7 @@
     document.getElementById('teamLeagueFilter')?.addEventListener('change',()=>{renderTeamItems();document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value;});
     document.getElementById('saveLeagueBtn')?.addEventListener('click',saveLeague);document.getElementById('clearLeagueBtn')?.addEventListener('click',clearLeagueForm);document.getElementById('cancelLeagueBtn')?.addEventListener('click',clearLeagueForm);
     document.getElementById('saveTeamBtn')?.addEventListener('click',saveTeam);document.getElementById('clearTeamBtn')?.addEventListener('click',clearTeamForm);document.getElementById('cancelTeamBtn')?.addEventListener('click',clearTeamForm);
-    document.getElementById('league_logo_url')?.addEventListener('input',e=>updateLogoPreview('leagueLogoPreview',e.target.value.trim()));
-    document.getElementById('team_logo_url')?.addEventListener('input',e=>updateLogoPreview('teamLogoPreview',e.target.value.trim()));
+    document.getElementById('league_logo_file')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)updateLogoPreview('leagueLogoPreview',URL.createObjectURL(f));});
     document.getElementById('team_logo_file')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)updateLogoPreview('teamLogoPreview',URL.createObjectURL(f));});
     document.getElementById('homeSectionFilter')?.addEventListener('change',loadHomepageManager);
     document.getElementById('home_section')?.addEventListener('change',()=>{renderHomeFormFields({});});
