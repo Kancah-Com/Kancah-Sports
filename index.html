@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kancah Sports | Portal Berita Olahraga Modern</title>
-  <meta name="description" content="Kancah Sports adalah portal berita olahraga modern berisi berita utama, live match, jadwal, klasemen, transfer, timnas, dan highlight olahraga terkini." />
+  <meta name="description" content="Kancah Sports adalah portal berita olahraga modern berisi berita utama, jadwal pertandingan, klasemen, transfer, timnas, dan highlight olahraga terkini." />
   <meta name="keywords" content="kancah sports, berita olahraga, berita bola, timnas indonesia, jadwal bola, klasemen, transfer pemain" />
   <meta name="author" content="Kancah Sports" />
   <meta property="og:title" content="Kancah Sports | Portal Berita Olahraga Modern" />
@@ -143,6 +143,26 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     }
 
+    .schedule-strip{background:#0b0b0b;border-bottom:1px solid var(--line);overflow:hidden;}
+    .schedule-strip__head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 0;}
+    .schedule-strip__label{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#fff;white-space:nowrap;}
+    .schedule-strip__nav{display:flex;gap:6px;}
+    .schedule-strip__nav button{width:24px;height:24px;border:1px solid var(--line);background:#151515;color:#fff;border-radius:5px;cursor:pointer;}
+    .schedule-strip__nav button:hover{border-color:var(--orange);color:var(--orange);}
+    .schedule-strip__list{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(155px,1fr);overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:#111;scrollbar-width:none;}
+    .schedule-strip__list::-webkit-scrollbar{display:none;}
+    .schedule-strip__item{padding:9px 12px;border-right:1px solid var(--line);min-height:54px;}
+    .schedule-strip__item:last-child{border-right:0;}
+    .schedule-strip__comp{display:flex;justify-content:space-between;gap:8px;color:#777;font-size:7px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+    .schedule-strip__teams{display:grid;grid-template-columns:1fr auto;gap:3px;font-size:9px;font-weight:700;line-height:1.2;}
+    .schedule-strip__time{color:var(--orange);font-weight:800;white-space:nowrap;}
+    .schedule-strip__date{color:#aaa;}
+    .schedule-strip__status{margin-top:5px;font-size:7px;color:#777;text-transform:uppercase;letter-spacing:.08em;}
+    .fixture-mini{padding:10px 12px;border:1px solid var(--line);background:#0b0b0b;border-radius:8px;}
+    .fixture-mini + .fixture-mini{margin-top:8px;}
+    .fixture-mini__top{display:flex;justify-content:space-between;gap:8px;color:#777;font-size:8px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+    .fixture-mini__teams{display:grid;grid-template-columns:1fr auto;gap:5px;font-size:11px;font-weight:700;}
+    .fixture-mini__time{color:var(--orange);font-size:10px;}
     .top-ticker {
       min-height: 34px;
       background: var(--orange);
@@ -2843,12 +2863,15 @@
     </div>
 
     <main>
-      <div class="container ad-slot-wrap top-ad">
-        <div class="ad-inner">
-          <span class="ad-label">Advertisement</span>
-          <ins class="adsbygoogle" data-ad-placement="top" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+    <section class="schedule-strip" aria-label="Jadwal pertandingan">
+      <div class="container">
+        <div class="schedule-strip__head">
+          <span class="schedule-strip__label">Jadwal Pertandingan</span>
+          <div class="schedule-strip__nav"><button type="button" id="schedulePrev" aria-label="Sebelumnya">‹</button><button type="button" id="scheduleNext" aria-label="Berikutnya">›</button></div>
         </div>
+        <div class="schedule-strip__list" id="scheduleStripList"></div>
       </div>
+    </section>
 
       <section class="hero container" id="top-stories">
         <div class="hero-grid">
@@ -2944,10 +2967,10 @@
             </div>
             <section class="score-panel">
               <div class="panel-head">
-                <h2 class="panel-title">Live Score</h2>
-                <a class="panel-link" href="#match-center">Semua</a>
+                <h2 class="panel-title">Jadwal Pertandingan</h2>
+                <a class="panel-link" href="#fixtures">Semua</a>
               </div>
-              <div class="score-list" id="liveScoreList"></div>
+              <div class="score-list" id="heroFixturesList"></div>
             </section>
 
             <section class="trend-panel">
@@ -2975,46 +2998,14 @@
         </div>
       </section>
 
-    <div class="top-ticker" aria-label="Live match ticker">
-      <div class="container top-ticker__inner">
-        <div class="ticker-live">
-          <span class="dot-live"></span>
-          <span>Live Match</span>
-        </div>
-        <div class="ticker-marquee">
-          <div class="ticker-track" id="tickerTrack">
-            <a class="ticker-link" href="#match-center"><strong>89'</strong> Indonesia 2-1 Malaysia</a>
-            <a class="ticker-link" href="#match-center"><strong>HT</strong> Arsenal 0-0 Chelsea</a>
-            <a class="ticker-link" href="#match-center"><strong>72'</strong> Real Madrid 1-1 Barcelona</a>
-            <a class="ticker-link" href="#match-center"><strong>FT</strong> Timor-Leste 1-3 Vietnam</a>
-            <a class="ticker-link" href="#match-center"><strong>02:00</strong> Bayern Munich vs Madrid</a>
-            <a class="ticker-link" href="#match-center"><strong>23:45</strong> AZ Alkmaar vs Shakhtar</a>
-            <a class="ticker-link" href="#match-center"><strong>LIVE</strong> Man City 3-2 Spurs</a>
-            <a class="ticker-link" href="#match-center"><strong>89'</strong> Indonesia 2-1 Malaysia</a>
-            <a class="ticker-link" href="#match-center"><strong>HT</strong> Arsenal 0-0 Chelsea</a>
-            <a class="ticker-link" href="#match-center"><strong>72'</strong> Real Madrid 1-1 Barcelona</a>
-            <a class="ticker-link" href="#match-center"><strong>FT</strong> Timor-Leste 1-3 Vietnam</a>
-            <a class="ticker-link" href="#match-center"><strong>02:00</strong> Bayern Munich vs Madrid</a>
-            <a class="ticker-link" href="#match-center"><strong>23:45</strong> AZ Alkmaar vs Shakhtar</a>
-            <a class="ticker-link" href="#match-center"><strong>LIVE</strong> Man City 3-2 Spurs</a>
-          </div>
+
+
+      <div class="container ad-slot-wrap top-ad">
+        <div class="ad-inner">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle" data-ad-placement="top" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
         </div>
       </div>
-    </div>
-
-
-      <section class="section compact" id="match-center">
-        <div class="container">
-          <div class="section-head">
-            <div>
-              <span class="eyebrow">Match Center</span>
-              <h2 class="section-title">Live, hasil, dan jadwal cepat</h2>
-            </div>
-            <button class="section-action">Refresh Score</button>
-          </div>
-          <div class="match-center hide-scrollbar" id="matchCenterList"></div>
-        </div>
-      </section>
 
       <section class="section" id="latest-news">
         <div class="container">
@@ -3176,7 +3167,7 @@
         <div class="container">
           <div class="section-head">
             <div><span class="eyebrow">Jadwal</span><h2 class="section-title">Pertandingan hari ini</h2></div>
-            <button class="section-action">Sinkron Kalender</button>
+            <span class="section-action" style="pointer-events:none">Diperbarui otomatis</span>
           </div>
           <div class="table-wrap">
             <table class="fixture-table">
@@ -3188,7 +3179,7 @@
       </section>
 
       <section class="section" id="standings">
-        <div class="container layout-2 standings-layout">
+        <div class="container standings-layout">
           <div>
             <div class="section-head">
               <div><span class="eyebrow">Klasemen</span><h2 class="section-title">Papan atas liga</h2></div>
@@ -3197,10 +3188,7 @@
             <div class="league-tabs" id="leagueTabs" aria-label="Pilih klasemen liga"></div>
             <div id="standingsPanels"></div>
           </div>
-          <aside class="side-panel scorers-panel">
-            <div class="panel-head"><h2 class="panel-title">Top Scorers</h2><span class="panel-link">Admin</span></div>
-            <div class="editor-panel__body" id="topScorersBody"></div>
-          </aside>
+
         </div>
       </section>
 
@@ -3355,15 +3343,14 @@
 
     // ================== STATE ==================
     let ARTICLES = [];
+    let FIXTURES = [];
 
     let HOMEPAGE = {
-      scores: [],
       trending: [],
       editor_picks: [],
       transfer: [],
       fixtures: [],
       standings: [],
-      top_scorers: []
     };
 
     function homepageRows(section){
@@ -3375,20 +3362,6 @@
       if (!el || !ARTICLES.length) return;
       const latest = ARTICLES[0];
       el.textContent = 'Update ' + timeAgo(latest.published_at || latest.created_at);
-    }
-
-    function renderHomepageScores(){
-      const wrap = document.getElementById('liveScoreList');
-      if (!wrap) return;
-      const rows = homepageRows('scores');
-      wrap.innerHTML = rows.length ? rows.slice(0,4).map(r => {
-        const p = r.payload || {};
-        return `<article class="score-card">
-          <div class="score-card__top"><span>${safeText(p.league || 'Match')}</span><span class="score-live">${safeText(p.status || '')}</span></div>
-          <div class="score-row"><span>${safeText(p.home || '')}</span><strong>${safeText(p.home_score ?? '-')}</strong></div>
-          <div class="score-row"><span>${safeText(p.away || '')}</span><strong>${safeText(p.away_score ?? '-')}</strong></div>
-        </article>`;
-      }).join('') : '<div style="padding:18px;color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.12em">Belum ada skor.</div>';
     }
 
     function renderHomepageTrending(){
@@ -3436,10 +3409,22 @@
       wrap.innerHTML=rows.map(r=>{const p=r.payload||{}, prob=Math.max(0,Math.min(100,Number(p.probability)||0)); return `<article class="transfer-card"><div class="transfer-card__top"><div class="player-avatar">${p.image_url?`<img src="${safeText(p.image_url)}" alt="${safeText(p.player||'Player')}" />`:''}</div><div><h3>${safeText(p.player||'Pemain')}</h3><p>${safeText(p.from_team||'')} → ${safeText(p.to_team||'')}</p></div></div><div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>${prob}%</strong></div><div class="bar"><span style="width:${prob}%"></span></div></div></article>`}).join('') || '<div style="grid-column:1/-1;padding:30px;color:#777;text-align:center">Belum ada rumor transfer.</div>';
     }
 
+    function fixtureLabelStatus(f){
+      const st=(f.status_short||'').toUpperCase();
+      if(['1H','2H','ET','P','BT'].includes(st)) return 'LIVE';
+      if(st==='HT') return 'HALF TIME';
+      if(['FT','AET','PEN'].includes(st)) return 'SELESAI';
+      if(['PST','CANC','ABD','AWD','WO'].includes(st)) return 'DITUNDA';
+      return 'Akan Datang';
+    }
+    function fixtureDateTime(f){
+      const d=new Date(f.fixture_date);
+      if(Number.isNaN(d.getTime())) return {date:'—',time:'—'};
+      return {date:d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'}),time:d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',hour12:false})};
+    }
     function renderHomepageFixtures(){
       const body=document.getElementById('fixturesBody'); if(!body) return;
-      const rows=homepageRows('fixtures');
-      body.innerHTML=rows.map(r=>{const p=r.payload||{}; return `<tr><td><span class="time-badge">${safeText(p.time||'—')}</span></td><td><span class="league-badge">${safeText(p.competition||'—')}</span></td><td>${safeText(p.home||'—')}</td><td>${safeText(p.away||'—')}</td><td>${safeText(p.tv||'—')}</td><td>${safeText(p.status||'Upcoming')}</td></tr>`}).join('') || '<tr><td colspan="6" style="text-align:center;color:#777;padding:30px">Belum ada jadwal.</td></tr>';
+      body.innerHTML=FIXTURES.map(f=>{const dt=fixtureDateTime(f); return `<tr><td><span class="time-badge">${safeText(dt.time)}</span></td><td><span class="league-badge">${safeText(f.league_name||'—')}</span><small style="display:block;color:#777;margin-top:3px">${safeText(dt.date)}</small></td><td>${safeText(f.home_team_name||'—')}</td><td>${safeText(f.away_team_name||'—')}</td><td>${safeText(f.timezone||'WIB')}</td><td>${safeText(fixtureLabelStatus(f))}</td></tr>`}).join('') || '<tr><td colspan="6" style="text-align:center;color:#777;padding:30px">Belum ada jadwal pertandingan.</td></tr>';
     }
 
     function renderHomepageStandings(){
@@ -3454,20 +3439,16 @@
       tabs.querySelectorAll('.league-tab').forEach(btn=>btn.addEventListener('click',()=>{tabs.querySelectorAll('.league-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');panels.querySelectorAll('.standings-panel').forEach(p=>p.classList.toggle('active',p.dataset.standings===btn.dataset.league));}));
     }
 
-    function renderHomepageScorers(){
-      const wrap=document.getElementById('topScorersBody'); if(!wrap) return;
-      const rows=homepageRows('top_scorers');
-      wrap.innerHTML=rows.slice(0,8).map((r,i)=>{const p=r.payload||{};return `<article class="rank-story"><span class="rank-story__num">${i+1}</span><div><h4>${safeText(p.player||'Pemain')}</h4><p>${safeText(p.goals??0)} Gol • ${safeText(p.team||'—')}</p></div></article>`}).join('') || '<div style="padding:18px;color:#777;font-size:11px">Belum ada top scorer.</div>';
-    }
-
-    function renderHomepageMatchCenter(){
-      const wrap=document.getElementById('matchCenterList'); if(!wrap) return;
-      const rows=homepageRows('scores');
-      wrap.innerHTML=rows.slice(0,8).map(r=>{const p=r.payload||{};return `<article class="match-card"><div class="match-card__comp"><span>${safeText(p.league||'Match')}</span><span>${safeText(p.status||'')}</span></div><div class="team-row"><span>${safeText(p.home||'')}</span><span class="team-score">${safeText(p.home_score??'-')}</span></div><div class="team-row"><span>${safeText(p.away||'')}</span><span class="team-score">${safeText(p.away_score??'-')}</span></div><div class="match-status"><span>${safeText(p.status||'')}</span><span>${safeText(p.note||'')}</span></div></article>`}).join('') || '<div style="padding:30px;color:#777">Belum ada data pertandingan.</div>';
+    function renderScheduleStrip(){
+      const strip=document.getElementById('scheduleStripList');
+      const hero=document.getElementById('heroFixturesList');
+      const items=FIXTURES.slice(0,12).map(f=>{const dt=fixtureDateTime(f);return `<article class="schedule-strip__item"><div class="schedule-strip__comp"><span>${safeText(f.league_name||'Match')}</span><span>${safeText(dt.date)}</span></div><div class="schedule-strip__teams"><span>${safeText(f.home_team_name||'Home')}</span><span class="schedule-strip__time">${safeText(dt.time)}</span><span>${safeText(f.away_team_name||'Away')}</span><span></span></div><div class="schedule-strip__status">${safeText(fixtureLabelStatus(f))}</div></article>`}).join('');
+      if(strip) strip.innerHTML=items || '<div style="padding:14px;color:#777;font-size:10px">Belum ada jadwal pertandingan otomatis.</div>';
+      if(hero) hero.innerHTML=FIXTURES.slice(0,4).map(f=>{const dt=fixtureDateTime(f);return `<article class="fixture-mini"><div class="fixture-mini__top"><span>${safeText(f.league_name||'Match')}</span><span>${safeText(dt.date)}</span></div><div class="fixture-mini__teams"><span>${safeText(f.home_team_name||'Home')}</span><span class="fixture-mini__time">${safeText(dt.time)}</span><span>${safeText(f.away_team_name||'Away')}</span><span></span></div></article>`}).join('') || '<div style="padding:14px;color:#777;font-size:10px">Belum ada jadwal.</div>';
     }
 
     function renderAllHomepage(){
-      renderHomepageScores(); renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderHomepageScorers(); renderHomepageMatchCenter();
+      renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderScheduleStrip();
     }
 
     // ================== RENDER: HERO ==================
@@ -3722,12 +3703,17 @@
       updateBreakingTime();
       await loadHomepageContent();
       setInterval(updateBreakingTime, 30000);
+      setInterval(loadHomepageContent, 15000);
     }
 
     async function loadHomepageContent(){
-      const { data, error } = await db.from('homepage_content').select('*').eq('is_active', true).order('section').order('sort_order');
+      const [{data,error}, {data:fixtures,error:fixtureError}] = await Promise.all([
+        db.from('homepage_content').select('*').eq('is_active', true).neq('section','fixtures').order('section').order('sort_order'),
+        db.from('football_fixtures').select('*').gte('fixture_date', new Date(Date.now()-2*86400000).toISOString()).lte('fixture_date', new Date(Date.now()+8*86400000).toISOString()).order('fixture_date',{ascending:true}).limit(100)
+      ]);
       if(error){ console.error('Gagal memuat homepage_content:', error); return; }
-      HOMEPAGE = {scores:[],trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],top_scorers:[]};
+      if(fixtureError){ console.error('Gagal memuat football_fixtures:', fixtureError); FIXTURES=[]; } else FIXTURES=fixtures||[];
+      HOMEPAGE = {trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[]};
       (data||[]).forEach(row=>{ if(HOMEPAGE[row.section]) HOMEPAGE[row.section].push(row); });
       renderAllHomepage();
     }
