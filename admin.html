@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -251,9 +252,37 @@
   .manager-order{width:28px;height:28px;border-radius:8px;background:#0b0b0b;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--orange);flex:0 0 auto}
   .manager-copy{min-width:0;flex:1}.manager-copy strong{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.manager-copy small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
   .manager-form-body{padding:18px;display:grid;gap:12px}
-  .json-hint{font-size:10px;color:#777;line-height:1.5}
+  .form-hint{font-size:10px;color:#777;line-height:1.5}
   .home-manager .field textarea{min-height:180px;font-family:var(--mono);font-size:11px}
   @media(max-width:1100px){.content-manager{grid-template-columns:1fr}}
+
+  .sports-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .sports-tab,.subtab{background:#0b0b0b;border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .sports-tab:hover,.sports-tab.active,.subtab:hover,.subtab.active{color:#fff;border-color:rgba(255,77,0,.45);background:var(--orange-dim)}
+  .sports-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .sports-toolbar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:14px;border-bottom:1px solid var(--line)}
+  .sports-toolbar .compact{margin:0;min-width:180px;flex:0 1 260px}
+  .sports-toolbar .compact:nth-child(2){min-width:110px;max-width:130px}
+  .week-note{padding:11px 14px;color:#888;font-size:11px;line-height:1.5;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .week-note b{color:#fff}
+  .fixture-admin-list{padding:14px;display:grid;gap:10px;max-height:640px;overflow:auto}
+  .fixture-row{border:1px solid var(--line);border-radius:13px;background:#0d0d0d;padding:12px}
+  .fixture-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .fixture-number{font-family:var(--mono);font-size:10px;color:var(--orange);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+  .fixture-fields{display:grid;grid-template-columns:1fr 1fr 1fr 1.5fr;gap:10px}
+  .fixture-fields .field{margin:0}.fixture-fields .team-field{grid-column:span 2}.fixture-fields .score-field{grid-column:span 1}
+  .fixture-fields .field label{font-size:9px}
+  .sports-panel-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .team-manager-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:16px;padding:14px}
+  .club-avatar{width:34px;height:34px;border-radius:9px;background:#080808;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;flex:0 0 auto;font-size:15px}
+  .club-avatar img{width:100%;height:100%;object-fit:contain;padding:4px}
+  .team-logo-preview{width:56px;height:56px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#0b0b0b;padding:6px;margin-top:8px;display:none}
+  .team-logo-preview.show{display:block}
+  .subtabs{display:flex;gap:8px;padding:14px 14px 0}
+  .subtab{font-size:9px}
+  .home-manager .content-manager{padding:14px}
+  @media(max-width:1100px){.fixture-fields{grid-template-columns:1fr 1fr}.fixture-fields .team-field{grid-column:span 1}.team-manager-grid{grid-template-columns:1fr}}
+  @media(max-width:680px){.fixture-fields{grid-template-columns:1fr}.fixture-fields .team-field,.fixture-fields .score-field{grid-column:span 1}.sports-panel-foot{align-items:stretch;flex-direction:column}.sports-toolbar .compact{min-width:100%;max-width:none}}
 
   /* ---------- CONFIRM MODAL ---------- */
   .confirm-box{
@@ -310,7 +339,7 @@
   <div id="loginScreen">
     <div class="login-card">
       <div class="login-brand">
-        <img src="data:image/png;base64,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" alt="Kancah Sports" />
+        <img src="logo-kancah.png" alt="Kancah Sports" />
       </div>
       <p class="login-sub">Ruang Redaksi — masuk untuk mengelola berita, jadwal, dan konten Kancah Sports.</p>
       <div class="login-error" id="loginError"></div>
@@ -452,35 +481,96 @@
 
       <section class="home-manager" id="homeManager">
         <div class="topbar" style="margin-top:8px;">
-          <div><span class="eyebrow">Homepage Dinamis</span><h2 style="font-size:20px;text-transform:uppercase">Kelola Klasemen, Skor, Transfer &amp; Editor Picks</h2></div>
-          <button class="btn btn-primary" id="newHomeBtn">+ Konten Baru</button>
-        </div>
-        <div class="content-manager">
-          <div class="manager-list">
-            <div class="manager-head"><h2>Data Homepage</h2><span class="date-text" id="homeCount">0 item</span></div>
-            <div class="manager-toolbar">
-              <select id="homeSectionFilter">
-                <option value="">Semua Section</option>
-                <option value="scores">Live Score</option>
-                <option value="trending">Trending</option>
-                <option value="editor_picks">Editor Picks</option>
-                <option value="transfer">Transfer</option>
-                <option value="fixtures">Jadwal</option>
-                <option value="standings">Klasemen</option>
-                <option value="top_scorers">Top Scorers</option>
-              </select>
-            </div>
-            <div class="manager-items" id="homeItems"><div class="empty-state">Memuat…</div></div>
+          <div>
+            <span class="eyebrow">Homepage Dinamis</span>
+            <h2 style="font-size:20px;text-transform:uppercase">Kelola Liga, Klub &amp; Jadwal</h2>
           </div>
-          <div class="manager-form">
-            <div class="manager-head"><div><h2 id="homeFormTitle">Tambah Konten</h2><p class="json-hint" id="homeFormHint">Pilih section lalu isi data. Semua perubahan tampil di homepage setelah disimpan.</p></div><button class="icon-btn" id="homeClearBtn" title="Bersihkan">×</button></div>
-            <div class="manager-form-body">
-              <input type="hidden" id="home_id">
-              <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="fixtures">Jadwal</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option></select></div>
-              <div class="form-row"><div class="field"><label>Urutan</label><input type="number" id="home_sort_order" value="0" min="0"></div><div class="field"><label>Aktif</label><select id="home_active"><option value="true">Ya</option><option value="false">Tidak</option></select></div></div>
-              <div class="field"><label>Data (JSON)</label><textarea id="home_payload" spellcheck="false"></textarea></div>
-              <div class="json-hint">Contoh akan otomatis muncul sesuai section. Kamu cukup edit nama tim/pemain, angka, judul, URL gambar, probabilitas, dan sebagainya.</div>
-              <div style="display:flex;gap:10px;"><button class="btn btn-ghost" id="homeCancelBtn" style="flex:1">Batal</button><button class="btn btn-primary" id="homeSaveBtn" style="flex:1">Simpan</button></div>
+          <button class="btn btn-primary" id="newHomeBtn">+ Tambah Data</button>
+        </div>
+
+        <div class="sports-tabs" id="sportsTabs">
+          <button class="sports-tab active" data-sports-view="fixtures">Jadwal Mingguan</button>
+          <button class="sports-tab" data-sports-view="teams">Liga &amp; Klub</button>
+          <button class="sports-tab" data-sports-view="content">Konten Homepage</button>
+        </div>
+
+        <div class="sports-panel" id="sportsFixturesPanel">
+          <div class="sports-toolbar">
+            <div class="field compact"><label>Liga</label><select id="fixtureLeagueSelect"></select></div>
+            <div class="field compact"><label>Pekan</label><input type="number" id="fixtureWeek" min="1" max="60" value="1"></div>
+            <button class="btn btn-ghost" id="loadWeekBtn">Muat Pekan</button>
+            <div class="spacer"></div>
+            <button class="btn btn-primary" id="addFixtureBtn">+ Pertandingan</button>
+          </div>
+          <div class="week-note">Klub dan logo diinput sekali di menu <b>Liga &amp; Klub</b>. Setelah itu, setiap pekan tinggal pilih klub untuk membuat jadwal.</div>
+          <div id="fixtureRows" class="fixture-admin-list"></div>
+          <div class="sports-panel-foot">
+            <span id="fixtureCount" class="date-text">0 pertandingan</span>
+            <button class="btn btn-primary" id="saveFixturesBtn">Simpan Jadwal Pekan</button>
+          </div>
+        </div>
+
+        <div class="sports-panel" id="sportsTeamsPanel" style="display:none">
+          <div class="subtabs">
+            <button class="subtab active" data-team-view="leagues">Liga</button>
+            <button class="subtab" data-team-view="clubs">Klub</button>
+          </div>
+
+          <div id="leagueManager" class="team-manager-grid">
+            <div class="manager-list">
+              <div class="manager-head"><h2>Daftar Liga</h2><span class="date-text" id="leagueCount">0 liga</span></div>
+              <div class="manager-items" id="leagueItems"></div>
+            </div>
+            <div class="manager-form">
+              <div class="manager-head"><div><h2 id="leagueFormTitle">Tambah Liga</h2><p class="form-hint">Satu liga cukup dibuat sekali. Setelah itu klub dan jadwal memakai data liga ini.</p></div><button class="icon-btn" id="clearLeagueBtn">×</button></div>
+              <div class="manager-form-body">
+                <input type="hidden" id="league_id">
+                <div class="field"><label>Nama Liga</label><input id="league_name" placeholder="Premier League" required></div>
+                <div class="form-row"><div class="field"><label>Negara</label><input id="league_country" placeholder="Inggris"></div><div class="field"><label>Musim</label><input id="league_season" placeholder="2026/27"></div></div>
+                <div class="field"><label>Logo Liga (URL)</label><input id="league_logo_url" placeholder="https://..."><img class="team-logo-preview" id="leagueLogoPreview" alt=""></div>
+                <div class="form-row"><button class="btn btn-ghost" id="cancelLeagueBtn">Batal</button><button class="btn btn-primary" id="saveLeagueBtn">Simpan Liga</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="clubManager" class="team-manager-grid" style="display:none">
+            <div class="manager-list">
+              <div class="manager-head"><div><h2>Daftar Klub</h2><small class="date-text">Pilih liga untuk melihat klub</small></div><span class="date-text" id="teamCount">0 klub</span></div>
+              <div class="manager-toolbar"><select id="teamLeagueFilter"></select></div>
+              <div class="manager-items" id="teamItems"></div>
+            </div>
+            <div class="manager-form">
+              <div class="manager-head"><div><h2 id="teamFormTitle">Tambah Klub</h2><p class="form-hint">Masukkan nama dan logo sekali. Logo akan otomatis dipakai di seluruh jadwal liga.</p></div><button class="icon-btn" id="clearTeamBtn">×</button></div>
+              <div class="manager-form-body">
+                <input type="hidden" id="team_id">
+                <div class="field"><label>Liga</label><select id="team_league_id"></select></div>
+                <div class="field"><label>Nama Klub</label><input id="team_name" placeholder="Arsenal" required></div>
+                <div class="field"><label>Nama Singkat</label><input id="team_short_name" placeholder="ARS"></div>
+                <div class="field"><label>Logo Klub (PNG/JPG)</label><input type="file" id="team_logo_file" accept="image/png,image/jpeg,image/webp"><input id="team_logo_url" placeholder="Atau tempel URL logo" style="margin-top:8px"><img class="team-logo-preview" id="teamLogoPreview" alt=""></div>
+                <div class="form-row"><button class="btn btn-ghost" id="cancelTeamBtn">Batal</button><button class="btn btn-primary" id="saveTeamBtn">Simpan Klub</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sports-panel" id="sportsContentPanel" style="display:none">
+          <div class="content-manager">
+            <div class="manager-list">
+              <div class="manager-head"><h2>Konten Homepage</h2><span class="date-text" id="homeCount">0 item</span></div>
+              <div class="manager-toolbar"><select id="homeSectionFilter">
+                <option value="">Semua Section</option><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option>
+              </select></div>
+              <div class="manager-items" id="homeItems"></div>
+            </div>
+            <div class="manager-form">
+              <div class="manager-head"><div><h2 id="homeFormTitle">Tambah Konten</h2><p class="form-hint">Isi lewat form. Tidak perlu input data teknis.</p></div><button class="icon-btn" id="homeClearBtn">×</button></div>
+              <div class="manager-form-body">
+                <input type="hidden" id="home_id">
+                <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option></select></div>
+                <div id="homeFormFields"></div>
+                <div class="form-row"><div class="field"><label>Urutan</label><input type="number" id="home_sort_order" value="0" min="0"></div><div class="field"><label>Aktif</label><select id="home_active"><option value="true">Ya</option><option value="false">Tidak</option></select></div></div>
+                <div class="form-row"><button class="btn btn-ghost" id="homeCancelBtn">Batal</button><button class="btn btn-primary" id="homeSaveBtn">Simpan</button></div>
+              </div>
             </div>
           </div>
         </div>
@@ -697,6 +787,7 @@
       loadCategories();
       loadStats();
       loadArticles();
+      loadSportsData();
       loadHomepageManager();
       document.getElementById('homeManager').classList.remove('show');
     }
@@ -885,79 +976,164 @@
 
 
 
-    // ---------- HOMEPAGE MANAGER ----------
-    const HOME_SECTIONS = ['scores','trending','editor_picks','transfer','fixtures','standings','top_scorers'];
-    const HOME_EXAMPLES = {
-      scores:{league:'Premier League',status:"72'",home:'Man City',home_score:3,away:'Spurs',away_score:2,note:'Live'},
-      trending:{tag:'Timnas',href:'#latest-news'},
-      editor_picks:{title:'Judul Editor Pick',category:'Analisis',excerpt:'Ringkasan singkat.',minutes:6,href:'#'},
-      transfer:{player:'Nama Pemain',from_team:'Klub A',to_team:'Klub B',probability:65,image_url:''},
-      fixtures:{time:'19.30',competition:'Premier League',home:'Arsenal',away:'Chelsea',tv:'Vidio',status:'Upcoming'},
-      standings:{league:'Premier League',position:1,team:'Arsenal',played:32,gd:'+45',points:74,form:'W W D W W'},
-      top_scorers:{player:'Nama Pemain',team:'Klub',goals:20,image_url:''}
+    // ---------- SPORTS / HOMEPAGE MANAGER ----------
+    const sportsState = { leagues: [], teams: [], fixtures: [], homeEditingId: null, leagueEditingId: null, teamEditingId: null };
+
+    async function loadSportsData(){
+      const [{data:leagues,error:leagueError},{data:teams,error:teamError}] = await Promise.all([
+        db.from('sports_leagues').select('*').order('name'),
+        db.from('sports_teams').select('*').order('name')
+      ]);
+      if(leagueError){ toast('Gagal memuat liga: '+leagueError.message,'error'); return; }
+      if(teamError){ toast('Gagal memuat klub: '+teamError.message,'error'); return; }
+      sportsState.leagues=leagues||[]; sportsState.teams=teams||[];
+      renderLeagueOptions(); renderTeamLeagueOptions(); renderLeagueItems(); renderTeamItems();
+      if(!document.getElementById('fixtureLeagueSelect').value && sportsState.leagues[0]) document.getElementById('fixtureLeagueSelect').value=sportsState.leagues[0].id;
+      if(!document.getElementById('teamLeagueFilter').value && sportsState.leagues[0]) document.getElementById('teamLeagueFilter').value=sportsState.leagues[0].id;
+      renderTeamItems();
+      loadWeekFixtures();
+    }
+
+    function leagueOptions(selected=''){
+      return '<option value="">Pilih Liga</option>'+sportsState.leagues.map(l=>`<option value="${escapeHtml(l.id)}" ${String(l.id)===String(selected)?'selected':''}>${escapeHtml(l.name)}${l.season?' · '+escapeHtml(l.season):''}</option>`).join('');
+    }
+    function teamOptions(leagueId,selected=''){
+      const teams=sportsState.teams.filter(t=>String(t.league_id)===String(leagueId));
+      return '<option value="">Pilih Klub</option>'+teams.map(t=>`<option value="${escapeHtml(t.id)}" ${String(t.id)===String(selected)?'selected':''}>${escapeHtml(t.name)}</option>`).join('');
+    }
+    function teamLogo(t){ return t?.logo_url || ''; }
+
+    function renderLeagueOptions(){
+      const fixture=document.getElementById('fixtureLeagueSelect'); const filter=document.getElementById('teamLeagueFilter');
+      const currentFixture=fixture?.value, currentFilter=filter?.value;
+      if(fixture) fixture.innerHTML=leagueOptions(currentFixture && sportsState.leagues.some(l=>String(l.id)===String(currentFixture))?currentFixture:sportsState.leagues[0]?.id||'');
+      if(filter) filter.innerHTML=leagueOptions(currentFilter && sportsState.leagues.some(l=>String(l.id)===String(currentFilter))?currentFilter:sportsState.leagues[0]?.id||'');
+    }
+    function renderTeamLeagueOptions(){
+      const select=document.getElementById('team_league_id'); if(select) select.innerHTML=leagueOptions(select.value);
+    }
+
+    function renderLeagueItems(){
+      const box=document.getElementById('leagueItems'); if(!box) return;
+      document.getElementById('leagueCount').textContent=`${sportsState.leagues.length} liga`;
+      box.innerHTML=sportsState.leagues.map(l=>`<div class="manager-item ${sportsState.leagueEditingId===l.id?'active':''}" data-id="${escapeHtml(l.id)}"><div class="club-avatar">${l.logo_url?`<img src="${escapeHtml(l.logo_url)}" alt="">`:'⚽'}</div><div class="manager-copy"><strong>${escapeHtml(l.name)}</strong><small>${escapeHtml(l.country||'')}${l.season?' · '+escapeHtml(l.season):''}</small></div><button class="icon-btn danger league-delete" title="Hapus">×</button></div>`).join('') || '<div class="empty-state"><h3>Belum Ada Liga</h3><p>Buat liga pertama untuk mulai memasukkan klub.</p></div>';
+      box.querySelectorAll('.manager-item').forEach(el=>{
+        el.addEventListener('click',e=>{if(e.target.closest('.league-delete')) return; openLeagueEdit(el.dataset.id);});
+        el.querySelector('.league-delete')?.addEventListener('click',e=>{e.stopPropagation();deleteLeague(el.dataset.id);});
+      });
+    }
+
+    async function openLeagueEdit(id){
+      const l=sportsState.leagues.find(x=>String(x.id)===String(id)); if(!l) return;
+      sportsState.leagueEditingId=id;
+      document.getElementById('league_id').value=id; document.getElementById('league_name').value=l.name||''; document.getElementById('league_country').value=l.country||''; document.getElementById('league_season').value=l.season||''; document.getElementById('league_logo_url').value=l.logo_url||''; updateLogoPreview('leagueLogoPreview',l.logo_url||''); document.getElementById('leagueFormTitle').textContent='Edit Liga'; renderLeagueItems();
+    }
+    function clearLeagueForm(){ sportsState.leagueEditingId=null; document.getElementById('league_id').value=''; document.getElementById('league_name').value=''; document.getElementById('league_country').value=''; document.getElementById('league_season').value=''; document.getElementById('league_logo_url').value=''; updateLogoPreview('leagueLogoPreview',''); document.getElementById('leagueFormTitle').textContent='Tambah Liga'; renderLeagueItems(); }
+    async function saveLeague(){
+      const name=document.getElementById('league_name').value.trim(); if(!name){toast('Nama liga wajib diisi','error');return;}
+      const row={name,country:document.getElementById('league_country').value.trim()||null,season:document.getElementById('league_season').value.trim()||null,logo_url:document.getElementById('league_logo_url').value.trim()||null,is_active:true,updated_at:new Date().toISOString()};
+      const result=sportsState.leagueEditingId?await db.from('sports_leagues').update(row).eq('id',sportsState.leagueEditingId):await db.from('sports_leagues').insert(row);
+      if(result.error){toast('Gagal menyimpan liga: '+result.error.message,'error');return;}
+      toast(sportsState.leagueEditingId?'Liga diperbarui':'Liga ditambahkan'); clearLeagueForm(); await loadSportsData();
+    }
+    async function deleteLeague(id){
+      const l=sportsState.leagues.find(x=>x.id===id); if(!l||!confirm(`Hapus liga ${l.name}? Klub dan jadwal liga ini juga akan terhapus.`)) return;
+      const {error}=await db.from('sports_leagues').delete().eq('id',id); if(error){toast('Gagal menghapus liga: '+error.message,'error');return;} toast('Liga dihapus'); await loadSportsData(); clearLeagueForm();
+    }
+
+    function renderTeamItems(){
+      const box=document.getElementById('teamItems'); if(!box) return;
+      const leagueId=document.getElementById('teamLeagueFilter')?.value;
+      const teams=sportsState.teams.filter(t=>!leagueId||String(t.league_id)===String(leagueId));
+      document.getElementById('teamCount').textContent=`${teams.length} klub`;
+      box.innerHTML=teams.map(t=>`<div class="manager-item ${sportsState.teamEditingId===t.id?'active':''}" data-id="${escapeHtml(t.id)}"><div class="club-avatar">${t.logo_url?`<img src="${escapeHtml(t.logo_url)}" alt="">`:'⚽'}</div><div class="manager-copy"><strong>${escapeHtml(t.name)}</strong><small>${escapeHtml(t.short_name||'')} · ${escapeHtml(sportsState.leagues.find(l=>String(l.id)===String(t.league_id))?.name||'Liga')}</small></div><button class="icon-btn danger team-delete" title="Hapus">×</button></div>`).join('') || '<div class="empty-state"><h3>Belum Ada Klub</h3><p>Tambahkan klub untuk liga yang dipilih.</p></div>';
+      box.querySelectorAll('.manager-item').forEach(el=>{
+        el.addEventListener('click',e=>{if(e.target.closest('.team-delete')) return; openTeamEdit(el.dataset.id);});
+        el.querySelector('.team-delete')?.addEventListener('click',e=>{e.stopPropagation();deleteTeam(el.dataset.id);});
+      });
+    }
+    async function openTeamEdit(id){
+      const t=sportsState.teams.find(x=>String(x.id)===String(id)); if(!t) return;
+      sportsState.teamEditingId=id; document.getElementById('team_id').value=id; document.getElementById('team_league_id').value=t.league_id||''; document.getElementById('team_name').value=t.name||''; document.getElementById('team_short_name').value=t.short_name||''; document.getElementById('team_logo_url').value=t.logo_url||''; document.getElementById('team_logo_file').value=''; updateLogoPreview('teamLogoPreview',t.logo_url||''); document.getElementById('teamFormTitle').textContent='Edit Klub'; renderTeamItems();
+    }
+    function clearTeamForm(){sportsState.teamEditingId=null;document.getElementById('team_id').value='';document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value||sportsState.leagues[0]?.id||'';document.getElementById('team_name').value='';document.getElementById('team_short_name').value='';document.getElementById('team_logo_url').value='';document.getElementById('team_logo_file').value='';updateLogoPreview('teamLogoPreview','');document.getElementById('teamFormTitle').textContent='Tambah Klub';renderTeamItems();}
+    async function uploadTeamLogo(leagueId,file){
+      if(!file) return null;
+      const ext=(file.name.split('.').pop()||'png').toLowerCase(); const safe=slugify(file.name.replace(/\.[^.]+$/,''))||'logo'; const path=`${leagueId}/${Date.now()}-${safe}.${ext}`;
+      const {error}=await db.storage.from('team-logos').upload(path,file,{upsert:false,contentType:file.type||'image/png'});
+      if(error) throw error;
+      return db.storage.from('team-logos').getPublicUrl(path).data.publicUrl;
+    }
+    async function saveTeam(){
+      const leagueId=document.getElementById('team_league_id').value; const name=document.getElementById('team_name').value.trim(); if(!leagueId||!name){toast('Liga dan nama klub wajib diisi','error');return;}
+      let logoUrl=document.getElementById('team_logo_url').value.trim()||null; const file=document.getElementById('team_logo_file').files[0];
+      try{if(file) logoUrl=await uploadTeamLogo(leagueId,file);}catch(e){toast('Upload logo gagal: '+e.message+' Pastikan bucket team-logos sudah dibuat.','error');return;}
+      const row={league_id:leagueId,name,short_name:document.getElementById('team_short_name').value.trim()||null,logo_url:logoUrl,is_active:true,updated_at:new Date().toISOString()};
+      const result=sportsState.teamEditingId?await db.from('sports_teams').update(row).eq('id',sportsState.teamEditingId):await db.from('sports_teams').insert(row);
+      if(result.error){toast('Gagal menyimpan klub: '+result.error.message,'error');return;} toast(sportsState.teamEditingId?'Klub diperbarui':'Klub ditambahkan'); clearTeamForm(); await loadSportsData();
+    }
+    async function deleteTeam(id){const t=sportsState.teams.find(x=>x.id===id);if(!t||!confirm(`Hapus klub ${t.name}? Jadwal yang memakai klub ini juga akan terhapus.`))return;const {error}=await db.from('sports_teams').delete().eq('id',id);if(error){toast('Gagal menghapus klub: '+error.message,'error');return;}toast('Klub dihapus');await loadSportsData();clearTeamForm();}
+
+    function updateLogoPreview(id,url){const img=document.getElementById(id);if(!img)return;if(url){img.src=url;img.classList.add('show');}else{img.removeAttribute('src');img.classList.remove('show');}}
+
+    function fixtureRowHtml(f={}){
+      const leagueId=document.getElementById('fixtureLeagueSelect').value; const date=f.fixture_date?toLocalInput(f.fixture_date):''; const d=date?date.slice(0,10):''; const tm=date?date.slice(11,16):'';
+      return `<div class="fixture-row" data-id="${escapeHtml(f.id||'')}" data-date="${escapeHtml(d)}" data-time="${escapeHtml(tm)}"><div class="fixture-row-top"><span class="fixture-number">Pertandingan</span><button class="icon-btn danger fixture-delete" title="Hapus">×</button></div><div class="fixture-fields"><div class="field"><label>Tanggal</label><input class="fx-date" type="date" value="${escapeHtml(d)}"></div><div class="field"><label>Jam</label><input class="fx-time" type="time" value="${escapeHtml(tm)}"></div><div class="field"><label>Status</label><select class="fx-status"><option value="upcoming" ${f.status==='upcoming'?'selected':''}>Akan Datang</option><option value="live" ${f.status==='live'?'selected':''}>Live</option><option value="finished" ${f.status==='finished'?'selected':''}>Selesai</option><option value="postponed" ${f.status==='postponed'?'selected':''}>Ditunda</option></select></div><div class="field"><label>Venue</label><input class="fx-venue" value="${escapeHtml(f.venue||'')}" placeholder="Stadion"></div><div class="field team-field"><label>Tuan Rumah</label><select class="fx-home">${teamOptions(leagueId,f.home_team_id)}</select></div><div class="field team-field"><label>Tamu</label><select class="fx-away">${teamOptions(leagueId,f.away_team_id)}</select></div><div class="field score-field"><label>Skor Home</label><input class="fx-home-score" type="number" min="0" value="${f.home_score??''}"></div><div class="field score-field"><label>Skor Away</label><input class="fx-away-score" type="number" min="0" value="${f.away_score??''}"></div></div></div>`;
+    }
+    function renumberFixtureRows(){document.querySelectorAll('.fixture-row').forEach((r,i)=>r.querySelector('.fixture-number').textContent=`Pertandingan ${i+1}`);document.getElementById('fixtureCount').textContent=`${document.querySelectorAll('.fixture-row').length} pertandingan`;}
+    function addFixtureRow(f={}){const box=document.getElementById('fixtureRows');box.insertAdjacentHTML('beforeend',fixtureRowHtml(f));const row=box.lastElementChild;row.querySelector('.fixture-delete').addEventListener('click',()=>deleteFixtureRow(row));row.querySelector('.fx-home').addEventListener('change',()=>{if(row.querySelector('.fx-home').value===row.querySelector('.fx-away').value)row.querySelector('.fx-away').value='';});renumberFixtureRows();}
+    async function deleteFixtureRow(row){const id=row.dataset.id;if(id){if(!confirm('Hapus pertandingan ini?'))return;const {error}=await db.from('sports_fixtures').delete().eq('id',id);if(error){toast('Gagal menghapus pertandingan: '+error.message,'error');return;}toast('Pertandingan dihapus');}row.remove();renumberFixtureRows();}
+    async function loadWeekFixtures(){
+      const leagueId=document.getElementById('fixtureLeagueSelect').value, week=Number(document.getElementById('fixtureWeek').value)||1; const box=document.getElementById('fixtureRows'); if(!box||!leagueId){if(box)box.innerHTML='<div class="empty-state"><h3>Belum Ada Liga</h3><p>Buat liga dan klub terlebih dahulu.</p></div>';return;}
+      box.innerHTML='<div class="loading-row" style="padding:30px">Memuat jadwal…</div>';
+      const {data,error}=await db.from('sports_fixtures').select('*').eq('league_id',leagueId).eq('week',week).order('fixture_date');
+      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
+      box.innerHTML=''; (data||[]).forEach(addFixtureRow); if(!(data||[]).length) addFixtureRow({}); renumberFixtureRows();
+    }
+    async function saveFixtures(){
+      const leagueId=document.getElementById('fixtureLeagueSelect').value, week=Number(document.getElementById('fixtureWeek').value)||1; if(!leagueId){toast('Pilih liga dulu','error');return;}
+      const rows=[...document.querySelectorAll('.fixture-row')]; const payloads=[];
+      for(const row of rows){const home=row.querySelector('.fx-home').value,away=row.querySelector('.fx-away').value,date=row.querySelector('.fx-date').value,time=row.querySelector('.fx-time').value;if(!home&&!away&&!date&&!time)continue;if(!home||!away||!date||!time){toast('Lengkapi tanggal, jam, tuan rumah, dan tamu.','error');return;}if(home===away){toast('Klub tuan rumah dan tamu tidak boleh sama.','error');return;}const when=new Date(`${date}T${time}:00`).toISOString();payloads.push({id:row.dataset.id||null,league_id:leagueId,week,fixture_date:when,home_team_id:home,away_team_id:away,venue:row.querySelector('.fx-venue').value.trim()||null,status:row.querySelector('.fx-status').value,home_score:row.querySelector('.fx-home-score').value===''?null:Number(row.querySelector('.fx-home-score').value),away_score:row.querySelector('.fx-away-score').value===''?null:Number(row.querySelector('.fx-away-score').value),timezone:'WIB',updated_at:new Date().toISOString()});}
+      if(!payloads.length){toast('Belum ada pertandingan untuk disimpan','error');return;}
+      for(const item of payloads){let result;if(item.id){const {id,...update}=item;result=await db.from('sports_fixtures').update(update).eq('id',id);}else{const {id,...insert}=item;result=await db.from('sports_fixtures').insert(insert);}if(result.error){toast('Gagal menyimpan jadwal: '+result.error.message,'error');return;}}
+      toast(`Jadwal pekan ${week} tersimpan`);await loadWeekFixtures();
+    }
+
+    const HOME_FIELD_DEFS={
+      scores:[['league','Liga','text'],['status','Status','text'],['home','Tuan Rumah','text'],['home_score','Skor Home','number'],['away','Tamu','text'],['away_score','Skor Away','number'],['note','Catatan','text']],
+      trending:[['tag','Tag Trending','text'],['href','Link','text']],
+      editor_picks:[['title','Judul','text'],['category','Kategori','text'],['excerpt','Ringkasan','textarea'],['minutes','Durasi Baca (menit)','number'],['article_id','ID Artikel (opsional)','text'],['image_url','URL Gambar','text'],['href','Link','text']],
+      transfer:[['player','Pemain','text'],['from_team','Dari Klub','text'],['to_team','Ke Klub','text'],['probability','Probabilitas (%)','number'],['image_url','URL Foto','text']],
+      standings:[['league','Liga','text'],['position','Posisi','number'],['team','Klub','text'],['played','Main','number'],['gd','Selisih Gol','text'],['points','Poin','number'],['form','Form','text'],['logo_url','URL Logo Klub','text']],
+      top_scorers:[['player','Pemain','text'],['team','Klub','text'],['goals','Gol','number'],['image_url','URL Foto','text']]
     };
+    function renderHomeFormFields(values={}){const section=document.getElementById('home_section').value;const defs=HOME_FIELD_DEFS[section]||[];const wrap=document.getElementById('homeFormFields');wrap.innerHTML=defs.map(([key,label,type])=>{const v=values[key]??'';if(type==='textarea')return `<div class="field"><label>${label}</label><textarea data-home-key="${key}">${escapeHtml(v)}</textarea></div>`;return `<div class="field"><label>${label}</label><input data-home-key="${key}" type="${type}" value="${escapeHtml(v)}"></div>`;}).join('');}
+    function collectHomePayload(){const p={};document.querySelectorAll('#homeFormFields [data-home-key]').forEach(el=>{let v=el.value;if(el.type==='number'&&v!=='')v=Number(v);p[el.dataset.homeKey]=v;});return p;}
+    function renderHomeItems(data=[]){const box=document.getElementById('homeItems');document.getElementById('homeCount').textContent=`${data.length} item`;box.innerHTML=data.map(row=>{const p=row.payload||{},label=p.title||p.player||p.team||p.tag||`${p.home||''} vs ${p.away||''}`||row.section;return `<div class="manager-item" data-home-id="${escapeHtml(row.id)}"><span class="manager-order">${row.sort_order??0}</span><div class="manager-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small></div><button class="icon-btn danger home-delete" title="Hapus">×</button></div>`}).join('')||'<div class="empty-state"><h3>Belum Ada Data</h3><p>Tambahkan konten homepage lewat form.</p></div>';box.querySelectorAll('.manager-item').forEach(el=>{el.addEventListener('click',e=>{if(e.target.closest('.home-delete'))return;openHomeEdit(el.dataset.homeId);});el.querySelector('.home-delete')?.addEventListener('click',e=>{e.stopPropagation();deleteHomeItem(el.dataset.homeId);});});}
+    let homepageRowsCache=[];
+    async function loadHomepageManager(){const filter=document.getElementById('homeSectionFilter')?.value;let q=db.from('homepage_content').select('*').order('section').order('sort_order');if(filter)q=q.eq('section',filter);const {data,error}=await q;if(error){toast('Gagal memuat konten homepage: '+error.message,'error');return;}homepageRowsCache=data||[];renderHomeItems(homepageRowsCache);}
+    function openHomeEdit(id){const row=homepageRowsCache.find(x=>String(x.id)===String(id));if(!row)return;sportsState.homeEditingId=id;document.getElementById('home_id').value=id;document.getElementById('home_section').value=row.section;document.getElementById('home_sort_order').value=row.sort_order??0;document.getElementById('home_active').value=String(row.is_active!==false);renderHomeFormFields(row.payload||{});document.getElementById('homeFormTitle').textContent='Edit '+row.section;}
+    function clearHomeForm(){sportsState.homeEditingId=null;document.getElementById('home_id').value='';document.getElementById('home_section').value='scores';document.getElementById('home_sort_order').value='0';document.getElementById('home_active').value='true';renderHomeFormFields({});document.getElementById('homeFormTitle').textContent='Tambah Konten';}
+    async function saveHomeItem(){const section=document.getElementById('home_section').value;const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload:collectHomePayload(),updated_at:new Date().toISOString()};const result=sportsState.homeEditingId?await db.from('homepage_content').update(row).eq('id',sportsState.homeEditingId):await db.from('homepage_content').insert(row);if(result.error){toast('Gagal menyimpan konten: '+result.error.message,'error');return;}toast(sportsState.homeEditingId?'Konten diperbarui':'Konten ditambahkan');clearHomeForm();loadHomepageManager();}
+    async function deleteHomeItem(id){if(!confirm('Hapus konten homepage ini?'))return;const {error}=await db.from('homepage_content').delete().eq('id',id);if(error){toast('Gagal menghapus: '+error.message,'error');return;}toast('Konten dihapus');loadHomepageManager();clearHomeForm();}
 
-    function setHomeExample(){
-      const section=document.getElementById('home_section').value;
-      const payload=document.getElementById('home_payload');
-      if(!payload.value.trim() || state.homeEditingId===null) payload.value=JSON.stringify(HOME_EXAMPLES[section]||{},null,2);
-      document.getElementById('homeFormHint').textContent='Format data: '+section+'. Edit JSON sesuai kebutuhan lalu simpan.';
-    }
-
-    async function loadHomepageManager(){
-      const box=document.getElementById('homeItems'); if(!box) return;
-      let query=db.from('homepage_content').select('*').order('section').order('sort_order');
-      const filter=document.getElementById('homeSectionFilter')?.value;
-      if(filter) query=query.eq('section',filter);
-      const {data,error}=await query;
-      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal memuat</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
-      document.getElementById('homeCount').textContent=`${(data||[]).length} item`;
-      box.innerHTML=(data||[]).map(row=>{const p=row.payload||{}; const label=p.title||p.player||p.team||p.tag||`${p.home||''} vs ${p.away||''}`||row.section; return `<div class="manager-item" data-home-id="${row.id}"><span class="manager-order">${row.sort_order}</span><div class="manager-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small></div><button class="icon-btn danger" title="Hapus" onclick="deleteHomeItem(event,'${row.id}')">×</button></div>`}).join('') || '<div class="empty-state"><h3>Belum Ada Data</h3><p>Tambahkan data dinamis homepage.</p></div>';
-      box.querySelectorAll('.manager-item').forEach(el=>el.addEventListener('click',()=>openHomeEdit(el.dataset.homeId)));
-    }
-
-    async function openHomeEdit(id){
-      const {data,error}=await db.from('homepage_content').select('*').eq('id',id).single();
-      if(error){toast('Gagal memuat konten: '+error.message,'error');return;}
-      state.homeEditingId=id;
-      document.getElementById('home_id').value=id;
-      document.getElementById('home_section').value=data.section;
-      document.getElementById('home_sort_order').value=data.sort_order??0;
-      document.getElementById('home_active').value=String(data.is_active!==false);
-      document.getElementById('home_payload').value=JSON.stringify(data.payload||{},null,2);
-      document.getElementById('homeFormTitle').textContent='Edit '+data.section;
-      document.querySelectorAll('.manager-item').forEach(x=>x.classList.toggle('active',x.dataset.homeId===id));
-    }
-    window.openHomeEdit=openHomeEdit;
-
-    function clearHomeForm(){
-      state.homeEditingId=null; document.getElementById('home_id').value=''; document.getElementById('home_sort_order').value='0'; document.getElementById('home_active').value='true'; document.getElementById('home_section').value='scores'; document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES.scores,null,2); document.getElementById('homeFormTitle').textContent='Tambah Konten'; document.querySelectorAll('.manager-item').forEach(x=>x.classList.remove('active')); setHomeExample();
-    }
-
-    async function saveHomeItem(){
-      const section=document.getElementById('home_section').value;
-      let payload;
-      try{payload=JSON.parse(document.getElementById('home_payload').value||'{}');}catch(e){toast('JSON tidak valid. Periksa tanda kurung/koma.','error');return;}
-      const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload,updated_at:new Date().toISOString()};
-      let result=state.homeEditingId?await db.from('homepage_content').update(row).eq('id',state.homeEditingId):await db.from('homepage_content').insert(row);
-      if(result.error){toast('Gagal menyimpan: '+result.error.message,'error');return;}
-      toast(state.homeEditingId?'Konten homepage diperbarui':'Konten homepage ditambahkan'); clearHomeForm(); loadHomepageManager();
-    }
-
-    async function deleteHomeItem(event,id){
-      event.stopPropagation(); if(!confirm('Hapus konten homepage ini?')) return;
-      const {error}=await db.from('homepage_content').delete().eq('id',id);
-      if(error){toast('Gagal menghapus: '+error.message,'error');return;}
-      toast('Konten homepage dihapus'); clearHomeForm(); loadHomepageManager();
-    }
-    window.deleteHomeItem=deleteHomeItem;
-    document.getElementById('newHomeBtn')?.addEventListener('click',clearHomeForm);
-    document.getElementById('homeClearBtn')?.addEventListener('click',clearHomeForm);
-    document.getElementById('homeCancelBtn')?.addEventListener('click',clearHomeForm);
-    document.getElementById('homeSaveBtn')?.addEventListener('click',saveHomeItem);
+    function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadWeekFixtures();if(view==='content')loadHomepageManager();}
+    document.querySelectorAll('.sports-tab').forEach(btn=>btn.addEventListener('click',()=>switchSportsView(btn.dataset.sportsView)));
+    document.querySelectorAll('.subtab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active',b===btn));const leagues=btn.dataset.teamView==='leagues';document.getElementById('leagueManager').style.display=leagues?'grid':'none';document.getElementById('clubManager').style.display=leagues?'none':'grid';if(!leagues){renderTeamLeagueOptions();renderTeamItems();}}));
+    document.getElementById('fixtureLeagueSelect')?.addEventListener('change',()=>{document.getElementById('fixtureRows').innerHTML='';loadWeekFixtures();});
+    document.getElementById('loadWeekBtn')?.addEventListener('click',loadWeekFixtures);
+    document.getElementById('addFixtureBtn')?.addEventListener('click',()=>addFixtureRow({}));
+    document.getElementById('saveFixturesBtn')?.addEventListener('click',saveFixtures);
+    document.getElementById('teamLeagueFilter')?.addEventListener('change',()=>{renderTeamItems();document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value;});
+    document.getElementById('saveLeagueBtn')?.addEventListener('click',saveLeague);document.getElementById('clearLeagueBtn')?.addEventListener('click',clearLeagueForm);document.getElementById('cancelLeagueBtn')?.addEventListener('click',clearLeagueForm);
+    document.getElementById('saveTeamBtn')?.addEventListener('click',saveTeam);document.getElementById('clearTeamBtn')?.addEventListener('click',clearTeamForm);document.getElementById('cancelTeamBtn')?.addEventListener('click',clearTeamForm);
+    document.getElementById('league_logo_url')?.addEventListener('input',e=>updateLogoPreview('leagueLogoPreview',e.target.value.trim()));
+    document.getElementById('team_logo_url')?.addEventListener('input',e=>updateLogoPreview('teamLogoPreview',e.target.value.trim()));
+    document.getElementById('team_logo_file')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)updateLogoPreview('teamLogoPreview',URL.createObjectURL(f));});
     document.getElementById('homeSectionFilter')?.addEventListener('change',loadHomepageManager);
-    document.getElementById('home_section')?.addEventListener('change',()=>{document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES[document.getElementById('home_section').value]||{},null,2);});
-    clearHomeForm();
+    document.getElementById('home_section')?.addEventListener('change',()=>{renderHomeFormFields({});});
+    document.getElementById('homeSaveBtn')?.addEventListener('click',saveHomeItem);document.getElementById('homeClearBtn')?.addEventListener('click',clearHomeForm);document.getElementById('homeCancelBtn')?.addEventListener('click',clearHomeForm);document.getElementById('newHomeBtn')?.addEventListener('click',()=>switchSportsView('fixtures'));
+    renderHomeFormFields({}); clearLeagueForm(); clearTeamForm();
 
     // ---------- NAV ----------
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
