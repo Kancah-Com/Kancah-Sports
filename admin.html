@@ -342,6 +342,39 @@
     .table-wrap{overflow-x:auto;}
     table{min-width:760px;}
   }
+
+  .api-match-card{background:#0b0b0b;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .api-match-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px}
+  .api-match-head strong{display:block;margin-top:4px;font-size:13px}
+  .api-match-id{font-size:9px;color:#777;letter-spacing:.12em;text-transform:uppercase}
+  .api-match-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .api-league-pill,.api-status-pill{border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .api-league-pill{color:var(--orange);border-color:rgba(255,77,0,.35)}
+  .api-status-pill{color:#aaa}
+  .api-match-teams{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;gap:14px;padding:18px 0}
+  .api-team{display:flex;align-items:center;gap:10px;min-width:0}
+  .api-team-away{justify-content:flex-end;text-align:right}
+  .api-team strong{font-size:15px}
+  .api-team-logo{width:38px;height:38px;background:#fff;border-radius:10px;display:grid;place-items:center;overflow:hidden;flex:0 0 38px}
+  .api-team-logo img{width:100%;height:100%;object-fit:contain}
+  .api-vs{text-align:center;color:#666;font-size:10px;font-weight:900;letter-spacing:.12em}
+  .api-override-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .api-override-box{border:1px solid var(--line);border-radius:12px;padding:12px;background:#090909}
+  .api-override-title{font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;color:#aaa}
+  .live-box{border-color:rgba(35,209,139,.22)}
+  .live-box .api-override-title{color:#23d18b}
+  .final-box{border-color:rgba(255,77,0,.22)}
+  .final-box .api-override-title{color:var(--orange)}
+  .api-score-pair{display:grid;grid-template-columns:1fr 16px 1fr;gap:7px;align-items:end}
+  .api-score-pair label{display:block;font-size:8px;color:#666;margin-bottom:4px}
+  .api-score-pair input{width:100%;text-align:center;font-size:17px;font-weight:900;font-family:var(--mono)}
+  .api-score-pair>span{text-align:center;padding-bottom:8px;color:#666;font-weight:900}
+  .api-status-override{width:100%}
+  .api-timer-note{display:block;color:#666;font-size:9px;line-height:1.4;margin-top:8px}
+  .api-match-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
+  .api-venue{font-size:10px;color:#777}
+  @media(max-width:900px){.api-override-grid{grid-template-columns:1fr}.api-match-teams{grid-template-columns:1fr 40px 1fr}}
+  @media(max-width:620px){.api-match-head{flex-direction:column}.api-match-meta{justify-content:flex-start}.api-match-teams{grid-template-columns:1fr;gap:10px}.api-vs{display:none}.api-team-away{justify-content:flex-start;text-align:left}.api-match-foot{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
@@ -494,34 +527,39 @@
         <div class="topbar" style="margin-top:8px;">
           <div>
             <span class="eyebrow">Homepage Dinamis</span>
-            <h2 style="font-size:20px;text-transform:uppercase">Kelola Liga, Klub &amp; Jadwal</h2>
+            <h2 style="font-size:20px;text-transform:uppercase">Match API &amp; Live Score</h2>
           </div>
           <button class="btn btn-primary" id="newHomeBtn">+ Tambah Data</button>
         </div>
 
         <div class="sports-tabs" id="sportsTabs">
           <button class="sports-tab active" data-sports-view="fixtures">Jadwal Mingguan</button>
-          <button class="sports-tab" data-sports-view="teams">Liga &amp; Klub</button>
+          <button class="sports-tab" data-sports-view="teams">Data API Klub</button>
           <button class="sports-tab" data-sports-view="content">Konten Homepage</button>
         </div>
 
         <div class="sports-panel" id="sportsFixturesPanel">
           <div class="sports-toolbar">
-            <div class="field compact"><label>Liga</label><select id="fixtureLeagueSelect"></select></div>
-            <div class="field compact"><label>Pekan</label><input type="number" id="fixtureWeek" min="1" max="60" value="1"></div>
-            <button class="btn btn-ghost" id="loadWeekBtn">Muat Pekan</button>
+            <div class="field compact"><label>Tanggal API</label><input type="date" id="apiMatchDate"></div>
+            <div class="field compact"><label>Filter</label><input type="search" id="apiMatchSearch" placeholder="Cari klub / liga..." style="min-width:220px"></div>
+            <button class="btn btn-ghost" id="loadApiMatchesBtn">Muat Match API</button>
             <div class="spacer"></div>
-            <button class="btn btn-primary" id="addFixtureBtn">+ Pertandingan</button>
+            <span class="date-text" id="apiMatchCount">0 match</span>
           </div>
-          <div class="week-note">Klub dan logo diinput sekali di menu <b>Liga &amp; Klub</b>. Setelah itu, setiap pekan tinggal pilih klub untuk membuat jadwal.</div>
-          <div id="fixtureRows" class="fixture-admin-list"></div>
-          <div class="sports-panel-foot">
-            <span id="fixtureCount" class="date-text">0 pertandingan</span>
-            <button class="btn btn-primary" id="saveFixturesBtn">Simpan Jadwal Pekan</button>
-          </div>
+          <div class="week-note">Semua <b>match, liga, klub, dan logo</b> diambil dari <b>API-Football</b> melalui tabel <b>football_matches</b>. Admin hanya mengedit status/skor sebagai override. Tidak perlu membuat klub atau pertandingan manual.</div>
+          <div id="apiMatchRows" class="fixture-admin-list"></div>
         </div>
 
         <div class="sports-panel" id="sportsTeamsPanel" style="display:none">
+          <div class="sports-toolbar">
+            <div class="field compact"><label>Cari Klub</label><input type="search" id="apiClubSearch" placeholder="Arsenal, Manchester..." style="min-width:260px"></div>
+            <button class="btn btn-ghost" id="loadApiClubsBtn">Muat Klub API</button>
+            <div class="spacer"></div><span class="date-text" id="apiClubCount">0 klub</span>
+          </div>
+          <div class="week-note">Daftar klub di bawah <b>dibentuk langsung dari data pertandingan API-Football</b>. Nama, logo, dan kompetisi tidak dibuat manual di admin.</div>
+          <div id="apiClubRows" class="manager-items"></div>
+          <div id="legacySportsManagers" style="display:none">
+
           <div class="subtabs">
             <button class="subtab active" data-team-view="leagues">Liga</button>
             <button class="subtab" data-team-view="clubs">Klub</button>
@@ -563,7 +601,8 @@
             </div>
           </div>
         </div>
-
+          </div>
+        </div>
         <div class="sports-panel" id="sportsContentPanel" style="display:none">
           <div class="content-manager">
             <div class="manager-list">
@@ -1099,118 +1138,162 @@
 
     function updateLogoPreview(id,url){const img=document.getElementById(id);if(!img)return;if(url){img.src=url;img.classList.add('show');}else{img.removeAttribute('src');img.classList.remove('show');}}
 
-    function fixtureRowHtml(f={}){
-      const leagueId=document.getElementById('fixtureLeagueSelect').value;
-      const date=f.fixture_date?toLocalInput(f.fixture_date):'';
-      const d=date?date.slice(0,10):'';
-      const tm=date?date.slice(11,16):'';
-      const status=f.status||'upcoming';
-      const liveStarted=f.live_started_at||'';
-      return `<div class="fixture-row" data-id="${escapeHtml(f.id||'')}" data-date="${escapeHtml(d)}" data-time="${escapeHtml(tm)}" data-original-status="${escapeHtml(status)}" data-live-started-at="${escapeHtml(liveStarted)}">
-        <div class="fixture-row-top">
-          <span class="fixture-number">Pertandingan</span>
-          <button class="icon-btn danger fixture-delete" title="Hapus" type="button">×</button>
-        </div>
-        <div class="fixture-fields">
-          <div class="field"><label>Tanggal</label><input class="fx-date" type="date" value="${escapeHtml(d)}"></div>
-          <div class="field"><label>Jam</label><input class="fx-time" type="time" value="${escapeHtml(tm)}"></div>
-          <div class="field"><label>Status</label><select class="fx-status">
-            <option value="upcoming" ${status==='upcoming'?'selected':''}>Akan Datang</option>
-            <option value="live" ${status==='live'?'selected':''}>Live</option>
-            <option value="finished" ${status==='finished'?'selected':''}>Selesai</option>
-            <option value="postponed" ${status==='postponed'?'selected':''}>Ditunda</option>
-          </select></div>
-          <div class="field"><label>Venue</label><input class="fx-venue" value="${escapeHtml(f.venue||'')}" placeholder="Stadion"></div>
-          <div class="field team-field"><label>Tuan Rumah</label><select class="fx-home">${teamOptions(leagueId,f.home_team_id)}</select></div>
-          <div class="field team-field"><label>Tamu</label><select class="fx-away">${teamOptions(leagueId,f.away_team_id)}</select></div>
-          <div class="fixture-score-section live-section">
-            <div class="fixture-score-heading live-heading"><span class="fixture-score-dot live-dot"></span>Skor Live</div>
-            <div class="fixture-score-grid">
-              <div class="field"><label>Home — Live</label><input class="fx-live-home-score" type="number" min="0" step="1" value="${f.live_home_score??''}" placeholder="0"></div>
-              <div class="field"><label>Away — Live</label><input class="fx-live-away-score" type="number" min="0" step="1" value="${f.live_away_score??''}" placeholder="0"></div>
-            </div>
-          </div>
-          <div class="fixture-score-section final-section">
-            <div class="fixture-score-heading final-heading"><span class="fixture-score-dot final-dot"></span>Skor Akhir</div>
-            <div class="fixture-score-grid">
-              <div class="field"><label>Home — Akhir</label><input class="fx-final-home-score" type="number" min="0" step="1" value="${f.final_home_score??''}" placeholder="0"></div>
-              <div class="field"><label>Away — Akhir</label><input class="fx-final-away-score" type="number" min="0" step="1" value="${f.final_away_score??''}" placeholder="0"></div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    }
-    function renumberFixtureRows(){document.querySelectorAll('.fixture-row').forEach((r,i)=>r.querySelector('.fixture-number').textContent=`Pertandingan ${i+1}`);document.getElementById('fixtureCount').textContent=`${document.querySelectorAll('.fixture-row').length} pertandingan`;}
-    function addFixtureRow(f={}){const box=document.getElementById('fixtureRows');box.insertAdjacentHTML('beforeend',fixtureRowHtml(f));const row=box.lastElementChild;row.querySelector('.fixture-delete').addEventListener('click',()=>deleteFixtureRow(row));row.querySelector('.fx-home').addEventListener('change',()=>{if(row.querySelector('.fx-home').value===row.querySelector('.fx-away').value)row.querySelector('.fx-away').value='';});renumberFixtureRows();}
-    async function deleteFixtureRow(row){const id=row.dataset.id;if(id){if(!confirm('Hapus pertandingan ini?'))return;const {error}=await db.from('sports_fixtures').delete().eq('id',id);if(error){toast('Gagal menghapus pertandingan: '+error.message,'error');return;}toast('Pertandingan dihapus');}row.remove();renumberFixtureRows();}
-    async function loadWeekFixtures(){
-      const leagueId=document.getElementById('fixtureLeagueSelect').value, week=Number(document.getElementById('fixtureWeek').value)||1; const box=document.getElementById('fixtureRows'); if(!box||!leagueId){if(box)box.innerHTML='<div class="empty-state"><h3>Belum Ada Liga</h3><p>Buat liga dan klub terlebih dahulu.</p></div>';return;}
-      box.innerHTML='<div class="loading-row" style="padding:30px">Memuat jadwal…</div>';
-      const {data,error}=await db.from('sports_fixtures').select('*').eq('league_id',leagueId).eq('week',week).order('fixture_date');
-      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
-      box.innerHTML=''; (data||[]).forEach(addFixtureRow); if(!(data||[]).length) addFixtureRow({}); renumberFixtureRows();
-    }
-    async function saveFixtures(){
-      const leagueId=document.getElementById('fixtureLeagueSelect').value;
-      const week=Number(document.getElementById('fixtureWeek').value)||1;
-      if(!leagueId){toast('Pilih liga dulu','error');return;}
-      const rows=[...document.querySelectorAll('.fixture-row')];
-      const payloads=[];
-      for(const row of rows){
-        const home=row.querySelector('.fx-home').value;
-        const away=row.querySelector('.fx-away').value;
-        const date=row.querySelector('.fx-date').value;
-        const time=row.querySelector('.fx-time').value;
-        const status=row.querySelector('.fx-status').value;
-        if(!home&&!away&&!date&&!time) continue;
-        if(!home||!away||!date||!time){toast('Lengkapi tanggal, jam, tuan rumah, dan tamu.','error');return;}
-        if(home===away){toast('Klub tuan rumah dan tamu tidak boleh sama.','error');return;}
-        const when=new Date(`${date}T${time}:00`).toISOString();
-        const liveHomeInput=row.querySelector('.fx-live-home-score');
-        const liveAwayInput=row.querySelector('.fx-live-away-score');
-        const finalHomeInput=row.querySelector('.fx-final-home-score');
-        const finalAwayInput=row.querySelector('.fx-final-away-score');
-        const liveHome=liveHomeInput.value===''?null:Number(liveHomeInput.value);
-        const liveAway=liveAwayInput.value===''?null:Number(liveAwayInput.value);
-        const finalHome=finalHomeInput.value===''?null:Number(finalHomeInput.value);
-        const finalAway=finalAwayInput.value===''?null:Number(finalAwayInput.value);
-        if([liveHome,liveAway,finalHome,finalAway].some(v=>v!==null&&(!Number.isInteger(v)||v<0))){toast('Skor harus berupa bilangan bulat 0 atau lebih.','error');return;}
-        const originalStatus=row.dataset.originalStatus||'upcoming';
-        let liveStartedAt=row.dataset.liveStartedAt||null;
-        if(status==='live'){
-          if(originalStatus!=='live'||!liveStartedAt) liveStartedAt=new Date().toISOString();
-        }else if(originalStatus==='live'){
-          liveStartedAt=null;
+    // ---------- API-FOOTBALL CLUB DIRECTORY ----------
+    let apiClubCache=[];
+    async function loadApiClubs(){
+      const box=document.getElementById('apiClubRows');
+      if(!box)return;
+      box.innerHTML='<div class="loading-row" style="padding:30px">Memuat klub dari API…</div>';
+      const {data,error}=await db.from('football_matches').select('home_team_name,home_team_logo,away_team_name,away_team_logo,league_name').limit(5000);
+      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Klub API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
+      const map=new Map();
+      (data||[]).forEach(f=>{
+        for(const side of ['home','away']){
+          const name=f[`${side}_team_name`];
+          if(!name)continue;
+          const key=String(name).trim().toLowerCase();
+          if(!map.has(key))map.set(key,{name,logo:f[`${side}_team_logo`]||'',leagues:new Set()});
+          if(f.league_name)map.get(key).leagues.add(f.league_name);
         }
-        payloads.push({
-          id:row.dataset.id||null,
-          league_id:leagueId,
-          week,
-          fixture_date:when,
-          home_team_id:home,
-          away_team_id:away,
-          venue:row.querySelector('.fx-venue').value.trim()||null,
-          status,
-          live_home_score:liveHome,
-          live_away_score:liveAway,
-          final_home_score:finalHome,
-          final_away_score:finalAway,
-          live_started_at:liveStartedAt,
-          timezone:'WIB',
-          updated_at:new Date().toISOString()
-        });
-      }
-      if(!payloads.length){toast('Belum ada pertandingan untuk disimpan','error');return;}
-      for(const item of payloads){
-        let result;
-        if(item.id){const {id,...update}=item;result=await db.from('sports_fixtures').update(update).eq('id',id);}
-        else{const {id,...insert}=item;result=await db.from('sports_fixtures').insert(insert);}
-        if(result.error){toast('Gagal menyimpan jadwal: '+result.error.message,'error');return;}
-      }
-      toast(`Jadwal pekan ${week} tersimpan`);
-      await loadWeekFixtures();
+      });
+      apiClubCache=[...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
+      renderApiClubs();
+    }
+    function renderApiClubs(){
+      const box=document.getElementById('apiClubRows');
+      const count=document.getElementById('apiClubCount');
+      const q=(document.getElementById('apiClubSearch')?.value||'').trim().toLowerCase();
+      const rows=apiClubCache.filter(t=>!q||t.name.toLowerCase().includes(q));
+      if(count)count.textContent=`${rows.length} klub API`;
+      if(!rows.length){box.innerHTML='<div class="empty-state"><h3>Tidak Ada Klub</h3><p>Belum ada data klub dari football_matches.</p></div>';return;}
+      box.innerHTML=rows.map(t=>`<div class="manager-item"><div class="club-avatar">${t.logo?`<img src="${escapeHtml(t.logo)}" alt="">`:'⚽'}</div><div class="manager-copy"><strong>${escapeHtml(t.name)}</strong><small>${escapeHtml([...t.leagues].join(' · ')||'Kompetisi dari API')}</small></div><span class="date-text">API</span></div>`).join('');
     }
 
+    // ---------- API-FOOTBALL MATCH MANAGER ----------
+    let apiMatchCache=[];
+
+    function apiDateValue(){
+      const el=document.getElementById('apiMatchDate');
+      if(el&&el.value) return el.value;
+      const d=new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function apiStatusLabel(status){
+      const s=String(status||'').toUpperCase();
+      if(['LIVE','1H','2H','ET','P','BT'].includes(s)) return 'LIVE';
+      if(s==='HT') return 'HALF TIME';
+      if(['FT','FINISHED','AET','PEN'].includes(s)) return 'SELESAI';
+      if(['PST','POSTPONED'].includes(s)) return 'DITUNDA';
+      if(['CANC','CANCELLED','ABD','AWD','WO'].includes(s)) return 'DIBATALKAN';
+      return 'AKAN DATANG';
+    }
+
+    function apiMatchTime(date){
+      const d=new Date(date);
+      return Number.isNaN(d.getTime())?'—':d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',hour12:false});
+    }
+
+    function apiMatchDateLabel(date){
+      const d=new Date(date);
+      return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+    }
+
+    function scoreInput(cls,value){
+      return `<input class="${cls}" type="number" min="0" step="1" value="${value??''}" placeholder="—">`;
+    }
+
+    function apiMatchRowHtml(f,override={}){
+      const apiStatus=String(f.status_short||'').toUpperCase();
+      const effectiveStatus=override.status_override||'';
+      const statusText=effectiveStatus?apiStatusLabel(effectiveStatus):apiStatusLabel(apiStatus);
+      const liveHome=override.live_home_score??(f.is_live?f.home_goals:null);
+      const liveAway=override.live_away_score??(f.is_live?f.away_goals:null);
+      const finalHome=override.final_home_score??(f.is_finished?(f.home_ft_goals??f.home_goals):null);
+      const finalAway=override.final_away_score??(f.is_finished?(f.away_ft_goals??f.away_goals):null);
+      const apiMinute=f.elapsed??null;
+      return `<div class="api-match-card" data-match-id="${escapeHtml(String(f.id))}" data-live-started-at="${escapeHtml(override.live_started_at||'')}" data-original-override-status="${escapeHtml(override.status_override||'')}">
+        <div class="api-match-head">
+          <div><span class="api-match-id">API MATCH #${escapeHtml(f.id)}</span><strong>${escapeHtml(apiMatchDateLabel(f.match_date))} · ${escapeHtml(apiMatchTime(f.match_date))} WIB</strong></div>
+          <div class="api-match-meta"><span class="api-league-pill">${escapeHtml(f.league_name||'—')}</span><span class="api-status-pill">API: ${escapeHtml(apiStatusLabel(apiStatus))}${apiMinute!==null&&apiMinute!==undefined?' · '+escapeHtml(apiMinute)+"'":''}</span></div>
+        </div>
+        <div class="api-match-teams">
+          <div class="api-team"><div class="api-team-logo">${f.home_team_logo?`<img src="${escapeHtml(f.home_team_logo)}" alt="">`:'⚽'}</div><strong>${escapeHtml(f.home_team_name||'—')}</strong></div>
+          <div class="api-vs">VS</div>
+          <div class="api-team api-team-away"><div class="api-team-logo">${f.away_team_logo?`<img src="${escapeHtml(f.away_team_logo)}" alt="">`:'⚽'}</div><strong>${escapeHtml(f.away_team_name||'—')}</strong></div>
+        </div>
+        <div class="api-override-grid">
+          <div class="api-override-box live-box"><div class="api-override-title">LIVE SCORE</div><div class="api-score-pair"><div><label>HOME</label>${scoreInput('api-live-home',liveHome)}</div><span>—</span><div><label>AWAY</label>${scoreInput('api-live-away',liveAway)}</div></div></div>
+          <div class="api-override-box final-box"><div class="api-override-title">FINAL SCORE</div><div class="api-score-pair"><div><label>HOME</label>${scoreInput('api-final-home',finalHome)}</div><span>—</span><div><label>AWAY</label>${scoreInput('api-final-away',finalAway)}</div></div></div>
+          <div class="api-override-box status-box"><div class="api-override-title">STATUS WEBSITE</div><select class="api-status-override"><option value="" ${!effectiveStatus?'selected':''}>Ikuti API (${escapeHtml(apiStatusLabel(apiStatus))})</option><option value="upcoming" ${effectiveStatus==='upcoming'?'selected':''}>Akan Datang</option><option value="live" ${effectiveStatus==='live'?'selected':''}>Live</option><option value="finished" ${effectiveStatus==='finished'?'selected':''}>Selesai</option><option value="postponed" ${effectiveStatus==='postponed'?'selected':''}>Ditunda</option></select><small class="api-timer-note">${override.live_started_at?'Timer dimulai: '+escapeHtml(new Date(override.live_started_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})):'Timer otomatis mengikuti kick-off/API saat LIVE.'}</small></div>
+        </div>
+        <div class="api-match-foot"><span class="api-venue">${escapeHtml(f.venue_name||f.venue_city||'Venue dari API tidak tersedia')}</span><button class="btn btn-primary api-save-match">Simpan Skor</button></div>
+      </div>`;
+    }
+
+    async function loadApiMatches(){
+      const box=document.getElementById('apiMatchRows');
+      const date=apiDateValue();
+      if(!box)return;
+      box.innerHTML='<div class="loading-row" style="padding:30px">Memuat pertandingan dari API…</div>';
+      const start=new Date(`${date}T00:00:00`);
+      const end=new Date(`${date}T23:59:59.999`);
+      const {data,error}=await db.from('football_matches').select('*').gte('match_date',start.toISOString()).lte('match_date',end.toISOString()).order('match_date',{ascending:true}).limit(200);
+      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Match API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
+      const matches=data||[];
+      apiMatchCache=matches;
+      let overrides=[];
+     if(matches.length){
+        const {data:ov,error:ovError}=await db.from('football_match_overrides').select('*').in('match_id',matches.map(m=>String(m.id)));
+        if(ovError){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Override</h3><p>${escapeHtml(ovError.message)}</p><small>Pastikan SQL football_match_overrides sudah dijalankan.</small></div>`;return;}
+        overrides=ov||[];
+      }
+      const map=new Map(overrides.map(o=>[String(o.match_id),o]));
+      renderApiMatches(matches,map);
+    }
+
+    function renderApiMatches(matches,map){
+      const box=document.getElementById('apiMatchRows');
+      const count=document.getElementById('apiMatchCount');
+      const query=(document.getElementById('apiMatchSearch')?.value||'').trim().toLowerCase();
+      const filtered=(matches||[]).filter(f=>!query||`${f.home_team_name||''} ${f.away_team_name||''} ${f.league_name||''}`.toLowerCase().includes(query));
+      if(count)count.textContent=`${filtered.length} match API`;
+      if(!filtered.length){box.innerHTML='<div class="empty-state"><h3>Tidak Ada Match</h3><p>Tidak ada pertandingan API pada tanggal/filter tersebut.</p></div>';return;}
+      box.innerHTML=filtered.map(f=>apiMatchRowHtml(f,map.get(String(f.id))||{})).join('');
+      box.querySelectorAll('.api-save-match').forEach(btn=>btn.addEventListener('click',()=>saveApiMatchOverride(btn.closest('.api-match-card'))));
+    }
+
+    async function saveApiMatchOverride(card){
+      if(!card)return;
+      const matchId=String(card.dataset.matchId);
+      const liveHome=card.querySelector('.api-live-home').value===''?null:Number(card.querySelector('.api-live-home').value);
+      const liveAway=card.querySelector('.api-live-away').value===''?null:Number(card.querySelector('.api-live-away').value);
+      const finalHome=card.querySelector('.api-final-home').value===''?null:Number(card.querySelector('.api-final-home').value);
+      const finalAway=card.querySelector('.api-final-away').value===''?null:Number(card.querySelector('.api-final-away').value);
+      const statusOverride=card.querySelector('.api-status-override').value||null;
+      if([liveHome,liveAway,finalHome,finalAway].some(v=>v!==null&&(!Number.isInteger(v)||v<0))){toast('Skor harus berupa bilangan bulat 0 atau lebih.','error');return;}
+      let liveStartedAt=card.dataset.liveStartedAt||null;
+      const previous=card.dataset.originalOverrideStatus||'';
+      if(statusOverride==='live'&&!liveStartedAt)liveStartedAt=new Date().toISOString();
+      if(statusOverride!=='live'&&previous==='live')liveStartedAt=null;
+      const payload={match_id:matchId,status_override:statusOverride,live_home_score:liveHome,live_away_score:liveAway,final_home_score:finalHome,final_away_score:finalAway,live_started_at:liveStartedAt,updated_at:new Date().toISOString()};
+      const empty=!statusOverride&&liveHome===null&&liveAway===null&&finalHome===null&&finalAway===null&&!liveStartedAt;
+      let result;
+      if(empty){result=await db.from('football_match_overrides').delete().eq('match_id',matchId);}else{result=await db.from('football_match_overrides').upsert(payload,{onConflict:'match_id'});}
+      if(result.error){toast('Gagal menyimpan override: '+result.error.message,'error');return;}
+      toast('Skor/status match API diperbarui');
+      await loadApiMatches();
+    }
+
+    function switchSportsView(view){
+      document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));
+      document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';
+      document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';
+      document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';
+      if(view==='fixtures')loadApiMatches();
+      if(view==='teams')loadApiClubs();
+      if(view==='content')loadHomepageManager();
+    }
     const HOME_FIELD_DEFS={
       scores:[['league','Liga','text'],['status','Status','text'],['home','Tuan Rumah','text'],['home_score','Skor Home','number'],['away','Tamu','text'],['away_score','Skor Away','number'],['note','Catatan','text']],
       trending:[['tag','Tag Trending','text'],['href','Link','text']],
@@ -1258,10 +1341,11 @@
     function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadWeekFixtures();if(view==='content')loadHomepageManager();}
     document.querySelectorAll('.sports-tab').forEach(btn=>btn.addEventListener('click',()=>switchSportsView(btn.dataset.sportsView)));
     document.querySelectorAll('.subtab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active',b===btn));const leagues=btn.dataset.teamView==='leagues';document.getElementById('leagueManager').style.display=leagues?'grid':'none';document.getElementById('clubManager').style.display=leagues?'none':'grid';if(!leagues){renderTeamLeagueOptions();renderTeamItems();}}));
-    document.getElementById('fixtureLeagueSelect')?.addEventListener('change',()=>{document.getElementById('fixtureRows').innerHTML='';loadWeekFixtures();});
-    document.getElementById('loadWeekBtn')?.addEventListener('click',loadWeekFixtures);
-    document.getElementById('addFixtureBtn')?.addEventListener('click',()=>addFixtureRow({}));
-    document.getElementById('saveFixturesBtn')?.addEventListener('click',saveFixtures);
+    document.getElementById('loadApiMatchesBtn')?.addEventListener('click',loadApiMatches);
+    document.getElementById('apiMatchSearch')?.addEventListener('input',()=>{const q=(document.getElementById('apiMatchSearch').value||'').trim().toLowerCase();const filtered=apiMatchCache.filter(f=>`${f.home_team_name||''} ${f.away_team_name||''} ${f.league_name||''}`.toLowerCase().includes(q));const ids=filtered.map(f=>String(f.id));db.from('football_match_overrides').select('*').in('match_id',ids.length?ids:['__none__']).then(({data})=>renderApiMatches(filtered,new Map((data||[]).map(o=>[String(o.match_id),o]))));});
+    document.getElementById('apiMatchDate')?.addEventListener('change',loadApiMatches);
+    document.getElementById('loadApiClubsBtn')?.addEventListener('click',loadApiClubs);
+    document.getElementById('apiClubSearch')?.addEventListener('input',renderApiClubs);
     document.getElementById('teamLeagueFilter')?.addEventListener('change',()=>{renderTeamItems();document.getElementById('team_league_id').value=document.getElementById('teamLeagueFilter').value;});
     document.getElementById('saveLeagueBtn')?.addEventListener('click',saveLeague);document.getElementById('clearLeagueBtn')?.addEventListener('click',clearLeagueForm);document.getElementById('cancelLeagueBtn')?.addEventListener('click',clearLeagueForm);
     document.getElementById('saveTeamBtn')?.addEventListener('click',saveTeam);document.getElementById('clearTeamBtn')?.addEventListener('click',clearTeamForm);document.getElementById('cancelTeamBtn')?.addEventListener('click',clearTeamForm);
@@ -1271,6 +1355,9 @@
     document.getElementById('home_section')?.addEventListener('change',()=>{renderHomeFormFields({});});
     document.getElementById('homeSaveBtn')?.addEventListener('click',saveHomeItem);document.getElementById('homeClearBtn')?.addEventListener('click',clearHomeForm);document.getElementById('homeCancelBtn')?.addEventListener('click',clearHomeForm);document.getElementById('newHomeBtn')?.addEventListener('click',()=>switchSportsView('fixtures'));
     renderHomeFormFields({}); clearLeagueForm(); clearTeamForm();
+    const apiDateEl=document.getElementById('apiMatchDate'); if(apiDateEl) apiDateEl.value=apiDateValue();
+    loadApiMatches();
+    loadApiClubs();
 
     // ---------- NAV ----------
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
