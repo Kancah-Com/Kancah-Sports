@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,6 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Google AdSense: ganti ca-pub-REPLACE_ME dengan Publisher ID milikmu setelah situs disetujui AdSense. -->
+  <!-- Slot iklan juga harus memakai data-ad-slot dari unit iklan yang dibuat di akun AdSense. -->
+
   <style>
     :root {
       --orange: #ff4d00;
@@ -98,6 +102,17 @@
     ::-webkit-scrollbar-thumb:hover {
       background: var(--orange);
     }
+
+
+    /* ---------- ADSENSE ---------- */
+    .ad-slot-wrap{width:100%;margin:22px auto;display:flex;justify-content:center;align-items:center;min-height:110px;overflow:hidden}
+    .ad-slot-wrap.top-ad{min-height:100px;margin:18px auto 8px}
+    .ad-slot-wrap.in-content-ad{min-height:140px;margin:28px auto}
+    .ad-slot-wrap.sidebar-ad{min-height:250px;margin:0 0 18px}
+    .ad-slot-wrap .adsbygoogle{display:block;width:100%;min-height:90px}
+    .ad-label{display:block;text-align:center;color:#555;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+    .ad-inner{width:100%;text-align:center}
+    @media(max-width:700px){.ad-slot-wrap{margin:18px auto;min-height:90px}.ad-slot-wrap.sidebar-ad{min-height:180px}.ad-slot-wrap .adsbygoogle{min-height:70px}}
 
     .container {
       width: min(var(--container), calc(100% - 32px));
@@ -2823,11 +2838,18 @@
       <div class="container breaking__inner">
         <span class="breaking__label">Breaking</span>
         <a href="#latest-news" class="breaking__content" id="breakingText">Kevin Diks jadi sorotan setelah tampil sebagai kapten, Timnas pantau kondisi Ole Romeny, dan transfer besar Eropa mulai memanas.</a>
-        <span class="breaking__time">Update 3 menit lalu</span>
+        <span class="breaking__time" id="breakingTime">Memuat…</span>
       </div>
     </div>
 
     <main>
+      <div class="container ad-slot-wrap top-ad">
+        <div class="ad-inner">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle" data-ad-placement="top" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+        </div>
+      </div>
+
       <section class="hero container" id="top-stories">
         <div class="hero-grid">
           <div class="hero-left">
@@ -2914,23 +2936,18 @@
           </div>
 
           <aside class="hero-sidebar" aria-label="Sidebar first view">
+            <div class="ad-slot-wrap sidebar-ad">
+              <div class="ad-inner">
+                <span class="ad-label">Advertisement</span>
+                <ins class="adsbygoogle" data-ad-placement="sidebar" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="rectangle" data-full-width-responsive="true"></ins>
+              </div>
+            </div>
             <section class="score-panel">
               <div class="panel-head">
                 <h2 class="panel-title">Live Score</h2>
                 <a class="panel-link" href="#match-center">Semua</a>
               </div>
-              <div class="score-list">
-                <article class="score-card">
-                  <div class="score-card__top"><span>AFC Cup</span><span class="score-live">89'</span></div>
-                  <div class="score-row"><span>Indonesia</span><strong>2</strong></div>
-                  <div class="score-row"><span>Malaysia</span><strong>1</strong></div>
-                </article>
-                <article class="score-card">
-                  <div class="score-card__top"><span>Premier League</span><span class="score-live">72'</span></div>
-                  <div class="score-row"><span>Man City</span><strong>3</strong></div>
-                  <div class="score-row"><span>Spurs</span><strong>2</strong></div>
-                </article>
-              </div>
+              <div class="score-list" id="liveScoreList"></div>
             </section>
 
             <section class="trend-panel">
@@ -2952,20 +2969,7 @@
                 <h2 class="panel-title">Editor Picks</h2>
                 <a class="panel-link" href="#editor-picks">Buka</a>
               </div>
-              <div class="editor-panel__body" id="editorPicksSidebarBody">
-                <article class="rank-story">
-                  <span class="rank-story__num">1</span>
-                  <div><h4>Kenapa Timnas Butuh Deep Playmaker Baru?</h4><p>Analisis • 8 min read</p></div>
-                </article>
-                <article class="rank-story">
-                  <span class="rank-story__num">2</span>
-                  <div><h4>Transfer Musim Panas: Klub Mana Paling Sibuk?</h4><p>Transfer • 6 min read</p></div>
-                </article>
-                <article class="rank-story">
-                  <span class="rank-story__num">3</span>
-                  <div><h4>Data Pressing Modern yang Ubah Sepak Bola</h4><p>Taktik • 7 min read</p></div>
-                </article>
-              </div>
+              <div class="editor-panel__body" id="editorPicksSidebarBody"></div>
             </section>
           </aside>
         </div>
@@ -3008,38 +3012,7 @@
             </div>
             <button class="section-action">Refresh Score</button>
           </div>
-          <div class="match-center hide-scrollbar">
-            <article class="match-card">
-              <div class="match-card__comp"><span>AFC Cup</span><span>Live</span></div>
-              <div class="team-row"><span>Indonesia</span><span class="team-score">2</span></div>
-              <div class="team-row"><span>Malaysia</span><span class="team-score">1</span></div>
-              <div class="match-status"><span>89'</span><span>Attack 64%</span></div>
-            </article>
-            <article class="match-card">
-              <div class="match-card__comp"><span>Premier League</span><span>Live</span></div>
-              <div class="team-row"><span>Man City</span><span class="team-score">3</span></div>
-              <div class="team-row"><span>Tottenham</span><span class="team-score">2</span></div>
-              <div class="match-status"><span>72'</span><span>xG 2.2 - 1.6</span></div>
-            </article>
-            <article class="match-card">
-              <div class="match-card__comp"><span>La Liga</span><span>HT</span></div>
-              <div class="team-row"><span>Real Madrid</span><span class="team-score">1</span></div>
-              <div class="team-row"><span>Barcelona</span><span class="team-score">1</span></div>
-              <div class="match-status"><span>HT</span><span>Poss 51%</span></div>
-            </article>
-            <article class="match-card">
-              <div class="match-card__comp"><span>Champions</span><span>02:00</span></div>
-              <div class="team-row"><span>Bayern</span><span class="team-score">-</span></div>
-              <div class="team-row"><span>Madrid</span><span class="team-score">-</span></div>
-              <div class="match-status"><span>Tonight</span><span>beIN</span></div>
-            </article>
-            <article class="match-card">
-              <div class="match-card__comp"><span>Europa</span><span>23:45</span></div>
-              <div class="team-row"><span>AZ Alkmaar</span><span class="team-score">-</span></div>
-              <div class="team-row"><span>Shakhtar</span><span class="team-score">-</span></div>
-              <div class="match-status"><span>Tonight</span><span>Vidio</span></div>
-            </article>
-          </div>
+          <div class="match-center hide-scrollbar" id="matchCenterList"></div>
         </div>
       </section>
 
@@ -3114,6 +3087,13 @@
         </div>
       </section>
 
+      <div class="container ad-slot-wrap in-content-ad">
+        <div class="ad-inner">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle" data-ad-placement="content" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+      </div>
+
       <section class="section" id="timnas">
         <div class="container layout-2">
           <div>
@@ -3153,37 +3133,17 @@
               <span class="eyebrow">Transfer Hub</span>
               <h2 class="section-title">Rumor, peluang, dan radar pemain</h2>
             </div>
-            <button class="section-action">Lihat Semua Rumor</button>
           </div>
-
-          <div class="transfer-board">
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Victor Osimhen</h3><p>Napoli → Chelsea</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>75%</strong></div><div class="bar"><span style="width:75%"></span></div></div>
-            </article>
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Florian Wirtz</h3><p>Leverkusen → Madrid</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>42%</strong></div><div class="bar"><span style="width:42%"></span></div></div>
-            </article>
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Thom Haye</h3><p>Heerenveen → Como</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>83%</strong></div><div class="bar"><span style="width:83%"></span></div></div>
-            </article>
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Joao Neves</h3><p>Benfica → PSG</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>68%</strong></div><div class="bar"><span style="width:68%"></span></div></div>
-            </article>
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Leny Yoro</h3><p>Lille → United</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>57%</strong></div><div class="bar"><span style="width:57%"></span></div></div>
-            </article>
-            <article class="transfer-card">
-              <div class="transfer-card__top"><div class="player-avatar"><img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=300&auto=format&fit=crop" alt="Player" /></div><div><h3>Joshua Zirkzee</h3><p>Bologna → Milan</p></div></div>
-              <div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>61%</strong></div><div class="bar"><span style="width:61%"></span></div></div>
-            </article>
-          </div>
+          <div class="transfer-board" id="transferBoard"></div>
         </div>
       </section>
+
+      <div class="container ad-slot-wrap in-content-ad">
+        <div class="ad-inner">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle" data-ad-placement="content" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+      </div>
 
       <section class="section" id="videos">
         <div class="container">
@@ -3221,14 +3181,7 @@
           <div class="table-wrap">
             <table class="fixture-table">
               <thead><tr><th>Waktu</th><th>Kompetisi</th><th>Home</th><th>Away</th><th>TV</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td><span class="time-badge">19.30</span></td><td><span class="league-badge">AFC Cup</span></td><td>Malaysia</td><td>Indonesia</td><td>Indosiar</td><td>Big Match</td></tr>
-                <tr><td><span class="time-badge">22.00</span></td><td><span class="league-badge">Premier League</span></td><td>Arsenal</td><td>Chelsea</td><td>Vidio</td><td>Live</td></tr>
-                <tr><td><span class="time-badge">23.45</span></td><td><span class="league-badge">Europa</span></td><td>Celta Vigo</td><td>Freiburg</td><td>beIN</td><td>Upcoming</td></tr>
-                <tr><td><span class="time-badge">23.45</span></td><td><span class="league-badge">Conference</span></td><td>AZ Alkmaar</td><td>Shakhtar</td><td>beIN</td><td>Upcoming</td></tr>
-                <tr><td><span class="time-badge">02.00</span></td><td><span class="league-badge">Champions</span></td><td>Bayern Munich</td><td>Real Madrid</td><td>beIN</td><td>Big Match</td></tr>
-                <tr><td><span class="time-badge">02.00</span></td><td><span class="league-badge">Champions</span></td><td>Arsenal</td><td>Sporting CP</td><td>beIN</td><td>Upcoming</td></tr>
-              </tbody>
+              <tbody id="fixturesBody"></tbody>
             </table>
           </div>
         </div>
@@ -3239,105 +3192,31 @@
           <div>
             <div class="section-head">
               <div><span class="eyebrow">Klasemen</span><h2 class="section-title">Papan atas liga</h2></div>
-              <p class="section-desc">Pilih liga untuk melihat posisi terbaru. Format dibuat ringkas agar tabel dan top scorers sejajar.</p>
+              <p class="section-desc">Data klasemen dikelola dari Admin Redaksi.</p>
             </div>
-            <div class="league-tabs" aria-label="Pilih klasemen liga">
-              <button class="league-tab active" data-league="epl">Premier League</button>
-              <button class="league-tab" data-league="laliga">La Liga</button>
-              <button class="league-tab" data-league="seriea">Serie A</button>
-              <button class="league-tab" data-league="bundesliga">Bundesliga</button>
-              <button class="league-tab" data-league="liga1">Liga 1</button>
-            </div>
-            <div class="table-wrap standings-panel active" data-standings="epl">
-              <table class="standings-table">
-                <thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead>
-                <tbody>
-                  <tr><td>1</td><td>Arsenal</td><td>32</td><td>+45</td><td>74</td><td>W W D W W</td></tr>
-                  <tr><td>2</td><td>Manchester City</td><td>31</td><td>+42</td><td>73</td><td>W W W D W</td></tr>
-                  <tr><td>3</td><td>Liverpool</td><td>32</td><td>+38</td><td>71</td><td>D W W L W</td></tr>
-                  <tr><td>4</td><td>Aston Villa</td><td>33</td><td>+18</td><td>63</td><td>W L W D W</td></tr>
-                  <tr><td>5</td><td>Tottenham</td><td>32</td><td>+16</td><td>60</td><td>L W D W L</td></tr>
-                  <tr><td>6</td><td>Manchester United</td><td>32</td><td>+4</td><td>56</td><td>W D L W D</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-wrap standings-panel" data-standings="laliga">
-              <table class="standings-table">
-                <thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead>
-                <tbody>
-                  <tr><td>1</td><td>Real Madrid</td><td>32</td><td>+51</td><td>78</td><td>W W W D W</td></tr>
-                  <tr><td>2</td><td>Barcelona</td><td>32</td><td>+41</td><td>72</td><td>W D W W W</td></tr>
-                  <tr><td>3</td><td>Girona</td><td>32</td><td>+30</td><td>68</td><td>L W W D W</td></tr>
-                  <tr><td>4</td><td>Atletico Madrid</td><td>32</td><td>+24</td><td>63</td><td>W L W W D</td></tr>
-                  <tr><td>5</td><td>Athletic Club</td><td>32</td><td>+19</td><td>59</td><td>D W L W D</td></tr>
-                  <tr><td>6</td><td>Real Sociedad</td><td>32</td><td>+11</td><td>53</td><td>W D L D W</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-wrap standings-panel" data-standings="seriea">
-              <table class="standings-table">
-                <thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead>
-                <tbody>
-                  <tr><td>1</td><td>Inter</td><td>32</td><td>+60</td><td>82</td><td>W W D W W</td></tr>
-                  <tr><td>2</td><td>AC Milan</td><td>32</td><td>+27</td><td>69</td><td>W W L W D</td></tr>
-                  <tr><td>3</td><td>Juventus</td><td>32</td><td>+21</td><td>63</td><td>D L W D W</td></tr>
-                  <tr><td>4</td><td>Bologna</td><td>32</td><td>+19</td><td>59</td><td>W D W L W</td></tr>
-                  <tr><td>5</td><td>Roma</td><td>32</td><td>+15</td><td>56</td><td>W W D L W</td></tr>
-                  <tr><td>6</td><td>Atalanta</td><td>31</td><td>+20</td><td>54</td><td>L W W D D</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-wrap standings-panel" data-standings="bundesliga">
-              <table class="standings-table">
-                <thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead>
-                <tbody>
-                  <tr><td>1</td><td>Leverkusen</td><td>30</td><td>+55</td><td>80</td><td>W W W D W</td></tr>
-                  <tr><td>2</td><td>Bayern Munich</td><td>30</td><td>+47</td><td>68</td><td>W L W W W</td></tr>
-                  <tr><td>3</td><td>Stuttgart</td><td>30</td><td>+32</td><td>63</td><td>D W W L W</td></tr>
-                  <tr><td>4</td><td>Leipzig</td><td>30</td><td>+31</td><td>59</td><td>W W D W L</td></tr>
-                  <tr><td>5</td><td>Dortmund</td><td>30</td><td>+25</td><td>57</td><td>L W D W W</td></tr>
-                  <tr><td>6</td><td>Frankfurt</td><td>30</td><td>+10</td><td>45</td><td>D L W D W</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-wrap standings-panel" data-standings="liga1">
-              <table class="standings-table">
-                <thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead>
-                <tbody>
-                  <tr><td>1</td><td>Borneo FC</td><td>30</td><td>+22</td><td>64</td><td>W W D W L</td></tr>
-                  <tr><td>2</td><td>Persib</td><td>30</td><td>+18</td><td>59</td><td>W D W W D</td></tr>
-                  <tr><td>3</td><td>Bali United</td><td>30</td><td>+15</td><td>56</td><td>L W W D W</td></tr>
-                  <tr><td>4</td><td>Madura United</td><td>30</td><td>+11</td><td>53</td><td>W L D W W</td></tr>
-                  <tr><td>5</td><td>PSIS</td><td>30</td><td>+8</td><td>50</td><td>D W L D W</td></tr>
-                  <tr><td>6</td><td>Persija</td><td>30</td><td>+5</td><td>47</td><td>W D D L W</td></tr>
-                </tbody>
-              </table>
-            </div>
+            <div class="league-tabs" id="leagueTabs" aria-label="Pilih klasemen liga"></div>
+            <div id="standingsPanels"></div>
           </div>
           <aside class="side-panel scorers-panel">
-            <div class="panel-head"><h2 class="panel-title">Top Scorers</h2><a class="panel-link" href="#">Detail</a></div>
-            <div class="editor-panel__body">
-              <article class="rank-story"><span class="rank-story__num">1</span><div><h4>Erling Haaland</h4><p>24 Gol • Man City</p></div></article>
-              <article class="rank-story"><span class="rank-story__num">2</span><div><h4>Kylian Mbappe</h4><p>23 Gol • Madrid</p></div></article>
-              <article class="rank-story"><span class="rank-story__num">3</span><div><h4>Harry Kane</h4><p>22 Gol • Bayern</p></div></article>
-              <article class="rank-story"><span class="rank-story__num">4</span><div><h4>Mohamed Salah</h4><p>20 Gol • Liverpool</p></div></article>
-              <article class="rank-story"><span class="rank-story__num">5</span><div><h4>Lautaro Martinez</h4><p>19 Gol • Inter</p></div></article>
-            </div>
+            <div class="panel-head"><h2 class="panel-title">Top Scorers</h2><span class="panel-link">Admin</span></div>
+            <div class="editor-panel__body" id="topScorersBody"></div>
           </aside>
         </div>
       </section>
+
+      <div class="container ad-slot-wrap in-content-ad">
+        <div class="ad-inner">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle" data-ad-placement="content" style="display:block" data-ad-client="ca-pub-REPLACE_ME" data-ad-slot="REPLACE_ME" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+      </div>
 
       <section class="section" id="editor-picks">
         <div class="container">
           <div class="section-head">
             <div><span class="eyebrow">Editor Picks</span><h2 class="section-title">Pilihan redaksi pekan ini</h2></div>
           </div>
-          <div class="news-grid" id="editorPicksGrid">
-            <article class="news-card" data-title="Sepak Bola Modern Lebih Cepat dari Sekadar Skor" data-category="Opini"><a class="news-card__image" href="#"><img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?q=80&w=900&auto=format&fit=crop" alt="Stadion" /></a><div class="news-card__body"><div class="news-card__cat">Opini</div><h3>Sepak Bola Modern Lebih Cepat dari Sekadar Skor</h3><p>Membaca pertandingan kini butuh data, konteks, dan pemahaman ruang.</p><div class="news-card__meta"><span>Opini</span><span>8 min</span></div></div></article>
-            <article class="news-card" data-title="Mengapa Akademi Harus Jadi Pusat Investasi Klub" data-category="Insight"><a class="news-card__image" href="#"><img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?q=80&w=900&auto=format&fit=crop" alt="Latihan" /></a><div class="news-card__body"><div class="news-card__cat">Insight</div><h3>Mengapa Akademi Harus Jadi Pusat Investasi Klub</h3><p>Pemain muda bukan hanya aset masa depan, tapi fondasi identitas klub.</p><div class="news-card__meta"><span>Insight</span><span>6 min</span></div></div></article>
-            <article class="news-card" data-title="Era Baru Timnas dan Standar Kompetisi" data-category="Feature"><a class="news-card__image" href="#"><img src="https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=900&auto=format&fit=crop" alt="Tim" /></a><div class="news-card__body"><div class="news-card__cat">Feature</div><h3>Era Baru Timnas dan Standar Kompetisi</h3><p>Kenaikan kualitas skuad harus diikuti ekosistem kompetisi yang sehat.</p><div class="news-card__meta"><span>Feature</span><span>7 min</span></div></div></article>
-            <article class="news-card" data-title="Transfer Mahal Tidak Selalu Menjamin Dominasi" data-category="Analisis"><a class="news-card__image" href="#"><img src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=900&auto=format&fit=crop" alt="Pemain" /></a><div class="news-card__body"><div class="news-card__cat">Analisis</div><h3>Transfer Mahal Tidak Selalu Menjamin Dominasi</h3><p>Skema, adaptasi, dan kultur ruang ganti sering lebih menentukan.</p><div class="news-card__meta"><span>Analisis</span><span>9 min</span></div></div></article>
-          </div>
+          <div class="news-grid" id="editorPicksGrid"></div>
         </div>
       </section>
 
@@ -3411,6 +3290,26 @@
     const SUPABASE_URL = "https://tnaehvirowknfsjdsrer.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_1bbk42A04hdCCh1CBFTK1A_zES8rBia";
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const ADSENSE_CLIENT = "ca-pub-REPLACE_ME";
+    const ADSENSE_SLOTS = { top: "REPLACE_ME", sidebar: "REPLACE_ME", content: "REPLACE_ME" };
+
+    function initAdsense(){
+      if (!ADSENSE_CLIENT || ADSENSE_CLIENT.includes("REPLACE_ME")) return;
+      const script=document.createElement("script");
+      script.async=true;
+      script.src=`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+      script.crossOrigin="anonymous";
+      document.head.appendChild(script);
+      document.querySelectorAll(".adsbygoogle").forEach(ad=>{
+        const placement=ad.dataset.adPlacement || "content";
+        const slot=ADSENSE_SLOTS[placement];
+        if(!slot || slot.includes("REPLACE_ME")) return;
+        ad.setAttribute("data-ad-client",ADSENSE_CLIENT);
+        ad.setAttribute("data-ad-slot",slot);
+        try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
+      });
+    }
+    document.addEventListener("DOMContentLoaded", initAdsense);
 
     const FALLBACK_IMG = "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1200&auto=format&fit=crop";
 
@@ -3456,6 +3355,120 @@
 
     // ================== STATE ==================
     let ARTICLES = [];
+
+    let HOMEPAGE = {
+      scores: [],
+      trending: [],
+      editor_picks: [],
+      transfer: [],
+      fixtures: [],
+      standings: [],
+      top_scorers: []
+    };
+
+    function homepageRows(section){
+      return (HOMEPAGE[section] || []).slice().sort((a,b) => (Number(a.sort_order)||0) - (Number(b.sort_order)||0));
+    }
+
+    function updateBreakingTime(){
+      const el = document.getElementById('breakingTime');
+      if (!el || !ARTICLES.length) return;
+      const latest = ARTICLES[0];
+      el.textContent = 'Update ' + timeAgo(latest.published_at || latest.created_at);
+    }
+
+    function renderHomepageScores(){
+      const wrap = document.getElementById('liveScoreList');
+      if (!wrap) return;
+      const rows = homepageRows('scores');
+      wrap.innerHTML = rows.length ? rows.slice(0,4).map(r => {
+        const p = r.payload || {};
+        return `<article class="score-card">
+          <div class="score-card__top"><span>${safeText(p.league || 'Match')}</span><span class="score-live">${safeText(p.status || '')}</span></div>
+          <div class="score-row"><span>${safeText(p.home || '')}</span><strong>${safeText(p.home_score ?? '-')}</strong></div>
+          <div class="score-row"><span>${safeText(p.away || '')}</span><strong>${safeText(p.away_score ?? '-')}</strong></div>
+        </article>`;
+      }).join('') : '<div style="padding:18px;color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.12em">Belum ada skor.</div>';
+    }
+
+    function renderHomepageTrending(){
+      const wrap = document.getElementById('trendTags');
+      if (!wrap) return;
+      const rows = homepageRows('trending');
+      wrap.innerHTML = rows.length ? rows.slice(0,8).map(r => {
+        const p = r.payload || {};
+        const href = p.href || '#latest-news';
+        return `<a href="${safeText(href)}">#${safeText(p.tag || '')}</a>`;
+      }).join('') : '<span style="color:#777;font-size:11px">Belum ada trending.</span>';
+    }
+
+    function editorPickArticle(p){
+      if (p.article_id) return ARTICLES.find(a => a.id === p.article_id) || null;
+      if (p.slug) return ARTICLES.find(a => a.slug === p.slug) || null;
+      return null;
+    }
+
+    function renderHomepageEditorPicks(){
+      const sidebar = document.getElementById('editorPicksSidebarBody');
+      const grid = document.getElementById('editorPicksGrid');
+      const rows = homepageRows('editor_picks');
+      if (sidebar) {
+        sidebar.innerHTML = rows.slice(0,3).map((r,i) => {
+          const p=r.payload||{}, a=editorPickArticle(p), href=a?articleHref(a):(p.href||'#');
+          return `<article class="rank-story"><span class="rank-story__num">${i+1}</span><div><h4><a href="${safeText(href)}">${safeText(p.title || a?.title || 'Editor Pick')}</a></h4><p>${safeText(p.category || a?.category || 'Redaksi')} • ${safeText(p.minutes || readTime(a?.content||''))} min read</p></div></article>`;
+        }).join('') || '<div style="padding:18px;color:#777;font-size:11px">Belum ada Editor Picks.</div>';
+      }
+      if (grid) {
+        grid.innerHTML = rows.slice(0,4).map(r => {
+          const p=r.payload||{}, a=editorPickArticle(p), base=a||{};
+          const href=a?articleHref(a):(p.href||'#');
+          return `<article class="news-card">
+            <a class="news-card__image" href="${safeText(href)}"><img src="${safeText(p.image_url || base.image_url || FALLBACK_IMG)}" alt="${safeText(p.title || base.title || '')}" loading="lazy" /></a>
+            <div class="news-card__body"><div class="news-card__cat">${safeText(p.category || base.category || 'Editor Pick')}</div><h3><a href="${safeText(href)}">${safeText(p.title || base.title || 'Editor Pick')}</a></h3><p>${safeText(p.excerpt || base.excerpt || '')}</p><div class="news-card__meta"><span>${safeText(p.minutes || readTime(base.content||''))} min</span><span>Editor Pick</span></div></div>
+          </article>`;
+        }).join('') || '<div style="grid-column:1/-1;padding:30px;color:#777;text-align:center">Belum ada pilihan redaksi.</div>';
+      }
+    }
+
+    function renderHomepageTransfers(){
+      const wrap=document.getElementById('transferBoard'); if(!wrap) return;
+      const rows=homepageRows('transfer');
+      wrap.innerHTML=rows.map(r=>{const p=r.payload||{}, prob=Math.max(0,Math.min(100,Number(p.probability)||0)); return `<article class="transfer-card"><div class="transfer-card__top"><div class="player-avatar">${p.image_url?`<img src="${safeText(p.image_url)}" alt="${safeText(p.player||'Player')}" />`:''}</div><div><h3>${safeText(p.player||'Pemain')}</h3><p>${safeText(p.from_team||'')} → ${safeText(p.to_team||'')}</p></div></div><div class="probability"><div class="probability__label"><span>Probabilitas</span><strong>${prob}%</strong></div><div class="bar"><span style="width:${prob}%"></span></div></div></article>`}).join('') || '<div style="grid-column:1/-1;padding:30px;color:#777;text-align:center">Belum ada rumor transfer.</div>';
+    }
+
+    function renderHomepageFixtures(){
+      const body=document.getElementById('fixturesBody'); if(!body) return;
+      const rows=homepageRows('fixtures');
+      body.innerHTML=rows.map(r=>{const p=r.payload||{}; return `<tr><td><span class="time-badge">${safeText(p.time||'—')}</span></td><td><span class="league-badge">${safeText(p.competition||'—')}</span></td><td>${safeText(p.home||'—')}</td><td>${safeText(p.away||'—')}</td><td>${safeText(p.tv||'—')}</td><td>${safeText(p.status||'Upcoming')}</td></tr>`}).join('') || '<tr><td colspan="6" style="text-align:center;color:#777;padding:30px">Belum ada jadwal.</td></tr>';
+    }
+
+    function renderHomepageStandings(){
+      const tabs=document.getElementById('leagueTabs'), panels=document.getElementById('standingsPanels'); if(!tabs||!panels) return;
+      const rows=homepageRows('standings');
+      const leagues=[...new Set(rows.map(r=>r.payload?.league).filter(Boolean))];
+      tabs.innerHTML=leagues.map((l,i)=>`<button class="league-tab ${i===0?'active':''}" data-league="${safeText(slugFilter(l))}">${safeText(l)}</button>`).join('');
+      panels.innerHTML=leagues.map((league,i)=>{
+        const items=rows.filter(r=>(r.payload?.league||'')===league);
+        return `<div class="table-wrap standings-panel ${i===0?'active':''}" data-standings="${safeText(slugFilter(league))}"><table class="standings-table"><thead><tr><th>Pos</th><th>Klub</th><th>Main</th><th>GD</th><th>Poin</th><th>Form</th></tr></thead><tbody>${items.map(r=>{const p=r.payload||{};return `<tr><td>${safeText(p.position??'')}</td><td>${safeText(p.team||'')}</td><td>${safeText(p.played??'')}</td><td>${safeText(p.gd??'')}</td><td>${safeText(p.points??'')}</td><td>${safeText(p.form||'')}</td></tr>`}).join('')}</tbody></table></div>`;
+      }).join('') || '<div style="padding:30px;color:#777">Belum ada data klasemen.</div>';
+      tabs.querySelectorAll('.league-tab').forEach(btn=>btn.addEventListener('click',()=>{tabs.querySelectorAll('.league-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');panels.querySelectorAll('.standings-panel').forEach(p=>p.classList.toggle('active',p.dataset.standings===btn.dataset.league));}));
+    }
+
+    function renderHomepageScorers(){
+      const wrap=document.getElementById('topScorersBody'); if(!wrap) return;
+      const rows=homepageRows('top_scorers');
+      wrap.innerHTML=rows.slice(0,8).map((r,i)=>{const p=r.payload||{};return `<article class="rank-story"><span class="rank-story__num">${i+1}</span><div><h4>${safeText(p.player||'Pemain')}</h4><p>${safeText(p.goals??0)} Gol • ${safeText(p.team||'—')}</p></div></article>`}).join('') || '<div style="padding:18px;color:#777;font-size:11px">Belum ada top scorer.</div>';
+    }
+
+    function renderHomepageMatchCenter(){
+      const wrap=document.getElementById('matchCenterList'); if(!wrap) return;
+      const rows=homepageRows('scores');
+      wrap.innerHTML=rows.slice(0,8).map(r=>{const p=r.payload||{};return `<article class="match-card"><div class="match-card__comp"><span>${safeText(p.league||'Match')}</span><span>${safeText(p.status||'')}</span></div><div class="team-row"><span>${safeText(p.home||'')}</span><span class="team-score">${safeText(p.home_score??'-')}</span></div><div class="team-row"><span>${safeText(p.away||'')}</span><span class="team-score">${safeText(p.away_score??'-')}</span></div><div class="match-status"><span>${safeText(p.status||'')}</span><span>${safeText(p.note||'')}</span></div></article>`}).join('') || '<div style="padding:30px;color:#777">Belum ada data pertandingan.</div>';
+    }
+
+    function renderAllHomepage(){
+      renderHomepageScores(); renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderHomepageScorers(); renderHomepageMatchCenter();
+    }
 
     // ================== RENDER: HERO ==================
     function renderHero(articles) {
@@ -3706,6 +3719,17 @@
       renderEditorPicksSection(ARTICLES);
       renderTimnasHub(ARTICLES);
       buildSearchIndex(ARTICLES);
+      updateBreakingTime();
+      await loadHomepageContent();
+      setInterval(updateBreakingTime, 30000);
+    }
+
+    async function loadHomepageContent(){
+      const { data, error } = await db.from('homepage_content').select('*').eq('is_active', true).order('section').order('sort_order');
+      if(error){ console.error('Gagal memuat homepage_content:', error); return; }
+      HOMEPAGE = {scores:[],trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],top_scorers:[]};
+      (data||[]).forEach(row=>{ if(HOMEPAGE[row.section]) HOMEPAGE[row.section].push(row); });
+      renderAllHomepage();
     }
 
     document.addEventListener("DOMContentLoaded", loadSiteData);
@@ -3722,8 +3746,6 @@
     const toTop = document.getElementById('toTop');
     const newsletterForm = document.getElementById('newsletterForm');
     const scrollButtons = document.querySelectorAll('[data-scroll]');
-    const leagueTabs = document.querySelectorAll('.league-tab');
-    const standingsPanels = document.querySelectorAll('.standings-panel');
 
     function openMobileMenu() {
       mobileMenu.classList.add('open');
@@ -3763,17 +3785,6 @@
         closeMobileMenu();
         closeSearchModal();
       }
-    });
-
-    leagueTabs.forEach((button) => {
-      button.addEventListener('click', () => {
-        const league = button.dataset.league;
-        leagueTabs.forEach((btn) => btn.classList.remove('active'));
-        button.classList.add('active');
-        standingsPanels.forEach((panel) => {
-          panel.classList.toggle('active', panel.dataset.standings === league);
-        });
-      });
     });
 
     scrollButtons.forEach((button) => {
