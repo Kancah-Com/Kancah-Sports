@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -235,6 +236,27 @@
   .toggle-row{display:flex;align-items:center;gap:10px;background:#0b0b0b;border:1px solid var(--line);border-radius:10px;padding:12px 13px;}
   .toggle-row select{flex:1;background:transparent;border:0;padding:0;outline:none;}
 
+
+  /* ---------- HOMEPAGE CONTENT ---------- */
+  .home-manager{display:none}
+  .home-manager.show{display:block}
+  .content-manager{display:grid;grid-template-columns:1fr 1.05fr;gap:16px}
+  .manager-list,.manager-form{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 16px;border-bottom:1px solid var(--line)}
+  .manager-head h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  .manager-toolbar{padding:12px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+  .manager-toolbar select{flex:1;background:#0b0b0b;border:1px solid var(--line);border-radius:9px;padding:9px;color:#fff}
+  .manager-items{max-height:600px;overflow:auto}
+  .manager-item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .manager-item:hover,.manager-item.active{background:rgba(255,77,0,.07)}
+  .manager-item:last-child{border-bottom:0}
+  .manager-order{width:28px;height:28px;border-radius:8px;background:#0b0b0b;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--orange);flex:0 0 auto}
+  .manager-copy{min-width:0;flex:1}.manager-copy strong{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.manager-copy small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+  .manager-form-body{padding:18px;display:grid;gap:12px}
+  .json-hint{font-size:10px;color:#777;line-height:1.5}
+  .home-manager .field textarea{min-height:180px;font-family:var(--mono);font-size:11px}
+  @media(max-width:1100px){.content-manager{grid-template-columns:1fr}}
+
   /* ---------- CONFIRM MODAL ---------- */
   .confirm-box{
     position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:301;
@@ -322,6 +344,10 @@
       <div class="nav-item active" data-view="articles">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
         Artikel
+      </div>
+      <div class="nav-item" data-view="homepage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
+        Homepage
       </div>
       <div class="nav-item" data-view="draft">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -425,6 +451,42 @@
           </div>
         </div>
       </div>
+
+      <section class="home-manager" id="homeManager">
+        <div class="topbar" style="margin-top:8px;">
+          <div><span class="eyebrow">Homepage Dinamis</span><h2 style="font-size:20px;text-transform:uppercase">Kelola Klasemen, Skor, Transfer &amp; Editor Picks</h2></div>
+          <button class="btn btn-primary" id="newHomeBtn">+ Konten Baru</button>
+        </div>
+        <div class="content-manager">
+          <div class="manager-list">
+            <div class="manager-head"><h2>Data Homepage</h2><span class="date-text" id="homeCount">0 item</span></div>
+            <div class="manager-toolbar">
+              <select id="homeSectionFilter">
+                <option value="">Semua Section</option>
+                <option value="scores">Live Score</option>
+                <option value="trending">Trending</option>
+                <option value="editor_picks">Editor Picks</option>
+                <option value="transfer">Transfer</option>
+                <option value="fixtures">Jadwal</option>
+                <option value="standings">Klasemen</option>
+                <option value="top_scorers">Top Scorers</option>
+              </select>
+            </div>
+            <div class="manager-items" id="homeItems"><div class="empty-state">Memuat…</div></div>
+          </div>
+          <div class="manager-form">
+            <div class="manager-head"><div><h2 id="homeFormTitle">Tambah Konten</h2><p class="json-hint" id="homeFormHint">Pilih section lalu isi data. Semua perubahan tampil di homepage setelah disimpan.</p></div><button class="icon-btn" id="homeClearBtn" title="Bersihkan">×</button></div>
+            <div class="manager-form-body">
+              <input type="hidden" id="home_id">
+              <div class="field"><label>Section</label><select id="home_section"><option value="scores">Live Score</option><option value="trending">Trending</option><option value="editor_picks">Editor Picks</option><option value="transfer">Transfer</option><option value="fixtures">Jadwal</option><option value="standings">Klasemen</option><option value="top_scorers">Top Scorers</option></select></div>
+              <div class="form-row"><div class="field"><label>Urutan</label><input type="number" id="home_sort_order" value="0" min="0"></div><div class="field"><label>Aktif</label><select id="home_active"><option value="true">Ya</option><option value="false">Tidak</option></select></div></div>
+              <div class="field"><label>Data (JSON)</label><textarea id="home_payload" spellcheck="false"></textarea></div>
+              <div class="json-hint">Contoh akan otomatis muncul sesuai section. Kamu cukup edit nama tim/pemain, angka, judul, URL gambar, probabilitas, dan sebagainya.</div>
+              <div style="display:flex;gap:10px;"><button class="btn btn-ghost" id="homeCancelBtn" style="flex:1">Batal</button><button class="btn btn-primary" id="homeSaveBtn" style="flex:1">Simpan</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -583,7 +645,8 @@
       sort: "created_desc",
       view: "articles",
       total: 0,
-      editingId: null
+      editingId: null,
+      homeEditingId: null
     };
 
     // ---------- AUTH ----------
@@ -636,6 +699,8 @@
       loadCategories();
       loadStats();
       loadArticles();
+      loadHomepageManager();
+      document.getElementById('homeManager').classList.remove('show');
     }
 
     initAuth();
@@ -820,6 +885,81 @@
     document.getElementById('sortFilter').addEventListener('change', (e) => { state.sort = e.target.value; state.page = 0; loadArticles(); });
     document.getElementById('refreshBtn').addEventListener('click', () => { loadArticles(); loadStats(); loadCategories(); });
 
+
+    // ---------- HOMEPAGE MANAGER ----------
+    const HOME_SECTIONS = ['scores','trending','editor_picks','transfer','fixtures','standings','top_scorers'];
+    const HOME_EXAMPLES = {
+      scores:{league:'Premier League',status:"72'",home:'Man City',home_score:3,away:'Spurs',away_score:2,note:'Live'},
+      trending:{tag:'Timnas',href:'#latest-news'},
+      editor_picks:{title:'Judul Editor Pick',category:'Analisis',excerpt:'Ringkasan singkat.',minutes:6,href:'#'},
+      transfer:{player:'Nama Pemain',from_team:'Klub A',to_team:'Klub B',probability:65,image_url:''},
+      fixtures:{time:'19.30',competition:'Premier League',home:'Arsenal',away:'Chelsea',tv:'Vidio',status:'Upcoming'},
+      standings:{league:'Premier League',position:1,team:'Arsenal',played:32,gd:'+45',points:74,form:'W W D W W'},
+      top_scorers:{player:'Nama Pemain',team:'Klub',goals:20,image_url:''}
+    };
+
+    function setHomeExample(){
+      const section=document.getElementById('home_section').value;
+      const payload=document.getElementById('home_payload');
+      if(!payload.value.trim() || state.homeEditingId===null) payload.value=JSON.stringify(HOME_EXAMPLES[section]||{},null,2);
+      document.getElementById('homeFormHint').textContent='Format data: '+section+'. Edit JSON sesuai kebutuhan lalu simpan.';
+    }
+
+    async function loadHomepageManager(){
+      const box=document.getElementById('homeItems'); if(!box) return;
+      let query=db.from('homepage_content').select('*').order('section').order('sort_order');
+      const filter=document.getElementById('homeSectionFilter')?.value;
+      if(filter) query=query.eq('section',filter);
+      const {data,error}=await query;
+      if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal memuat</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
+      document.getElementById('homeCount').textContent=`${(data||[]).length} item`;
+      box.innerHTML=(data||[]).map(row=>{const p=row.payload||{}; const label=p.title||p.player||p.team||p.tag||`${p.home||''} vs ${p.away||''}`||row.section; return `<div class="manager-item" data-home-id="${row.id}"><span class="manager-order">${row.sort_order}</span><div class="manager-copy"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(row.section)} · ${row.is_active?'Aktif':'Nonaktif'}</small></div><button class="icon-btn danger" title="Hapus" onclick="deleteHomeItem(event,'${row.id}')">×</button></div>`}).join('') || '<div class="empty-state"><h3>Belum Ada Data</h3><p>Tambahkan data dinamis homepage.</p></div>';
+      box.querySelectorAll('.manager-item').forEach(el=>el.addEventListener('click',()=>openHomeEdit(el.dataset.homeId)));
+    }
+
+    async function openHomeEdit(id){
+      const {data,error}=await db.from('homepage_content').select('*').eq('id',id).single();
+      if(error){toast('Gagal memuat konten: '+error.message,'error');return;}
+      state.homeEditingId=id;
+      document.getElementById('home_id').value=id;
+      document.getElementById('home_section').value=data.section;
+      document.getElementById('home_sort_order').value=data.sort_order??0;
+      document.getElementById('home_active').value=String(data.is_active!==false);
+      document.getElementById('home_payload').value=JSON.stringify(data.payload||{},null,2);
+      document.getElementById('homeFormTitle').textContent='Edit '+data.section;
+      document.querySelectorAll('.manager-item').forEach(x=>x.classList.toggle('active',x.dataset.homeId===id));
+    }
+    window.openHomeEdit=openHomeEdit;
+
+    function clearHomeForm(){
+      state.homeEditingId=null; document.getElementById('home_id').value=''; document.getElementById('home_sort_order').value='0'; document.getElementById('home_active').value='true'; document.getElementById('home_section').value='scores'; document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES.scores,null,2); document.getElementById('homeFormTitle').textContent='Tambah Konten'; document.querySelectorAll('.manager-item').forEach(x=>x.classList.remove('active')); setHomeExample();
+    }
+
+    async function saveHomeItem(){
+      const section=document.getElementById('home_section').value;
+      let payload;
+      try{payload=JSON.parse(document.getElementById('home_payload').value||'{}');}catch(e){toast('JSON tidak valid. Periksa tanda kurung/koma.','error');return;}
+      const row={section,sort_order:Number(document.getElementById('home_sort_order').value)||0,is_active:document.getElementById('home_active').value==='true',payload,updated_at:new Date().toISOString()};
+      let result=state.homeEditingId?await db.from('homepage_content').update(row).eq('id',state.homeEditingId):await db.from('homepage_content').insert(row);
+      if(result.error){toast('Gagal menyimpan: '+result.error.message,'error');return;}
+      toast(state.homeEditingId?'Konten homepage diperbarui':'Konten homepage ditambahkan'); clearHomeForm(); loadHomepageManager();
+    }
+
+    async function deleteHomeItem(event,id){
+      event.stopPropagation(); if(!confirm('Hapus konten homepage ini?')) return;
+      const {error}=await db.from('homepage_content').delete().eq('id',id);
+      if(error){toast('Gagal menghapus: '+error.message,'error');return;}
+      toast('Konten homepage dihapus'); clearHomeForm(); loadHomepageManager();
+    }
+    window.deleteHomeItem=deleteHomeItem;
+    document.getElementById('newHomeBtn')?.addEventListener('click',clearHomeForm);
+    document.getElementById('homeClearBtn')?.addEventListener('click',clearHomeForm);
+    document.getElementById('homeCancelBtn')?.addEventListener('click',clearHomeForm);
+    document.getElementById('homeSaveBtn')?.addEventListener('click',saveHomeItem);
+    document.getElementById('homeSectionFilter')?.addEventListener('change',loadHomepageManager);
+    document.getElementById('home_section')?.addEventListener('change',()=>{document.getElementById('home_payload').value=JSON.stringify(HOME_EXAMPLES[document.getElementById('home_section').value]||{},null,2);});
+    clearHomeForm();
+
     // ---------- NAV ----------
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', () => {
@@ -827,9 +967,14 @@
         item.classList.add('active');
         state.view = item.dataset.view;
         state.page = 0;
-        document.getElementById('viewTitle').textContent = state.view === 'draft' ? 'Draft Artikel' : 'Semua Artikel';
-        document.getElementById('viewEyebrow').textContent = state.view === 'draft' ? 'Belum Terbit' : 'Kelola Konten';
-        loadArticles();
+        const isHome = state.view === 'homepage';
+        document.getElementById('homeManager').classList.toggle('show', isHome);
+        document.querySelector('.toolbar').style.display = isHome ? 'none' : '';
+        document.querySelector('.table-wrap').style.display = isHome ? 'none' : '';
+        document.getElementById('newArticleBtn').style.display = isHome ? 'none' : '';
+        document.getElementById('viewTitle').textContent = isHome ? 'Homepage Dinamis' : (state.view === 'draft' ? 'Draft Artikel' : 'Semua Artikel');
+        document.getElementById('viewEyebrow').textContent = isHome ? 'Klasemen · Transfer · Editor Picks' : (state.view === 'draft' ? 'Belum Terbit' : 'Kelola Konten');
+        if(isHome) loadHomepageManager(); else loadArticles();
       });
     });
 
