@@ -3996,13 +3996,28 @@
     }
 
     function fixtureLabelStatus(f){
-      const st=(f.status || f.status_short || '').toUpperCase();
-      if(['LIVE','1H','2H','ET','P','BT'].includes(st)) return 'LIVE';
-      if(st==='HT') return 'HALF TIME';
-      if(['FINISHED','FT','AET','PEN'].includes(st)) return 'SELESAI';
-      if(['POSTPONED','PST','CANC','ABD','AWD','WO'].includes(st)) return 'DITUNDA';
-      return 'Akan Datang';
-    }
+  const st = String(
+    f.status_short || f.status || ''
+  ).toUpperCase();
+
+  if(['LIVE','1H','2H','ET','P','BT'].includes(st)){
+    return 'LIVE';
+  }
+
+  if(st === 'HT'){
+    return 'HALF TIME';
+  }
+
+  if(['FT','FINISHED','AET','PEN'].includes(st)){
+    return 'SELESAI';
+  }
+
+  if(['PST','POSTPONED','CANC','CANCELLED','ABD','AWD','WO'].includes(st)){
+    return 'DITUNDA';
+  }
+
+  return 'Akan Datang';
+}
     function teamChip(name,logo){return `<span class="fixture-team">${logo?`<img src="${safeText(logo)}" alt="">`:''}<span class="fixture-team__name">${safeText(name||'—')}</span></span>`;}
     function fixtureDateTime(f){
       const d=new Date(f.fixture_date);
@@ -4010,9 +4025,127 @@
       return {date:d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'}),time:d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',hour12:false})};
     }
     function renderHomepageFixtures(){
-      const body=document.getElementById('fixturesBody'); if(!body) return;
-      body.innerHTML=FIXTURES.map(f=>{const dt=fixtureDateTime(f); const score=f.home_score!==null&&f.home_score!==undefined&&f.away_score!==null&&f.away_score!==undefined?`<small style="display:block;color:#ff4d00;margin-top:3px;font-weight:800">${safeText(f.home_score)} - ${safeText(f.away_score)}</small>`:''; return `<tr><td><span class="time-badge">${safeText(dt.time)}</span></td><td><span class="league-badge">${safeText(f.league_name||'—')}</span><small style="display:block;color:#777;margin-top:3px">${safeText(dt.date)} · Pekan ${safeText(f.week||'—')}</small></td><td>${teamChip(f.home_team_name,f.home_team_logo)}${score}</td><td>${teamChip(f.away_team_name,f.away_team_logo)}</td><td>${safeText(f.venue||f.timezone||'WIB')}</td><td>${safeText(fixtureLabelStatus(f))}</td></tr>`}).join('') || '<tr><td colspan="6" style="text-align:center;color:#777;padding:30px">Belum ada jadwal pertandingan.</td></tr>';
-    }
+  const body = document.getElementById('fixturesBody');
+  if(!body) return;
+
+  body.innerHTML = FIXTURES.map(f => {
+    const dt = fixtureDateTime(f);
+
+    const st = String(
+      f.status_short || f.status || ''
+    ).toUpperCase();
+
+    const isLive =
+      f.is_live === true ||
+      ['LIVE','1H','2H','ET','P','BT'].includes(st);
+
+    const scoreAvailable =
+      f.home_score !== null &&
+      f.home_score !== undefined &&
+      f.away_score !== null &&
+      f.away_score !== undefined;
+
+    const score = scoreAvailable
+      ? `<small style="
+          display:block;
+          color:#ff4d00;
+          margin-top:3px;
+          font-weight:800;
+        ">${safeText(f.home_score)} - ${safeText(f.away_score)}</small>`
+      : '';
+
+    const liveMinute =
+      isLive && f.elapsed !== null && f.elapsed !== undefined
+        ? `<small style="
+            display:block;
+            color:#ff4d00;
+            margin-top:2px;
+            font-weight:800;
+          ">${safeText(f.elapsed)}'</small>`
+        : '';
+
+    const statusHtml = isLive
+      ? `<span style="
+          display:inline-flex;
+          align-items:center;
+          gap:5px;
+          color:#e53935;
+          font-weight:800;
+        ">
+          <span style="
+            width:7px;
+            height:7px;
+            border-radius:50%;
+            background:#e53935;
+            display:inline-block;
+          "></span>
+          LIVE${f.elapsed !== null && f.elapsed !== undefined ? ` ${safeText(f.elapsed)}'` : ''}
+        </span>`
+      : safeText(fixtureLabelStatus(f));
+
+    return `
+      <tr>
+        <td>
+          <span class="time-badge">
+            ${safeText(dt.time)}
+          </span>
+        </td>
+
+        <td>
+          <span class="league-badge">
+            ${safeText(f.league_name || '—')}
+          </span>
+
+          <small style="
+            display:block;
+            color:#777;
+            margin-top:3px;
+          ">
+            ${safeText(dt.date)}
+          </small>
+        </td>
+
+        <td>
+          ${teamChip(
+            f.home_team_name,
+            f.home_team_logo
+          )}
+          ${score}
+          ${isLive ? liveMinute : ''}
+        </td>
+
+        <td>
+          ${teamChip(
+            f.away_team_name,
+            f.away_team_logo
+          )}
+        </td>
+
+        <td>
+          ${safeText(
+            f.venue ||
+            f.venue_city ||
+            'WIB'
+          )}
+        </td>
+
+        <td>
+          ${statusHtml}
+        </td>
+      </tr>
+    `;
+  }).join('') || `
+    <tr>
+      <td colspan="6" style="
+        text-align:center;
+        color:#777;
+        padding:30px;
+      ">
+        Belum ada jadwal pertandingan hari ini.
+      </td>
+    </tr>
+  `;
+}
 
     function renderHomepageStandings(){
       const tabs=document.getElementById('leagueTabs'), panels=document.getElementById('standingsPanels'); if(!tabs||!panels) return;
@@ -4327,20 +4460,101 @@
     }
 
     async function loadHomepageContent(){
-      const from=new Date(Date.now()-2*86400000).toISOString();
-      const to=new Date(Date.now()+8*86400000).toISOString();
-      const [{data,error},{data:leagues,error:leagueError},{data:teams,error:teamError},{data:fixtures,error:fixtureError}]=await Promise.all([
-        db.from('homepage_content').select('*').eq('is_active',true).neq('section','fixtures').order('section').order('sort_order'),
-        db.from('sports_leagues').select('*').eq('is_active',true).order('name'),
-        db.from('sports_teams').select('*').eq('is_active',true).order('name'),
-        db.from('sports_fixtures').select('*').gte('fixture_date',from).lte('fixture_date',to).order('fixture_date',{ascending:true}).limit(100)
-      ]);
-      if(error) console.error('Gagal memuat homepage_content:',error);
-      if(leagueError||teamError||fixtureError){console.error('Gagal memuat data olahraga:',leagueError||teamError||fixtureError);FIXTURES=[];}else{const leagueMap=new Map((leagues||[]).map(x=>[String(x.id),x]));const teamMap=new Map((teams||[]).map(x=>[String(x.id),x]));FIXTURES=(fixtures||[]).map(f=>{const l=leagueMap.get(String(f.league_id))||{};const h=teamMap.get(String(f.home_team_id))||{};const a=teamMap.get(String(f.away_team_id))||{};return {...f,league_name:l.name||'—',home_team_name:h.name||'—',home_team_logo:h.logo_url||'',away_team_name:a.name||'—',away_team_logo:a.logo_url||''};});}
-      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],video:[]};
-      (data||[]).forEach(row=>{if(HOMEPAGE[row.section])HOMEPAGE[row.section].push(row);});
-      renderAllHomepage();
+  const now = new Date();
+
+  // Jadwal pertandingan HANYA berasal dari API-Football
+  // melalui tabel football_matches.
+  const startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0, 0, 0, 0
+  );
+
+  const endOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23, 59, 59, 999
+  );
+
+  const [
+    { data, error },
+    { data: fixtures, error: fixtureError }
+  ] = await Promise.all([
+    db
+      .from('homepage_content')
+      .select('*')
+      .eq('is_active', true)
+      .neq('section', 'fixtures')
+      .order('section')
+      .order('sort_order'),
+
+    db
+      .from('football_matches')
+      .select('*')
+      .gte('match_date', startOfDay.toISOString())
+      .lte('match_date', endOfDay.toISOString())
+      .order('match_date', { ascending: true })
+      .limit(100)
+  ]);
+
+  if(error){
+    console.error('Gagal memuat homepage_content:', error);
+  }
+
+  if(fixtureError){
+    console.error('Gagal memuat football_matches:', fixtureError);
+    FIXTURES = [];
+  }else{
+    FIXTURES = (fixtures || []).map(f => ({
+      ...f,
+
+      // Adapter untuk renderer fixture yang sudah ada.
+      fixture_date: f.match_date,
+
+      league_name: f.league_name || '—',
+
+      home_team_name: f.home_team_name || '—',
+      home_team_logo: f.home_team_logo || '',
+
+      away_team_name: f.away_team_name || '—',
+      away_team_logo: f.away_team_logo || '',
+
+      home_score: f.home_goals ?? null,
+      away_score: f.away_goals ?? null,
+
+      venue: f.venue_name || f.venue_city || '',
+
+      timezone: 'WIB',
+
+      status: f.status_short || '',
+      status_short: f.status_short || '',
+
+      elapsed: f.elapsed ?? null,
+
+      is_live: f.is_live === true,
+      is_finished: f.is_finished === true
+    }));
+  }
+
+  HOMEPAGE = {
+    trending: [],
+    editor_picks: [],
+    transfer: [],
+    fixtures: [],
+    standings: [],
+    video: []
+  };
+
+  (data || []).forEach(row => {
+    if(HOMEPAGE[row.section]){
+      HOMEPAGE[row.section].push(row);
     }
+  });
+
+  renderAllHomepage();
+}
 
     document.addEventListener("DOMContentLoaded", loadSiteData);
 
