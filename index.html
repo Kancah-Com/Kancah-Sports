@@ -4067,6 +4067,109 @@
       }).join('')||`<tr><td colspan="6" style="text-align:center;color:#777;padding:30px;">Belum ada jadwal pertandingan hari ini.</td></tr>`;
     }
 
+    // ================== RENDER: SCHEDULE STRIP (bawah navbar) ==================
+    function renderScheduleStrip(){
+      const list = document.getElementById('scheduleStripList');
+      if(!list) return;
+
+      if(!FIXTURES.length){
+        list.innerHTML = `<div class="schedule-strip__item" style="color:#777;font-size:10px;">Belum ada jadwal pertandingan hari ini.</div>`;
+        return;
+      }
+
+      list.innerHTML = FIXTURES.map(f=>{
+        const dt = fixtureDateTime(f);
+        const st = String(f.status_short||f.status||'').toUpperCase();
+        const isLive = f.is_live===true || ['LIVE','1H','2H','ET','P','BT'].includes(st);
+        const isFinished = f.is_finished===true || ['FT','FINISHED','AET','PEN'].includes(st);
+        let homeScore=null, awayScore=null;
+        if(isLive){ homeScore=f.live_home_score??f.home_score??null; awayScore=f.live_away_score??f.away_score??null; }
+        else if(isFinished){ homeScore=f.final_home_score??f.home_score??null; awayScore=f.final_away_score??f.away_score??null; }
+        const hasScore = homeScore!==null && homeScore!==undefined && awayScore!==null && awayScore!==undefined;
+
+        return `<div class="schedule-strip__item">
+          <div class="schedule-strip__comp">
+            <span>${safeText(f.league_name||'—')}</span>
+            <span class="schedule-strip__date">${safeText(dt.date)}</span>
+          </div>
+          <div class="schedule-strip__teams">
+            <div class="schedule-team">${f.home_team_logo?`<img src="${safeText(f.home_team_logo)}" alt="">`:''}<span>${safeText(f.home_team_name||'—')}</span></div>
+            <span>${hasScore?safeText(homeScore):''}</span>
+          </div>
+          <div class="schedule-strip__teams">
+            <div class="schedule-team">${f.away_team_logo?`<img src="${safeText(f.away_team_logo)}" alt="">`:''}<span>${safeText(f.away_team_name||'—')}</span></div>
+            <span>${hasScore?safeText(awayScore):''}</span>
+          </div>
+          <div class="schedule-strip__status">
+            <span class="schedule-strip__time">${safeText(dt.time)}</span> · ${fixtureLabelStatus(f)}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ================== RENDER: STANDINGS (klasemen multi-liga) ==================
+    function renderHomepageStandings(){
+      const tabsWrap = document.getElementById('leagueTabs');
+      const panelsWrap = document.getElementById('standingsPanels');
+      if(!tabsWrap || !panelsWrap) return;
+
+      const rows = homepageRows('standings');
+      if(!rows.length){
+        tabsWrap.innerHTML = '';
+        panelsWrap.innerHTML = '<div style="padding:30px;color:#777;text-align:center;">Belum ada data klasemen.</div>';
+        return;
+      }
+
+      const leagues = new Map();
+      rows.forEach(r=>{
+        const p = r.payload || {};
+        const key = p.league_name || p.league || 'Liga';
+        if(!leagues.has(key)) leagues.set(key, []);
+        leagues.get(key).push(p);
+      });
+      leagues.forEach(list => list.sort((a,b)=>(Number(a.position??a.rank)||0)-(Number(b.position??b.rank)||0)));
+
+      const leagueNames = [...leagues.keys()];
+
+      tabsWrap.innerHTML = leagueNames.map((name,i)=>
+        `<button type="button" class="league-tab${i===0?' active':''}" data-league="${safeText(slugFilter(name))}">${safeText(name)}</button>`
+      ).join('');
+
+      panelsWrap.innerHTML = leagueNames.map((name,i)=>{
+        const teams = leagues.get(name);
+        const bodyRows = teams.map(t => `
+          <tr>
+            <td>${safeText(t.position??t.rank??'-')}</td>
+            <td><span class="schedule-team">${t.logo_url?`<img src="${safeText(t.logo_url)}" alt="">`:''}<span>${safeText(t.team||t.team_name||'—')}</span></span></td>
+            <td>${safeText(t.played??'-')}</td>
+            <td>${safeText(t.win??'-')}</td>
+            <td>${safeText(t.draw??'-')}</td>
+            <td>${safeText(t.lose??'-')}</td>
+            <td>${safeText(t.goal_diff??'-')}</td>
+            <td>${safeText(t.points??'-')}</td>
+          </tr>`).join('');
+
+        return `<div class="standings-panel${i===0?' active':''}" data-league="${safeText(slugFilter(name))}">
+          <div class="table-wrap">
+            <table class="standings-table">
+              <thead><tr><th>#</th><th>Klub</th><th>M</th><th>M</th><th>S</th><th>K</th><th>SG</th><th>Poin</th></tr></thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('');
+
+      tabsWrap.querySelectorAll('.league-tab').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabsWrap.querySelectorAll('.league-tab').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          panelsWrap.querySelectorAll('.standings-panel').forEach(p=>{
+            p.classList.toggle('active', p.dataset.league === btn.dataset.league);
+          });
+        });
+      });
+    }
+
     function youtubeId(url){
       if(!url) return '';
       const value=String(url).trim();
@@ -4094,551 +4197,570 @@
       document.getElementById('videoFeatureTitle').textContent=first.title||'Highlight pertandingan';
       document.getElementById('videoFeatureTag').textContent=first.category||'Watch Now';
       feature.dataset.youtubeId=firstId; feature.dataset.videoTitle=first.title||'';
-      side.innerHTML=items.slice(1,5).map((v,i)=>{const id=youtubeId(v.youtube_url);return `<article class="side-item video-side-item" data-youtube-id="${safeText(id)}" data-video-title="${safeText(v.title||'Video Kancah Sports')}"><div class="side-item__img"><img src="${safeText(v.thumbnail_url||youtubeThumb(id)||'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop')}" alt="${safeText(v.title||'Video')}" /></div><div><h4>${safeText(v.title||'Video Kancah Sports')}</h4><p>${safeText(v.duration?`Video • ${v.duration}`:'Video')}</p></div></article>`;}).join('');
-      side.querySelectorAll('.video-side-item').forEach(el=>el.addEventListener('click',()=>openVideoModal(el.dataset.youtubeId,el.dataset.videoTitle)));
-    }
-    function openVideoModal(id,title){ if(!id)return; const modal=document.getElementById('videoModal'), frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=youtubeEmbed(id); document.getElementById('videoModalTitle').textContent=title||'Kancah Sports Video'; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('menu-open'); }
-    function closeVideoModal(){ const modal=document.getElementById('videoModal'),frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=''; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.classList.remove('menu-open'); }
-    function renderAllHomepage(){
-      renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderScheduleStrip(); renderVideos();
-    }
-
-    // ================== RENDER: HERO ==================
-    function renderHero(articles) {
-      const featured = articles[0];
-      const small = articles.slice(1, 3);
-      const strip = articles.slice(3, 7);
-
-      if (featured) {
-        const headline = document.getElementById("heroHeadline");
-        const media = headline.querySelector(".headline-card__media");
-        media.setAttribute("href", articleHref(featured));
-        media.querySelector("img").src = articleImg(featured);
-        media.querySelector("img").alt = safeText(featured.title || "");
-        headline.querySelector(".kicker-row .tag").textContent = "#" + safeText((featured.category || "Kancah").replace(/\s+/g, ""));
-        headline.querySelector(".status-live").textContent = safeText(featured.category || "Berita");
-        headline.querySelector(".headline-title").textContent = featured.title || "Berita Kancah Sports";
-        headline.querySelector(".headline-desc").textContent = featured.excerpt || "";
-        const metaSpans = headline.querySelectorAll(".meta span");
-        if (metaSpans[1]) metaSpans[1].textContent = timeAgo(featured.published_at || featured.created_at);
-        headline.querySelector(".meta strong").textContent = featured.source_name || "Kancah Desk";
-      }
-
-      if (small.length) {
-        const wrap = document.getElementById("heroSmallStack");
-        wrap.innerHTML = small.map(a => `
-          <article class="story-card compact">
-            <a class="story-card__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a>
-            <div class="story-card__content">
-              <div class="kicker-row"><span class="tag orange">${safeText(a.category || 'Berita')}</span></div>
-              <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3>
-              <div class="meta"><span>${timeAgo(a.published_at || a.created_at)}</span></div>
-            </div>
-          </article>
-        `).join("");
-      }
-
-      if (strip.length) {
-        const wrap = document.getElementById("heroStrip");
-        wrap.innerHTML = strip.map(a => `
-          <article class="article-mini">
-            <a class="article-mini__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a>
-            <div class="article-mini__body">
-              <span class="article-mini__cat">${safeText(a.category || 'Berita')}</span>
-              <h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4>
-              <span class="article-mini__time">${timeAgo(a.published_at || a.created_at)}</span>
-            </div>
-          </article>
-        `).join("");
-      }
-    }
-
-    // ================== RENDER: BREAKING TICKER ==================
-    function renderBreaking(articles) {
-      const el = document.getElementById("breakingText");
-      if (!el || !articles.length) return;
-      const titles = articles.slice(0, 3).map(a => a.title).filter(Boolean);
-      if (titles.length) el.textContent = titles.join(" • ");
-    }
-
-    // ================== RENDER: TRENDING TAGS ==================
-    function renderTrending(articles) {
-      const wrap = document.getElementById("trendTags");
-      if (!wrap) return;
-      const counts = {};
-      articles.forEach(a => {
-        const cat = (a.category || "").trim();
-        if (cat) counts[cat] = (counts[cat] || 0) + 1;
+      side.innerHTML=items.slice(1,5).map((v,i)=>{const id=youtubeId(v.youtube_url);return `<article class="side-item video-side-item" data-youtube-id="${safeText(id)}" data-video-title="${safeText(v.title||'Video Kancah Sports')}"><div class="side-item__img"><img src="${safeText(v.thumbnail_url||youtubeThumb(id)||'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop')}" alt="${safeText(v.title||'Video')}" /></div><div><h4>${safeText(v.title||'Video Kancah Sports')}</h4><p>${safeText(v.duration?`Video • ${v.duration}`:'Video')}</p></div></article>`;}).join(''); 
+      side.querySelectorAll('.video-side-item').forEach(el=>el.addEventListener('click',()=>openVideoModal(el.dataset.youtubeId,el.dataset.videoTitle))); 
+    } 
+    function openVideoModal(id,title){ if(!id)return; const modal=document.getElementById('videoModal'), frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=youtubeEmbed(id); document.getElementById('videoModalTitle').textContent=title||'Kancah Sports Video'; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('menu-open'); } 
+    function closeVideoModal(){ const modal=document.getElementById('videoModal'),frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=''; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.classList.remove('menu-open'); } 
+    function renderAllHomepage(){ 
+      const steps = [
+        renderHomepageTrending,
+        renderHomepageEditorPicks,
+        renderHomepageTransfers,
+        renderHomepageFixtures,
+        renderHomepageStandings,
+        renderScheduleStrip,
+        renderVideos
+      ];
+      steps.forEach(fn => {
+        try { fn(); } catch (err) { console.error(`${fn.name} gagal:`, err); }
       });
-      const top = Object.keys(counts).sort((x, y) => counts[y] - counts[x]).slice(0, 6);
-      if (!top.length) return;
-      wrap.innerHTML = top.map(cat => `<a href="#latest-news" data-jump-filter="${safeText(slugFilter(cat))}">#${safeText(cat.replace(/\s+/g, ""))}</a>`).join("");
-    }
+    } 
+ 
+    // ================== RENDER: HERO ================== 
+    function renderHero(articles) { 
+      const featured = articles[0]; 
+      const small = articles.slice(1, 3); 
+      const strip = articles.slice(3, 7); 
+ 
+      if (featured) { 
+        const headline = document.getElementById("heroHeadline"); 
+        const media = headline.querySelector(".headline-card__media"); 
+        media.setAttribute("href", articleHref(featured)); 
+        media.querySelector("img").src = articleImg(featured); 
+        media.querySelector("img").alt = safeText(featured.title || ""); 
+        headline.querySelector(".kicker-row .tag").textContent = "#" + safeText((featured.category || "Kancah").replace(/\s+/g, "")); 
+        headline.querySelector(".status-live").textContent = safeText(featured.category || "Berita"); 
+        headline.querySelector(".headline-title").textContent = featured.title || "Berita Kancah Sports"; 
+        headline.querySelector(".headline-desc").textContent = featured.excerpt || ""; 
+        const metaSpans = headline.querySelectorAll(".meta span"); 
+        if (metaSpans[1]) metaSpans[1].textContent = timeAgo(featured.published_at || featured.created_at); 
+        headline.querySelector(".meta strong").textContent = featured.source_name || "Kancah Desk"; 
+      } 
+ 
+      if (small.length) { 
+        const wrap = document.getElementById("heroSmallStack"); 
+        wrap.innerHTML = small.map(a => ` 
+          <article class="story-card compact"> 
+            <a class="story-card__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a> 
+            <div class="story-card__content"> 
+              <div class="kicker-row"><span class="tag orange">${safeText(a.category || 'Berita')}</span></div> 
+              <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3> 
+              <div class="meta"><span>${timeAgo(a.published_at || a.created_at)}</span></div> 
+            </div> 
+          </article> 
+        `).join(""); 
+      } 
+ 
+      if (strip.length) { 
+        const wrap = document.getElementById("heroStrip"); 
+        wrap.innerHTML = strip.map(a => ` 
+          <article class="article-mini"> 
+            <a class="article-mini__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a> 
+            <div class="article-mini__body"> 
+              <span class="article-mini__cat">${safeText(a.category || 'Berita')}</span> 
+              <h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4> 
+              <span class="article-mini__time">${timeAgo(a.published_at || a.created_at)}</span> 
+            </div> 
+          </article> 
+        `).join(""); 
+      } 
+    } 
+ 
+    // ================== RENDER: BREAKING TICKER ================== 
+    function renderBreaking(articles) { 
+      const el = document.getElementById("breakingText"); 
+      if (!el || !articles.length) return; 
+      const titles = articles.slice(0, 3).map(a => a.title).filter(Boolean); 
+      if (titles.length) el.textContent = titles.join(" • "); 
+    } 
+ 
+    // ================== RENDER: TRENDING TAGS ================== 
+    function renderTrending(articles) { 
+      const wrap = document.getElementById("trendTags"); 
+      if (!wrap) return; 
+      const counts = {}; 
+      articles.forEach(a => { 
+        const cat = (a.category || "").trim(); 
+        if (cat) counts[cat] = (counts[cat] || 0) + 1; 
+      }); 
+      const top = Object.keys(counts).sort((x, y) => counts[y] - counts[x]).slice(0, 6); 
+      if (!top.length) return; 
+      wrap.innerHTML = top.map(cat => `<a href="#latest-news" data-jump-filter="${safeText(slugFilter(cat))}">#${safeText(cat.replace(/\s+/g, ""))}</a>`).join(""); 
+    } 
+ 
+    // ================== RENDER: LATEST NEWS GRID + TABS ================== 
+    function newsCardHtml(a) { 
+      return ` 
+        <article class="news-card" data-filter-item="${safeText(slugFilter(a.category))}"> 
+          <a class="news-card__image" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" loading="lazy" /></a> 
+          <div class="news-card__body"> 
+            <div class="news-card__cat">${safeText(a.category || 'Berita')}</div> 
+            <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3> 
+            <p>${safeText(a.excerpt || '')}</p> 
+            <div class="news-card__meta"><span>${timeAgo(a.published_at || a.created_at)}</span><span>${safeText(a.source_name || 'Kancah Sports')}</span></div> 
+          </div> 
+        </article> 
+      `; 
+    } 
+ 
+    function renderLatestNews(articles) { 
+      const grid = document.getElementById("newsGrid"); 
+      const tabsWrap = document.getElementById("categoryTabs"); 
+      if (!grid) return; 
+ 
+      if (!articles.length) { 
+        grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;text-transform:uppercase;letter-spacing:.12em;">Belum ada berita.</div>`; 
+        return; 
+      } 
+ 
+      const latestSix = articles.slice(0, 6); 
+      grid.innerHTML = latestSix.map(newsCardHtml).join(""); 
+ 
+      // Rebuild category tabs from the 6 berita yang tampil di homepage 
+      const cats = [...new Set(latestSix.map(a => (a.category || "").trim()).filter(Boolean))].sort(); 
+      tabsWrap.innerHTML = `<button class="tab-button active" data-filter="all">Semua</button>` + 
+        cats.map(c => `<button class="tab-button" data-filter="${safeText(slugFilter(c))}">${safeText(c)}</button>`).join(""); 
+ 
+      tabsWrap.querySelectorAll(".tab-button").forEach(btn => { 
+        btn.addEventListener("click", () => { 
+          tabsWrap.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active")); 
+          btn.classList.add("active"); 
+          const filter = btn.dataset.filter; 
+          grid.querySelectorAll("[data-filter-item]").forEach(card => { 
+            const visible = filter === "all" || card.dataset.filterItem === filter; 
+            card.style.display = visible ? "" : "none"; 
+          }); 
+        }); 
+      }); 
+    } 
+ 
+    // Trending tag click -> jump to a matching tab 
+    document.addEventListener("click", (e) => { 
+      const link = e.target.closest("[data-jump-filter]"); 
+      if (!link) return; 
+      setTimeout(() => { 
+        const tabsWrap = document.getElementById("categoryTabs"); 
+        const target = tabsWrap && tabsWrap.querySelector(`[data-filter="${link.dataset.jumpFilter}"]`); 
+        if (target) target.click(); 
+      }, 400); 
+    }); 
+ 
+    // ================== RENDER: EDITOR PICKS SIDEBAR ================== 
+    function renderEditorSidebar(articles) { 
+      const wrap = document.getElementById("editorPicksSidebarBody"); 
+      if (!wrap || !articles.length) return; 
+      const picks = articles.slice(0, 3); 
+      wrap.innerHTML = picks.map((a, i) => ` 
+        <article class="rank-story"> 
+          <span class="rank-story__num">${i + 1}</span> 
+          <div><h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4><p>${safeText(a.category || 'Berita')} • ${readTime(a.content)} min read</p></div> 
+        </article> 
+      `).join(""); 
+    } 
+ 
+    // ================== RENDER: EDITOR PICKS SECTION ================== 
+    function renderEditorPicksSection(articles) { 
+      const grid = document.getElementById("editorPicksGrid"); 
+      if (!grid || !articles.length) return; 
+      const picks = articles.slice(0, 4); 
+      grid.innerHTML = picks.map(newsCardHtml).join(""); 
+    } 
+ 
+    // ================== RENDER: TIMNAS HUB ================== 
+    function renderTimnasHub(articles) { 
+      const wideWrap = document.getElementById("timnasWideList"); 
+      const sideWrap = document.getElementById("timnasSideList"); 
+      if (!wideWrap || !sideWrap || !articles.length) return; 
+ 
+      let matches = articles.filter(a => (a.category || "").toLowerCase().includes("timnas")); 
+      if (!matches.length) matches = articles; 
+ 
+      const wide = matches.slice(0, 2); 
+      const side = matches.slice(2, 6).length ? matches.slice(2, 6) : matches.slice(0, 4); 
+ 
+      if (wide.length) { 
+        wideWrap.innerHTML = wide.map(a => ` 
+          <article class="wide-card"> 
+            <a class="wide-card__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a> 
+            <div class="wide-card__content"> 
+              <span class="tag orange">${safeText(a.category || 'Timnas')}</span> 
+              <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3> 
+              <div class="meta"><span>${timeAgo(a.published_at || a.created_at)}</span><span>•</span><span>${readTime(a.content)} min read</span></div> 
+            </div> 
+          </article> 
+        `).join(""); 
+      } 
+ 
+      if (side.length) { 
+        sideWrap.innerHTML = side.map(a => ` 
+          <article class="side-item"> 
+            <a class="side-item__img" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a> 
+            <div><h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4><p>${timeAgo(a.published_at || a.created_at)}</p></div> 
+          </article> 
+        `).join(""); 
+      } 
+    } 
+ 
+    // ================== SEARCH ================== 
+    function buildSearchIndex(articles) { 
+      window.__searchIndex = articles.map(a => ({ 
+        title: a.title || "Tanpa Judul", 
+        category: a.category || "Berita", 
+        href: articleHref(a) 
+      })); 
+      const resultsEl = document.getElementById("searchResults"); 
+      if (resultsEl && !document.getElementById("searchModal").classList.contains("open")) { 
+        // will render on open 
+      } 
+    } 
+ 
+    function renderSearchResults(query) { 
+      const q = query.trim().toLowerCase(); 
+      const index = window.__searchIndex || []; 
+      const results = index.filter((item) => { 
+        if (!q) return true; 
+        return item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q); 
+      }).slice(0, 12); 
+ 
+      const searchResults = document.getElementById("searchResults"); 
+      searchResults.innerHTML = results.map((item) => ` 
+        <a href="${item.href}" class="search-result"> 
+          <span>${safeText(item.category)}</span> 
+          <strong>${safeText(item.title)}</strong> 
+        </a> 
+      `).join("") || '<div class="search-result"><span>Tidak ada hasil</span><strong>Coba kata kunci lain.</strong></div>'; 
+    } 
+ 
+    // ================== LOAD FROM SUPABASE ================== 
+    async function loadSiteData() { 
+      const grid = document.getElementById("newsGrid"); 
+      if (grid) { 
+        grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;text-transform:uppercase;letter-spacing:.12em;">Memuat berita terbaru...</div>`; 
+      } 
+ 
+      const { data, error } = await db 
+        .from("articles") 
+        .select("*") 
+        .eq("status", "published") 
+        .order("published_at", { ascending: false, nullsFirst: false }) 
+        .order("created_at", { ascending: false }) 
+        .limit(40); 
+ 
+      if (error) { 
+        console.error("Gagal memuat artikel dari Supabase:", error); 
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:#ff4d00;text-align:center;padding:40px 0;font-weight:700;">Gagal memuat berita. Coba muat ulang halaman.</div>`; 
+        return; 
+      } 
+ 
+      if (!data || !data.length) { 
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;">Belum ada berita yang dipublikasikan.</div>`; 
+        return; 
+      } 
+ 
+      ARTICLES = data; 
+      renderHero(ARTICLES); 
+      renderBreaking(ARTICLES); 
+      renderTrending(ARTICLES); 
+      renderLatestNews(ARTICLES); 
+      renderEditorSidebar(ARTICLES); 
+      renderEditorPicksSection(ARTICLES); 
+      renderTimnasHub(ARTICLES); 
+      buildSearchIndex(ARTICLES); 
+      updateBreakingTime(); 
+      await loadHomepageContent(); 
+      setInterval(updateBreakingTime, 30000); 
+      setInterval(loadHomepageContent, 15000); 
+      setInterval(()=>{ if(Array.isArray(FIXTURES) && FIXTURES.some(f=>f.is_live===true)) { renderHomepageFixtures(); renderScheduleStrip(); } }, 30000); 
+    } 
+ 
+    async function loadHomepageContent(){ 
+      const now=new Date(); 
+      const startOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0); 
+      const endOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999); 
+ 
+      const [ 
+        {data,error}, 
+        {data:apiFixtures,error:fixtureError}, 
+        {data:manualFixtures,error:manualError}, 
+        {data:leagues,error:leagueError}, 
+        {data:teams,error:teamError} 
+      ]=await Promise.all([ 
+        db.from('homepage_content').select('*').eq('is_active',true).neq('section','fixtures').order('section').order('sort_order'), 
+        db.from('football_matches').select('*').gte('match_date',startOfDay.toISOString()).lte('match_date',endOfDay.toISOString()).order('match_date',{ascending:true}).limit(100), 
+        db.from('sports_fixtures').select('*').gte('fixture_date',startOfDay.toISOString()).lte('fixture_date',endOfDay.toISOString()).order('fixture_date',{ascending:true}).limit(100), 
+        db.from('sports_leagues').select('id,name,logo_url'), 
+        db.from('sports_teams').select('id,name,short_name,logo_url,league_id') 
+      ]); 
+ 
+      if(error) console.error('Gagal memuat homepage_content:',error); 
+      if(fixtureError) console.error('Gagal memuat football_matches:',fixtureError); 
+      if(manualError) console.error('Gagal memuat sports_fixtures:',manualError); 
+      if(leagueError) console.error('Gagal memuat sports_leagues:',leagueError); 
+      if(teamError) console.error('Gagal memuat sports_teams:',teamError); 
+ 
+      const leagueMap=new Map((leagues||[]).map(x=>[String(x.id),x])); 
+      const teamMap=new Map((teams||[]).map(x=>[String(x.id),x])); 
+      const normalizeName=v=>String(v||'').toLowerCase().replace(/\b(fc|afc|cf|sc|ac)\b/g,'').replace(/[^a-z0-9]+/g,'').trim(); 
+      const fixtureKey=(home,away,date)=>`${normalizeName(home)}|${normalizeName(away)}|${String(date||'').slice(0,10)}`; 
+ 
+      const manual=(manualFixtures||[]).map(f=>{ 
+        const home=teamMap.get(String(f.home_team_id))||{}; 
+        const away=teamMap.get(String(f.away_team_id))||{}; 
+        const league=leagueMap.get(String(f.league_id))||{}; 
+        const status=f.status||'upcoming'; 
+        return { 
+          id:`admin-${f.id}`,fixture_date:f.fixture_date,league_name:league.name||'—',league_logo_url:league.logo_url||'', 
+          home_team_name:home.name||'—',home_team_logo:home.logo_url||'',away_team_name:away.name||'—',away_team_logo:away.logo_url||'', 
+          venue:f.venue||'',venue_city:'',timezone:f.timezone||'WIB',status,status_short:status,elapsed:null, 
+          is_live:status==='live',is_finished:status==='finished',is_half_time:false,live_started_at:f.live_started_at||null, 
+          live_home_score:f.live_home_score??null,live_away_score:f.live_away_score??null, 
+          final_home_score:f.final_home_score??null,final_away_score:f.final_away_score??null, 
+          home_score:status==='live'?f.live_home_score:(status==='finished'?f.final_home_score:null), 
+          away_score:status==='live'?f.live_away_score:(status==='finished'?f.final_away_score:null),source:'admin', 
+          _key:fixtureKey(home.name,away.name,f.fixture_date) 
+        }; 
+      }); 
+ 
+      const api=(apiFixtures||[]).map(f=>({ 
+        ...f,id:`api-${f.id}`,fixture_date:f.match_date,league_name:f.league_name||'—', 
+        home_team_name:f.home_team_name||'—',home_team_logo:f.home_team_logo||'',away_team_name:f.away_team_name||'—',away_team_logo:f.away_team_logo||'', 
+        venue:f.venue_name||f.venue_city||'',timezone:'WIB',status:f.status_short||'',status_short:f.status_short||'',elapsed:f.elapsed??null, 
+        is_live:f.is_live===true,is_finished:f.is_finished===true,is_half_time:String(f.status_short||'').toUpperCase()==='HT',live_started_at:null, 
+        live_home_score:f.is_live===true?(f.home_goals??null):null,live_away_score:f.is_live===true?(f.away_goals??null):null, 
+        final_home_score:f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null,final_away_score:f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null, 
+        home_score:f.is_live===true?(f.home_goals??null):(f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null), 
+        away_score:f.is_live===true?(f.away_goals??null):(f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null),source:'football-data', 
+        _key:fixtureKey(f.home_team_name,f.away_team_name,f.match_date) 
+      })); 
+ 
+      const manualKeys=new Set(manual.map(f=>f._key)); 
+      FIXTURES=[...manual,...api.filter(f=>!manualKeys.has(f._key))]; 
+ 
+      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],video:[]}; 
+      (data||[]).forEach(row=>{if(HOMEPAGE[row.section]) HOMEPAGE[row.section].push(row);}); 
+      renderAllHomepage(); 
+    } 
+ 
+    document.addEventListener("DOMContentLoaded", loadSiteData); 
+ 
+    // ================== UI: MENU, SEARCH MODAL, SCROLL ================== 
+    const body = document.body; 
+    const mobileMenu = document.getElementById('mobileMenu'); 
+    const openMenu = document.getElementById('openMenu'); 
+    const closeMenu = document.getElementById('closeMenu'); 
+    const openSearch = document.getElementById('openSearch'); 
+    const closeSearch = document.getElementById('closeSearch'); 
+    const searchModal = document.getElementById('searchModal'); 
+    const searchInput = document.getElementById('searchInput'); 
+    const toTop = document.getElementById('toTop'); 
+    const newsletterForm = document.getElementById('newsletterForm'); 
+    const scrollButtons = document.querySelectorAll('[data-scroll]'); 
+ 
+    document.getElementById('videoFeaturePlay')?.addEventListener('click',()=>{const el=document.getElementById('videoFeature');openVideoModal(el?.dataset.youtubeId,el?.dataset.videoTitle);}); 
+    document.querySelectorAll('[data-video-close]').forEach(el=>el.addEventListener('click',closeVideoModal)); 
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVideoModal();}); 
 
-    // ================== RENDER: LATEST NEWS GRID + TABS ==================
-    function newsCardHtml(a) {
-      return `
-        <article class="news-card" data-filter-item="${safeText(slugFilter(a.category))}">
-          <a class="news-card__image" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" loading="lazy" /></a>
-          <div class="news-card__body">
-            <div class="news-card__cat">${safeText(a.category || 'Berita')}</div>
-            <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3>
-            <p>${safeText(a.excerpt || '')}</p>
-            <div class="news-card__meta"><span>${timeAgo(a.published_at || a.created_at)}</span><span>${safeText(a.source_name || 'Kancah Sports')}</span></div>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderLatestNews(articles) {
-      const grid = document.getElementById("newsGrid");
-      const tabsWrap = document.getElementById("categoryTabs");
-      if (!grid) return;
-
-      if (!articles.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;text-transform:uppercase;letter-spacing:.12em;">Belum ada berita.</div>`;
-        return;
-      }
-
-      const latestSix = articles.slice(0, 6);
-      grid.innerHTML = latestSix.map(newsCardHtml).join("");
-
-      // Rebuild category tabs from the 6 berita yang tampil di homepage
-      const cats = [...new Set(latestSix.map(a => (a.category || "").trim()).filter(Boolean))].sort();
-      tabsWrap.innerHTML = `<button class="tab-button active" data-filter="all">Semua</button>` +
-        cats.map(c => `<button class="tab-button" data-filter="${safeText(slugFilter(c))}">${safeText(c)}</button>`).join("");
-
-      tabsWrap.querySelectorAll(".tab-button").forEach(btn => {
-        btn.addEventListener("click", () => {
-          tabsWrap.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          const filter = btn.dataset.filter;
-          grid.querySelectorAll("[data-filter-item]").forEach(card => {
-            const visible = filter === "all" || card.dataset.filterItem === filter;
-            card.style.display = visible ? "" : "none";
-          });
-        });
-      });
-    }
-
-    // Trending tag click -> jump to a matching tab
-    document.addEventListener("click", (e) => {
-      const link = e.target.closest("[data-jump-filter]");
-      if (!link) return;
-      setTimeout(() => {
-        const tabsWrap = document.getElementById("categoryTabs");
-        const target = tabsWrap && tabsWrap.querySelector(`[data-filter="${link.dataset.jumpFilter}"]`);
-        if (target) target.click();
-      }, 400);
+    // Navigasi geser jadwal pertandingan di bawah navbar
+    document.getElementById('schedulePrev')?.addEventListener('click', ()=>{
+      document.getElementById('scheduleStripList')?.scrollBy({ left: -320, behavior: 'smooth' });
     });
-
-    // ================== RENDER: EDITOR PICKS SIDEBAR ==================
-    function renderEditorSidebar(articles) {
-      const wrap = document.getElementById("editorPicksSidebarBody");
-      if (!wrap || !articles.length) return;
-      const picks = articles.slice(0, 3);
-      wrap.innerHTML = picks.map((a, i) => `
-        <article class="rank-story">
-          <span class="rank-story__num">${i + 1}</span>
-          <div><h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4><p>${safeText(a.category || 'Berita')} • ${readTime(a.content)} min read</p></div>
-        </article>
-      `).join("");
-    }
-
-    // ================== RENDER: EDITOR PICKS SECTION ==================
-    function renderEditorPicksSection(articles) {
-      const grid = document.getElementById("editorPicksGrid");
-      if (!grid || !articles.length) return;
-      const picks = articles.slice(0, 4);
-      grid.innerHTML = picks.map(newsCardHtml).join("");
-    }
-
-    // ================== RENDER: TIMNAS HUB ==================
-    function renderTimnasHub(articles) {
-      const wideWrap = document.getElementById("timnasWideList");
-      const sideWrap = document.getElementById("timnasSideList");
-      if (!wideWrap || !sideWrap || !articles.length) return;
-
-      let matches = articles.filter(a => (a.category || "").toLowerCase().includes("timnas"));
-      if (!matches.length) matches = articles;
-
-      const wide = matches.slice(0, 2);
-      const side = matches.slice(2, 6).length ? matches.slice(2, 6) : matches.slice(0, 4);
-
-      if (wide.length) {
-        wideWrap.innerHTML = wide.map(a => `
-          <article class="wide-card">
-            <a class="wide-card__media" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a>
-            <div class="wide-card__content">
-              <span class="tag orange">${safeText(a.category || 'Timnas')}</span>
-              <h3><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h3>
-              <div class="meta"><span>${timeAgo(a.published_at || a.created_at)}</span><span>•</span><span>${readTime(a.content)} min read</span></div>
-            </div>
-          </article>
-        `).join("");
-      }
-
-      if (side.length) {
-        sideWrap.innerHTML = side.map(a => `
-          <article class="side-item">
-            <a class="side-item__img" href="${articleHref(a)}"><img src="${safeText(articleImg(a))}" alt="${safeText(a.title || '')}" /></a>
-            <div><h4><a href="${articleHref(a)}">${safeText(a.title || 'Berita Kancah Sports')}</a></h4><p>${timeAgo(a.published_at || a.created_at)}</p></div>
-          </article>
-        `).join("");
-      }
-    }
-
-    // ================== SEARCH ==================
-    function buildSearchIndex(articles) {
-      window.__searchIndex = articles.map(a => ({
-        title: a.title || "Tanpa Judul",
-        category: a.category || "Berita",
-        href: articleHref(a)
-      }));
-      const resultsEl = document.getElementById("searchResults");
-      if (resultsEl && !document.getElementById("searchModal").classList.contains("open")) {
-        // will render on open
-      }
-    }
-
-    function renderSearchResults(query) {
-      const q = query.trim().toLowerCase();
-      const index = window.__searchIndex || [];
-      const results = index.filter((item) => {
-        if (!q) return true;
-        return item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
-      }).slice(0, 12);
-
-      const searchResults = document.getElementById("searchResults");
-      searchResults.innerHTML = results.map((item) => `
-        <a href="${item.href}" class="search-result">
-          <span>${safeText(item.category)}</span>
-          <strong>${safeText(item.title)}</strong>
-        </a>
-      `).join("") || '<div class="search-result"><span>Tidak ada hasil</span><strong>Coba kata kunci lain.</strong></div>';
-    }
-
-    // ================== LOAD FROM SUPABASE ==================
-    async function loadSiteData() {
-      const grid = document.getElementById("newsGrid");
-      if (grid) {
-        grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;text-transform:uppercase;letter-spacing:.12em;">Memuat berita terbaru...</div>`;
-      }
-
-      const { data, error } = await db
-        .from("articles")
-        .select("*")
-        .eq("status", "published")
-        .order("published_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false })
-        .limit(40);
-
-      if (error) {
-        console.error("Gagal memuat artikel dari Supabase:", error);
-        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:#ff4d00;text-align:center;padding:40px 0;font-weight:700;">Gagal memuat berita. Coba muat ulang halaman.</div>`;
-        return;
-      }
-
-      if (!data || !data.length) {
-        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:#a7a7a7;text-align:center;padding:40px 0;font-weight:700;">Belum ada berita yang dipublikasikan.</div>`;
-        return;
-      }
-
-      ARTICLES = data;
-      renderHero(ARTICLES);
-      renderBreaking(ARTICLES);
-      renderTrending(ARTICLES);
-      renderLatestNews(ARTICLES);
-      renderEditorSidebar(ARTICLES);
-      renderEditorPicksSection(ARTICLES);
-      renderTimnasHub(ARTICLES);
-      buildSearchIndex(ARTICLES);
-      updateBreakingTime();
-      await loadHomepageContent();
-      setInterval(updateBreakingTime, 30000);
-      setInterval(loadHomepageContent, 15000);
-      setInterval(()=>{ if(Array.isArray(FIXTURES) && FIXTURES.some(f=>f.is_live===true)) { renderHomepageFixtures(); renderScheduleStrip(); } }, 30000);
-    }
-
-    async function loadHomepageContent(){
-      const now=new Date();
-      const startOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0);
-      const endOfDay=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999);
-
-      const [
-        {data,error},
-        {data:apiFixtures,error:fixtureError},
-        {data:manualFixtures,error:manualError},
-        {data:leagues,error:leagueError},
-        {data:teams,error:teamError}
-      ]=await Promise.all([
-        db.from('homepage_content').select('*').eq('is_active',true).neq('section','fixtures').order('section').order('sort_order'),
-        db.from('football_matches').select('*').gte('match_date',startOfDay.toISOString()).lte('match_date',endOfDay.toISOString()).order('match_date',{ascending:true}).limit(100),
-        db.from('sports_fixtures').select('*').gte('fixture_date',startOfDay.toISOString()).lte('fixture_date',endOfDay.toISOString()).order('fixture_date',{ascending:true}).limit(100),
-        db.from('sports_leagues').select('id,name,logo_url'),
-        db.from('sports_teams').select('id,name,short_name,logo_url,league_id')
-      ]);
-
-      if(error) console.error('Gagal memuat homepage_content:',error);
-      if(fixtureError) console.error('Gagal memuat football_matches:',fixtureError);
-      if(manualError) console.error('Gagal memuat sports_fixtures:',manualError);
-      if(leagueError) console.error('Gagal memuat sports_leagues:',leagueError);
-      if(teamError) console.error('Gagal memuat sports_teams:',teamError);
-
-      const leagueMap=new Map((leagues||[]).map(x=>[String(x.id),x]));
-      const teamMap=new Map((teams||[]).map(x=>[String(x.id),x]));
-      const normalizeName=v=>String(v||'').toLowerCase().replace(/\b(fc|afc|cf|sc|ac)\b/g,'').replace(/[^a-z0-9]+/g,'').trim();
-      const fixtureKey=(home,away,date)=>`${normalizeName(home)}|${normalizeName(away)}|${String(date||'').slice(0,10)}`;
-
-      const manual=(manualFixtures||[]).map(f=>{
-        const home=teamMap.get(String(f.home_team_id))||{};
-        const away=teamMap.get(String(f.away_team_id))||{};
-        const league=leagueMap.get(String(f.league_id))||{};
-        const status=f.status||'upcoming';
-        return {
-          id:`admin-${f.id}`,fixture_date:f.fixture_date,league_name:league.name||'—',league_logo_url:league.logo_url||'',
-          home_team_name:home.name||'—',home_team_logo:home.logo_url||'',away_team_name:away.name||'—',away_team_logo:away.logo_url||'',
-          venue:f.venue||'',venue_city:'',timezone:f.timezone||'WIB',status,status_short:status,elapsed:null,
-          is_live:status==='live',is_finished:status==='finished',is_half_time:false,live_started_at:f.live_started_at||null,
-          live_home_score:f.live_home_score??null,live_away_score:f.live_away_score??null,
-          final_home_score:f.final_home_score??null,final_away_score:f.final_away_score??null,
-          home_score:status==='live'?f.live_home_score:(status==='finished'?f.final_home_score:null),
-          away_score:status==='live'?f.live_away_score:(status==='finished'?f.final_away_score:null),source:'admin',
-          _key:fixtureKey(home.name,away.name,f.fixture_date)
-        };
-      });
-
-      const api=(apiFixtures||[]).map(f=>({
-        ...f,id:`api-${f.id}`,fixture_date:f.match_date,league_name:f.league_name||'—',
-        home_team_name:f.home_team_name||'—',home_team_logo:f.home_team_logo||'',away_team_name:f.away_team_name||'—',away_team_logo:f.away_team_logo||'',
-        venue:f.venue_name||f.venue_city||'',timezone:'WIB',status:f.status_short||'',status_short:f.status_short||'',elapsed:f.elapsed??null,
-        is_live:f.is_live===true,is_finished:f.is_finished===true,is_half_time:String(f.status_short||'').toUpperCase()==='HT',live_started_at:null,
-        live_home_score:f.is_live===true?(f.home_goals??null):null,live_away_score:f.is_live===true?(f.away_goals??null):null,
-        final_home_score:f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null,final_away_score:f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null,
-        home_score:f.is_live===true?(f.home_goals??null):(f.is_finished===true?(f.home_ft_goals??f.home_goals??null):null),
-        away_score:f.is_live===true?(f.away_goals??null):(f.is_finished===true?(f.away_ft_goals??f.away_goals??null):null),source:'football-data',
-        _key:fixtureKey(f.home_team_name,f.away_team_name,f.match_date)
-      }));
-
-      const manualKeys=new Set(manual.map(f=>f._key));
-      FIXTURES=[...manual,...api.filter(f=>!manualKeys.has(f._key))];
-
-      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],video:[]};
-      (data||[]).forEach(row=>{if(HOMEPAGE[row.section]) HOMEPAGE[row.section].push(row);});
-      renderAllHomepage();
-    }
-
-    document.addEventListener("DOMContentLoaded", loadSiteData);
-
-    // ================== UI: MENU, SEARCH MODAL, SCROLL ==================
-    const body = document.body;
-    const mobileMenu = document.getElementById('mobileMenu');
-    const openMenu = document.getElementById('openMenu');
-    const closeMenu = document.getElementById('closeMenu');
-    const openSearch = document.getElementById('openSearch');
-    const closeSearch = document.getElementById('closeSearch');
-    const searchModal = document.getElementById('searchModal');
-    const searchInput = document.getElementById('searchInput');
-    const toTop = document.getElementById('toTop');
-    const newsletterForm = document.getElementById('newsletterForm');
-    const scrollButtons = document.querySelectorAll('[data-scroll]');
-
-    document.getElementById('videoFeaturePlay')?.addEventListener('click',()=>{const el=document.getElementById('videoFeature');openVideoModal(el?.dataset.youtubeId,el?.dataset.videoTitle);});
-    document.querySelectorAll('[data-video-close]').forEach(el=>el.addEventListener('click',closeVideoModal));
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVideoModal();});
-
-    function openMobileMenu() {
-      mobileMenu.classList.add('open');
-      body.classList.add('menu-open');
-    }
-
-    function closeMobileMenu() {
-      mobileMenu.classList.remove('open');
-      body.classList.remove('menu-open');
-    }
-
-    function openSearchModal() {
-      searchModal.classList.add('open');
-      setTimeout(() => searchInput.focus(), 50);
-      renderSearchResults('');
-    }
-
-    function closeSearchModal() {
-      searchModal.classList.remove('open');
-      searchInput.value = '';
-    }
-
-    openMenu?.addEventListener('click', openMobileMenu);
-    closeMenu?.addEventListener('click', closeMobileMenu);
-    mobileMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileMenu));
-
-    // NAVBAR ACTIVE STATE: garis oranye mengikuti menu/section yang dipilih.
-    const desktopNavLinks = Array.from(document.querySelectorAll('.desktop-nav > a[href^="#"]'));
-    const navSections = desktopNavLinks
-      .map((link) => ({ link, section: document.querySelector(link.getAttribute('href')) }))
-      .filter((item) => item.section);
-
-    function setActiveNav(link) {
-      desktopNavLinks.forEach((item) => item.classList.remove('active'));
-      if (link) link.classList.add('active');
-    }
-
-    desktopNavLinks.forEach((link) => {
-      link.addEventListener('click', () => setActiveNav(link));
+    document.getElementById('scheduleNext')?.addEventListener('click', ()=>{
+      document.getElementById('scheduleStripList')?.scrollBy({ left: 320, behavior: 'smooth' });
     });
-
-    // Saat user scroll manual, garis aktif ikut berpindah ke section yang sedang terlihat.
-    if ('IntersectionObserver' in window && navSections.length) {
-      const navObserver = new IntersectionObserver((entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) {
-          const match = navSections.find((item) => item.section === visible.target);
-          if (match) setActiveNav(match.link);
-        }
-      }, {
-        rootMargin: '-18% 0px -65% 0px',
-        threshold: [0.05, 0.2, 0.5]
-      });
-      navSections.forEach((item) => navObserver.observe(item.section));
-    }
-
-    openSearch?.addEventListener('click', openSearchModal);
-    closeSearch?.addEventListener('click', closeSearchModal);
-    searchModal?.addEventListener('click', (event) => {
-      if (event.target === searchModal) closeSearchModal();
-    });
-
-    searchInput?.addEventListener('input', (event) => renderSearchResults(event.target.value));
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        closeMobileMenu();
-        closeSearchModal();
-      }
-    });
-
-    scrollButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const target = document.querySelector(button.dataset.scroll);
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
-      });
-    });
-
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 500) toTop.classList.add('show');
-      else toTop.classList.remove('show');
-    });
-
-    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-    newsletterForm?.addEventListener('submit', (event) => {
-      event.preventDefault();
-      alert('Mantap! Kamu berhasil subscribe ke Kancah Sports.');
-      newsletterForm.reset();
-    });
-  </script>
-
-
-<style id="timnas-quickread-four-rows">
-/* Quick Read: 4 berita vertikal, satu baris satu berita — mengisi tinggi panel */
-@media (min-width: 1181px) {
-  #timnas .timnas-quick-panel {
-    display: grid !important;
-    grid-template-rows: auto minmax(0, 1fr) auto !important;
-    height: 568px !important;
-    min-height: 568px !important;
-  }
-  #timnas .timnas-quick-panel .side-list {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
-    gap: 0 !important;
-    padding: 6px 14px !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-  #timnas .timnas-quick-panel .side-item,
-  #timnas .timnas-quick-panel .side-item:nth-child(3),
-  #timnas .timnas-quick-panel .side-item:nth-child(4) {
-    display: grid !important;
-    grid-template-columns: 86px minmax(0, 1fr) !important;
-    align-items: center !important;
-    min-height: 0 !important;
-    height: auto !important;
-    padding: 8px 0 !important;
-    border: 0 !important;
-    border-bottom: 1px solid var(--line) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-  }
-  #timnas .timnas-quick-panel .side-item:last-child {
-    border-bottom: 0 !important;
-  }
-  #timnas .timnas-quick-panel .side-item__img {
-    width: 86px !important;
-    height: 64px !important;
-    border-radius: 8px !important;
-  }
-  #timnas .timnas-quick-panel .side-item h4 {
-    font-size: 11px !important;
-    line-height: 1.2 !important;
-    -webkit-line-clamp: 3 !important;
-  }
-  #timnas .timnas-quick-panel .side-item p {
-    margin-top: 5px !important;
-    font-size: 8px !important;
-  }
-}
-</style>
-
-<style id="timnas-quickread-spacing-fix">
-@media (min-width:1181px){
-  #timnas .timnas-quick-panel .side-list{
-    padding: 4px 14px !important;
-    gap: 0 !important;
-  }
-  #timnas .timnas-quick-panel .side-item,
-  #timnas .timnas-quick-panel .side-item:nth-child(3),
-  #timnas .timnas-quick-panel .side-item:nth-child(4){
-    display:grid !important;
-    grid-template-columns:92px minmax(0,1fr) !important;
-    align-items:center !important;
-    column-gap:14px !important;
-    padding:12px 2px !important;
-    min-height:0 !important;
-    height:auto !important;
-    box-sizing:border-box !important;
-  }
-  #timnas .timnas-quick-panel .side-item__img{
-    width:92px !important;
-    height:68px !important;
-    min-width:92px !important;
-    min-height:68px !important;
-    margin:0 !important;
-    border-radius:8px !important;
-    overflow:hidden !important;
-  }
-  #timnas .timnas-quick-panel .side-item > div{
-    min-width:0 !important;
-    padding:0 !important;
-    gap:5px !important;
-  }
-  #timnas .timnas-quick-panel .side-item h4{
-    margin:0 !important;
-    font-size:11px !important;
-    line-height:1.22 !important;
-    -webkit-line-clamp:3 !important;
-  }
-}
-
-    /* ================= MATCH LIVE TIMER ================= */
-    .fixture-live-status{display:inline-flex;align-items:center;gap:6px;color:#e53935;font-weight:800;white-space:nowrap}
-    .fixture-live-dot{width:7px;height:7px;border-radius:50%;background:#e53935;display:inline-block;animation:fixtureLivePulse 1.2s infinite}
-    .fixture-half-time{color:#ff9800}
-    @keyframes fixtureLivePulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}}
-</style>
-
-</body>
+ 
+    function openMobileMenu() { 
+      mobileMenu.classList.add('open'); 
+      body.classList.add('menu-open'); 
+    } 
+ 
+    function closeMobileMenu() { 
+      mobileMenu.classList.remove('open'); 
+      body.classList.remove('menu-open'); 
+    } 
+ 
+    function openSearchModal() { 
+      searchModal.classList.add('open'); 
+      setTimeout(() => searchInput.focus(), 50); 
+      renderSearchResults(''); 
+    } 
+ 
+    function closeSearchModal() { 
+      searchModal.classList.remove('open'); 
+      searchInput.value = ''; 
+    } 
+ 
+    openMenu?.addEventListener('click', openMobileMenu); 
+    closeMenu?.addEventListener('click', closeMobileMenu); 
+    mobileMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileMenu)); 
+ 
+    // NAVBAR ACTIVE STATE: garis oranye mengikuti menu/section yang dipilih. 
+    const desktopNavLinks = Array.from(document.querySelectorAll('.desktop-nav > a[href^="#"]')); 
+    const navSections = desktopNavLinks 
+      .map((link) => ({ link, section: document.querySelector(link.getAttribute('href')) })) 
+      .filter((item) => item.section); 
+ 
+    function setActiveNav(link) { 
+      desktopNavLinks.forEach((item) => item.classList.remove('active')); 
+      if (link) link.classList.add('active'); 
+    } 
+ 
+    desktopNavLinks.forEach((link) => { 
+      link.addEventListener('click', () => setActiveNav(link)); 
+    }); 
+ 
+    // Saat user scroll manual, garis aktif ikut berpindah ke section yang sedang terlihat. 
+    if ('IntersectionObserver' in window && navSections.length) { 
+      const navObserver = new IntersectionObserver((entries) => { 
+        const visible = entries 
+          .filter((entry) => entry.isIntersecting) 
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]; 
+        if (visible) { 
+          const match = navSections.find((item) => item.section === visible.target); 
+          if (match) setActiveNav(match.link); 
+        } 
+      }, { 
+        rootMargin: '-18% 0px -65% 0px', 
+        threshold: [0.05, 0.2, 0.5] 
+      }); 
+      navSections.forEach((item) => navObserver.observe(item.section)); 
+    } 
+ 
+    openSearch?.addEventListener('click', openSearchModal); 
+    closeSearch?.addEventListener('click', closeSearchModal); 
+    searchModal?.addEventListener('click', (event) => { 
+      if (event.target === searchModal) closeSearchModal(); 
+    }); 
+ 
+    searchInput?.addEventListener('input', (event) => renderSearchResults(event.target.value)); 
+ 
+    document.addEventListener('keydown', (event) => { 
+      if (event.key === 'Escape') { 
+        closeMobileMenu(); 
+        closeSearchModal(); 
+      } 
+    }); 
+ 
+    scrollButtons.forEach((button) => { 
+      button.addEventListener('click', () => { 
+        const target = document.querySelector(button.dataset.scroll); 
+        if (target) target.scrollIntoView({ behavior: 'smooth' }); 
+      }); 
+    }); 
+ 
+    window.addEventListener('scroll', () => { 
+      if (window.scrollY > 500) toTop.classList.add('show'); 
+      else toTop.classList.remove('show'); 
+    }); 
+ 
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' })); 
+ 
+    newsletterForm?.addEventListener('submit', (event) => { 
+      event.preventDefault(); 
+      alert('Mantap! Kamu berhasil subscribe ke Kancah Sports.'); 
+      newsletterForm.reset(); 
+    }); 
+  </script> 
+ 
+ 
+<style id="timnas-quickread-four-rows"> 
+/* Quick Read: 4 berita vertikal, satu baris satu berita — mengisi tinggi panel */ 
+@media (min-width: 1181px) { 
+  #timnas .timnas-quick-panel { 
+    display: grid !important; 
+    grid-template-rows: auto minmax(0, 1fr) auto !important; 
+    height: 568px !important; 
+    min-height: 568px !important; 
+  } 
+  #timnas .timnas-quick-panel .side-list { 
+    display: grid !important; 
+    grid-template-columns: 1fr !important; 
+    grid-template-rows: repeat(4, minmax(0, 1fr)) !important; 
+    gap: 0 !important; 
+    padding: 6px 14px !important; 
+    min-height: 0 !important; 
+    overflow: hidden !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item, 
+  #timnas .timnas-quick-panel .side-item:nth-child(3), 
+  #timnas .timnas-quick-panel .side-item:nth-child(4) { 
+    display: grid !important; 
+    grid-template-columns: 86px minmax(0, 1fr) !important; 
+    align-items: center !important; 
+    min-height: 0 !important; 
+    height: auto !important; 
+    padding: 8px 0 !important; 
+    border: 0 !important; 
+    border-bottom: 1px solid var(--line) !important; 
+    border-radius: 0 !important; 
+    background: transparent !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item:last-child { 
+    border-bottom: 0 !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item__img { 
+    width: 86px !important; 
+    height: 64px !important; 
+    border-radius: 8px !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item h4 { 
+    font-size: 11px !important; 
+    line-height: 1.2 !important; 
+    -webkit-line-clamp: 3 !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item p { 
+    margin-top: 5px !important; 
+    font-size: 8px !important; 
+  } 
+} 
+</style> 
+ 
+<style id="timnas-quickread-spacing-fix"> 
+@media (min-width:1181px){ 
+  #timnas .timnas-quick-panel .side-list{ 
+    padding: 4px 14px !important; 
+    gap: 0 !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item, 
+  #timnas .timnas-quick-panel .side-item:nth-child(3), 
+  #timnas .timnas-quick-panel .side-item:nth-child(4){ 
+    display:grid !important; 
+    grid-template-columns:92px minmax(0,1fr) !important; 
+    align-items:center !important; 
+    column-gap:14px !important; 
+    padding:12px 2px !important; 
+    min-height:0 !important; 
+    height:auto !important; 
+    box-sizing:border-box !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item__img{ 
+    width:92px !important; 
+    height:68px !important; 
+    min-width:92px !important; 
+    min-height:68px !important; 
+    margin:0 !important; 
+    border-radius:8px !important; 
+    overflow:hidden !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item > div{ 
+    min-width:0 !important; 
+    padding:0 !important; 
+    gap:5px !important; 
+  } 
+  #timnas .timnas-quick-panel .side-item h4{ 
+    margin:0 !important; 
+    font-size:11px !important; 
+    line-height:1.22 !important; 
+    -webkit-line-clamp:3 !important; 
+  } 
+} 
+ 
+    /* ================= MATCH LIVE TIMER ================= */ 
+    .fixture-live-status{display:inline-flex;align-items:center;gap:6px;color:#e53935;font-weight:800;white-space:nowrap} 
+    .fixture-live-dot{width:7px;height:7px;border-radius:50%;background:#e53935;display:inline-block;animation:fixtureLivePulse 1.2s infinite} 
+    .fixture-half-time{color:#ff9800} 
+    @keyframes fixtureLivePulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}} 
+</style> 
+ 
+</body> 
 </html>
