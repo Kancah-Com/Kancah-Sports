@@ -105,6 +105,10 @@
 
 
 
+
+    .latest-news-footer{display:flex;justify-content:center;align-items:center;margin-top:28px;}
+    .latest-news-footer .section-action{display:inline-flex;align-items:center;gap:10px;}
+
     /* ---------- ADSENSE ---------- */
     .ad-slot-wrap{width:100%;margin:22px auto;display:flex;justify-content:center;align-items:center;min-height:110px;overflow:hidden}
     .ad-slot-wrap.top-ad{min-height:100px;margin:18px auto 8px}
@@ -978,6 +982,14 @@
       font-size: 14px;
     }
 
+    .section-head__actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+      max-width: 620px;
+    }
+
     .section-action {
       border: 1px solid var(--line-strong);
       background: rgba(255,255,255,.04);
@@ -1133,22 +1145,33 @@
       padding: 14px;
     }
 
-    .side-item {
+    .side-list {
       display: grid;
-      grid-template-columns: 86px 1fr;
-      gap: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .side-item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,.035);
+      min-width: 0;
     }
 
     .side-item:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
     }
 
     .side-item__img {
-      aspect-ratio: 1 / 1;
-      border-radius: 12px;
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
       overflow: hidden;
       background: #111;
     }
@@ -1157,6 +1180,10 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .side-item > div {
+      padding: 0 12px;
     }
 
     .side-item h4 {
@@ -1441,9 +1468,30 @@
 
     .video-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(320px, .5fr);
-      gap: 18px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
     }
+    .video-feature { min-height: 0; aspect-ratio: 16 / 7.5; height: auto; }
+    .video-feature__media { position:absolute; inset:0; }
+    .video-feature__media img { width:100%; height:100%; object-fit:cover; }
+    .video-feature .media-card__content { min-height:100%; padding:clamp(22px,3vw,38px); }
+    .video-feature .play-button { border:0; cursor:pointer; flex:0 0 auto; }
+    .video-side-panel { min-width:0; margin-top:0; }
+    .video-side-list { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+    .video-side-list .side-item { cursor:pointer; }
+    .video-side-list .side-item__img { height:128px !important; min-height:128px !important; }
+    .video-side-list .side-item h4 { -webkit-line-clamp:3 !important; }
+    .video-modal { position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; padding:24px; }
+    .video-modal.open { display:flex; }
+    .video-modal__backdrop { position:absolute; inset:0; background:rgba(0,0,0,.82); backdrop-filter:blur(5px); }
+    .video-modal__dialog { position:relative; z-index:2; width:min(1000px,96vw); background:#101010; border:1px solid var(--line-strong); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); }
+    .video-modal__frame { aspect-ratio:16/9; background:#000; }
+    .video-modal__frame iframe { width:100%; height:100%; border:0; display:block; }
+    .video-modal__dialog h3 { padding:16px 20px 20px; font-size:20px; line-height:1.1; }
+    .video-modal__close { position:absolute; right:12px; top:12px; z-index:3; width:38px; height:38px; border:1px solid rgba(255,255,255,.2); border-radius:50%; background:rgba(0,0,0,.72); color:#fff; font-size:25px; cursor:pointer; }
+    @media(max-width:900px){ .video-feature{aspect-ratio:16/9;} .video-side-list{grid-template-columns:repeat(2,minmax(0,1fr)) !important;} }
+    @media(max-width:560px){ .video-side-list{grid-template-columns:1fr !important;} .video-feature{aspect-ratio:16/10;} .video-feature .media-card__content{padding:20px;} .video-modal{padding:12px;} }
 
     .media-card {
       position: relative;
@@ -1804,6 +1852,12 @@
         flex-direction: column;
       }
 
+      .section-head__actions {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
       .newsletter__content {
         grid-template-columns: 1fr;
       }
@@ -1813,7 +1867,12 @@
       }
     }
 
+    @media (max-width: 900px) {
+      .side-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 620px) {
+      .side-list { grid-template-columns: 1fr; }
       .container {
         width: min(100% - 22px, var(--container));
       }
@@ -2094,7 +2153,7 @@
 .network-item.current span{
   color:var(--orange);
 }
-    .league-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}.league-tab{border:1px solid var(--line);background:#101010;color:#e8e8e8;border-radius:999px;padding:11px 13px;cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;transition:.2s ease}.league-tab.active,.league-tab:hover{background:var(--orange);border-color:var(--orange);color:#050505}.standings-panel{display:none}.standings-panel.active{display:block}.standings-layout{align-items:start}.standings-layout .scorers-panel,#timnas .layout-2>.side-panel{margin-top:126px}.standings-table td:nth-child(5){color:var(--orange);font-size:15px}.side-item{align-items:center;min-height:98px}.side-item__img{width:86px;height:86px;display:block;flex:0 0 auto}.side-item__img img{display:block}.main-header__inner{grid-template-columns:auto minmax(0,1fr) auto}.header-actions{min-width:max-content}
+    .league-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}.league-tab{border:1px solid var(--line);background:#101010;color:#e8e8e8;border-radius:999px;padding:11px 13px;cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;transition:.2s ease}.league-tab.active,.league-tab:hover{background:var(--orange);border-color:var(--orange);color:#050505}.standings-panel{display:none}.standings-panel.active{display:block}.standings-layout{align-items:start}.standings-layout .scorers-panel,#timnas .layout-2>.side-panel{margin-top:126px}.standings-table td:nth-child(5){color:var(--orange);font-size:15px}.side-item{align-items:stretch;min-height:0}.side-item__img{width:100%;height:auto;display:block;flex:0 0 auto}.side-item__img img{display:block;width:100%;height:100%;object-fit:cover}.main-header__inner{grid-template-columns:auto minmax(0,1fr) auto}.header-actions{min-width:max-content}
     @media(max-width:1180px){.network-button{display:none}.standings-layout .scorers-panel,#timnas .layout-2>.side-panel{margin-top:0}.top-ticker__inner{grid-template-columns:auto 1fr}.ticker-marquee{mask-image:none;-webkit-mask-image:none}}
     @media(max-width:620px){.top-ticker{font-size:10px}.ticker-live{padding-right:10px}.ticker-track{gap:26px}.league-tabs{overflow:auto;flex-wrap:nowrap;padding-bottom:4px}.league-tab{white-space:nowrap}}
 /* FIX KANCAH NETWORK DROPDOWN */
@@ -2584,8 +2643,105 @@
 <style id="kancah-final-mobile-spacing-fix">
 /* =========================================================
    KANCAH SPORTS - FINAL MOBILE SPACING FIX
-   Taruh PALING BAWAH sebelum </head>
-   ========================================================= */
+   Taruh PALING BAWAH sebelum <style id="final-article-mini-vertical-fix">
+  /* HERO NEWS STRIP: gambar di atas, teks di bawah */
+  .hero-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    min-height: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .hero-strip .article-mini {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 170px auto !important;
+    gap: 0 !important;
+    min-height: 330px !important;
+    height: 330px !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .hero-strip .article-mini__media {
+    display: block !important;
+    width: 100% !important;
+    height: 170px !important;
+    min-height: 170px !important;
+    overflow: hidden !important;
+  }
+
+  .hero-strip .article-mini__media img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .hero-strip .article-mini__body {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 14px !important;
+    overflow: hidden !important;
+  }
+
+  .hero-strip .article-mini__cat,
+  .hero-strip .article-mini h4,
+  .hero-strip .article-mini__time {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .hero-strip .article-mini h4 {
+    font-size: 16px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.035em !important;
+    text-transform: uppercase !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 4 !important;
+    -webkit-box-orient: vertical !important;
+  }
+
+  .hero-strip .article-mini__time {
+    margin-top: auto !important;
+    color: var(--muted) !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: .12em !important;
+    text-transform: uppercase !important;
+  }
+
+  @media (max-width: 900px) {
+    .hero-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero-strip {
+      grid-template-columns: 1fr !important;
+    }
+
+    .hero-strip .article-mini {
+      grid-template-rows: 190px auto !important;
+      height: 350px !important;
+      min-height: 350px !important;
+    }
+
+    .hero-strip .article-mini__media {
+      height: 190px !important;
+      min-height: 190px !important;
+    }
+  }
+</style>
+<style id="kancah-mobile-responsive-fix">
 @media (max-width: 768px) {
   html,
   body {
@@ -2723,19 +2879,51 @@
     line-height: 1.08 !important;
   }
 
-  .article-mini {
-    grid-template-columns: 90px 1fr !important;
-    min-height: 92px !important;
+  .hero-strip .article-mini {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 150px auto !important;
+    min-height: 300px !important;
+    height: 300px !important;
+    width: 100% !important;
+    overflow: hidden !important;
     border-radius: 13px !important;
   }
 
-  .article-mini__body {
-    padding: 10px 11px 10px 0 !important;
+  .hero-strip .article-mini__media {
+    width: 100% !important;
+    height: 150px !important;
+    min-height: 150px !important;
+    overflow: hidden !important;
   }
 
-  .article-mini h4 {
-    font-size: 12px !important;
+  .hero-strip .article-mini__media img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .hero-strip .article-mini__body {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .hero-strip .article-mini h4 {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    font-size: 13px !important;
     line-height: 1.15 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 4 !important;
+    overflow: hidden !important;
   }
 
   .section {
@@ -2766,6 +2954,187 @@
   .hero.container {
     padding-left: 20px !important;
     padding-right: 20px !important;
+  }
+}
+</style>
+
+<style id="timnas-layout-redesign">
+/* =========================================================
+   TIMNAS HUB — REDESIGN
+   Desktop: 2 berita utama + quick read 2x2
+   Mobile: seluruh blok turun menjadi 1 kolom
+   ========================================================= */
+#timnas .layout-2{
+  display:grid !important;
+  grid-template-columns:minmax(0,1.62fr) minmax(380px,.78fr) !important;
+  gap:22px !important;
+  align-items:start !important;
+}
+
+#timnas .wide-list{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:18px !important;
+}
+
+#timnas .wide-card{
+  position:relative !important;
+  height:275px !important;
+  min-height:275px !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+}
+
+#timnas .wide-card__content{
+  padding:26px !important;
+  justify-content:flex-end !important;
+}
+
+#timnas .wide-card h3{
+  max-width:900px !important;
+  font-size:clamp(26px,2.7vw,42px) !important;
+  line-height:.98 !important;
+  letter-spacing:-.055em !important;
+  text-wrap:balance !important;
+}
+
+#timnas .side-panel{
+  margin-top:116px !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border-radius:18px !important;
+}
+
+#timnas .side-panel .panel-head{
+  min-height:68px !important;
+  padding:0 20px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  border-bottom:1px solid var(--line) !important;
+}
+
+#timnas .side-list{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+  padding:14px !important;
+}
+
+#timnas .side-item{
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  background:rgba(255,255,255,.035) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:14px !important;
+  overflow:hidden !important;
+  transition:transform .2s ease,border-color .2s ease,background .2s ease !important;
+}
+
+#timnas .side-item:hover{
+  transform:translateY(-2px) !important;
+  border-color:rgba(255,77,0,.55) !important;
+  background:rgba(255,77,0,.06) !important;
+}
+
+#timnas .side-item__img{
+  display:block !important;
+  width:100% !important;
+  height:112px !important;
+  min-height:112px !important;
+  overflow:hidden !important;
+  flex:none !important;
+}
+
+#timnas .side-item__img img{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  transition:transform .35s ease !important;
+}
+
+#timnas .side-item:hover .side-item__img img{
+  transform:scale(1.04) !important;
+}
+
+#timnas .side-item > div{
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
+  padding:12px 13px 13px !important;
+  gap:7px !important;
+}
+
+#timnas .side-item h4{
+  margin:0 !important;
+  color:#fff !important;
+  font-size:13px !important;
+  line-height:1.16 !important;
+  letter-spacing:-.025em !important;
+  text-transform:uppercase !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp:4 !important;
+  -webkit-box-orient:vertical !important;
+}
+
+#timnas .side-item p{
+  margin:0 !important;
+  color:var(--muted) !important;
+  font-size:9px !important;
+  line-height:1.2 !important;
+  font-weight:700 !important;
+  letter-spacing:.10em !important;
+  text-transform:uppercase !important;
+}
+
+@media (max-width:1180px){
+  #timnas .layout-2{
+    grid-template-columns:minmax(0,1fr) minmax(330px,.72fr) !important;
+    gap:18px !important;
+  }
+  #timnas .wide-card{
+    height:250px !important;
+    min-height:250px !important;
+  }
+}
+
+@media (max-width:900px){
+  #timnas .side-panel{margin-top:0 !important;}
+  #timnas .layout-2{
+    grid-template-columns:1fr !important;
+  }
+  #timnas .wide-card{
+    height:260px !important;
+    min-height:260px !important;
+  }
+}
+
+@media (max-width:560px){
+  #timnas .wide-card{
+    height:230px !important;
+    min-height:230px !important;
+    border-radius:14px !important;
+  }
+  #timnas .wide-card__content{
+    padding:18px !important;
+  }
+  #timnas .wide-card h3{
+    font-size:25px !important;
+    line-height:1 !important;
+  }
+  #timnas .side-list{
+    grid-template-columns:1fr !important;
+  }
+  #timnas .side-item__img{
+    height:155px !important;
+    min-height:155px !important;
+  }
+  #timnas .side-item h4{
+    font-size:14px !important;
   }
 }
 </style>
@@ -2996,7 +3365,6 @@
               <span class="eyebrow">Latest News</span>
               <h2 class="section-title">Update olahraga terkini</h2>
             </div>
-            <p class="section-desc">Berita disusun padat agar pembaca langsung mendapat banyak opsi tanpa hero yang terlalu tinggi.</p>
           </div>
 
           <div class="tabs" id="categoryTabs" aria-label="Filter berita">
@@ -3057,6 +3425,10 @@
               <div class="news-card__body"><div class="news-card__cat">Champions League</div><h3>Liga Champions Masuki Fase Penentuan</h3><p>Tekanan semakin besar untuk para kandidat juara musim ini.</p><div class="news-card__meta"><span>2 Jam</span><span>8.6K</span></div></div>
             </article>
           </div>
+          <div class="latest-news-footer">
+            <a class="section-action" href="berita.html">Lihat Semua Berita <span aria-hidden="true">→</span></a>
+          </div>
+
         </div>
       </section>
 
@@ -3123,27 +3495,31 @@
           <div class="section-head">
             <div><span class="eyebrow">Video Highlight</span><h2 class="section-title">Tonton momen penting</h2></div>
           </div>
-          <div class="video-grid">
-            <article class="media-card" data-title="Highlight Indonesia vs Malaysia" data-category="Video">
-              <a class="media-card__media" href="#"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1400&auto=format&fit=crop" alt="Highlight pertandingan" /></a>
+          <div class="video-grid" id="videoGrid">
+            <article class="media-card video-feature" id="videoFeature">
+              <div class="media-card__media video-feature__media"><img id="videoFeatureImage" src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1400&auto=format&fit=crop" alt="Highlight pertandingan" /></div>
               <div class="media-card__content">
-                <div class="play-button"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-                <span class="tag orange">Watch Now</span>
-                <h2 class="section-title" style="font-size:clamp(32px,4vw,58px);max-width:820px;">Highlight Indonesia vs Malaysia: Gol Menit Akhir yang Panas</h2>
+                <button class="play-button video-play" id="videoFeaturePlay" type="button" aria-label="Putar video"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+                <span class="tag orange" id="videoFeatureTag">Watch Now</span>
+                <h2 class="section-title" id="videoFeatureTitle" style="font-size:clamp(32px,4vw,58px);max-width:820px;">Highlight Indonesia vs Malaysia: Gol Menit Akhir yang Panas</h2>
               </div>
             </article>
-            <aside class="side-panel">
-              <div class="panel-head"><h2 class="panel-title">Video Lainnya</h2><a class="panel-link" href="#">Semua</a></div>
-              <div class="side-list">
-                <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop" alt="Video" /></a><div><h4>Analisis Gol dari Set Piece</h4><p>Video • 04:22</p></div></article>
-                <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1518604666860-9ed391f76460?q=80&w=300&auto=format&fit=crop" alt="Video" /></a><div><h4>Behind The Match: Ruang Ganti</h4><p>Video • 07:10</p></div></article>
-                <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=300&auto=format&fit=crop" alt="Video" /></a><div><h4>Skill Terbaik Pekan Ini</h4><p>Video • 03:51</p></div></article>
-                <article class="side-item"><a class="side-item__img" href="#"><img src="https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=300&auto=format&fit=crop" alt="Video" /></a><div><h4>Prediksi Lineup Malam Ini</h4><p>Video • 05:16</p></div></article>
-              </div>
+            <aside class="side-panel video-side-panel">
+              <div class="panel-head"><h2 class="panel-title">Video Lainnya</h2><a class="panel-link" href="#videos">Semua</a></div>
+              <div class="side-list video-side-list" id="videoSideList"></div>
             </aside>
           </div>
         </div>
       </section>
+
+      <div class="video-modal" id="videoModal" aria-hidden="true">
+        <div class="video-modal__backdrop" data-video-close></div>
+        <div class="video-modal__dialog" role="dialog" aria-modal="true" aria-label="Pemutar video">
+          <button class="video-modal__close" type="button" data-video-close aria-label="Tutup">×</button>
+          <div class="video-modal__frame"><iframe id="videoModalFrame" src="" title="Kancah Sports Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+          <h3 id="videoModalTitle"></h3>
+        </div>
+      </div>
 
       <section class="section" id="fixtures">
         <div class="container">
@@ -3332,6 +3708,7 @@
       transfer: [],
       fixtures: [],
       standings: [],
+      video: [],
     };
 
     function homepageRows(section){
@@ -3429,8 +3806,40 @@
       if(hero) hero.innerHTML=FIXTURES.slice(0,4).map(f=>{const dt=fixtureDateTime(f);return `<article class="fixture-mini"><div class="fixture-mini__top"><span>${safeText(f.league_name||'Match')}</span><span>${safeText(dt.date)}</span></div><div class="fixture-mini__teams"><span class="schedule-team">${f.home_team_logo?`<img src="${safeText(f.home_team_logo)}" alt="">`:''}${safeText(f.home_team_name||'Home')}</span><span class="fixture-mini__time">${safeText(dt.time)}</span><span class="schedule-team">${f.away_team_logo?`<img src="${safeText(f.away_team_logo)}" alt="">`:''}${safeText(f.away_team_name||'Away')}</span><span></span></div></article>`}).join('') || '<div style="padding:14px;color:#777;font-size:10px">Belum ada jadwal.</div>';
     }
 
+    function youtubeId(url){
+      if(!url) return '';
+      const value=String(url).trim();
+      const patterns=[/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/, /[?&]v=([A-Za-z0-9_-]{11})/];
+      for(const re of patterns){const m=value.match(re);if(m)return m[1];}
+      return '';
+    }
+    function youtubeThumb(id){ return id ? `https://img.youtube.com/vi/${encodeURIComponent(id)}/hqdefault.jpg` : ''; }
+    function youtubeEmbed(id){ return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0` : ''; }
+    function renderVideos(){
+      const feature=document.getElementById('videoFeature'), side=document.getElementById('videoSideList');
+      if(!feature||!side)return;
+      const rows=homepageRows('video').filter(r=>r.payload?.youtube_url);
+      const fallback=[
+        {title:'Highlight Indonesia vs Malaysia: Gol Menit Akhir yang Panas',youtube_url:'',thumbnail_url:'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1400&auto=format&fit=crop',category:'Watch Now',duration:'04:22'},
+        {title:'Analisis Gol dari Set Piece',youtube_url:'',thumbnail_url:'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop',category:'Video',duration:'04:22'},
+        {title:'Behind The Match: Ruang Ganti',youtube_url:'',thumbnail_url:'https://images.unsplash.com/photo-1518604666860-9ed391f76460?q=80&w=300&auto=format&fit=crop',category:'Video',duration:'07:10'},
+        {title:'Skill Terbaik Pekan Ini',youtube_url:'',thumbnail_url:'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=300&auto=format&fit=crop',category:'Video',duration:'03:51'},
+        {title:'Prediksi Lineup Malam Ini',youtube_url:'',thumbnail_url:'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=300&auto=format&fit=crop',category:'Video',duration:'05:16'}
+      ];
+      const items=rows.length?rows.map(r=>r.payload||{}):fallback;
+      const first=items[0]||{}; const firstId=youtubeId(first.youtube_url);
+      const img=document.getElementById('videoFeatureImage'); if(firstId) img.src=youtubeThumb(firstId); else if(first.thumbnail_url) img.src=first.thumbnail_url;
+      img.alt=safeText(first.title||'Highlight pertandingan');
+      document.getElementById('videoFeatureTitle').textContent=first.title||'Highlight pertandingan';
+      document.getElementById('videoFeatureTag').textContent=first.category||'Watch Now';
+      feature.dataset.youtubeId=firstId; feature.dataset.videoTitle=first.title||'';
+      side.innerHTML=items.slice(1,5).map((v,i)=>{const id=youtubeId(v.youtube_url);return `<article class="side-item video-side-item" data-youtube-id="${safeText(id)}" data-video-title="${safeText(v.title||'Video Kancah Sports')}"><div class="side-item__img"><img src="${safeText(youtubeThumb(id)||v.thumbnail_url||'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=300&auto=format&fit=crop')}" alt="${safeText(v.title||'Video')}" /></div><div><h4>${safeText(v.title||'Video Kancah Sports')}</h4><p>${safeText(v.duration?`Video • ${v.duration}`:'Video')}</p></div></article>`;}).join('');
+      side.querySelectorAll('.video-side-item').forEach(el=>el.addEventListener('click',()=>openVideoModal(el.dataset.youtubeId,el.dataset.videoTitle)));
+    }
+    function openVideoModal(id,title){ if(!id)return; const modal=document.getElementById('videoModal'), frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=youtubeEmbed(id); document.getElementById('videoModalTitle').textContent=title||'Kancah Sports Video'; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('menu-open'); }
+    function closeVideoModal(){ const modal=document.getElementById('videoModal'),frame=document.getElementById('videoModalFrame'); if(!modal||!frame)return; frame.src=''; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.classList.remove('menu-open'); }
     function renderAllHomepage(){
-      renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderScheduleStrip();
+      renderHomepageTrending(); renderHomepageEditorPicks(); renderHomepageTransfers(); renderHomepageFixtures(); renderHomepageStandings(); renderScheduleStrip(); renderVideos();
     }
 
     // ================== RENDER: HERO ==================
@@ -3530,10 +3939,11 @@
         return;
       }
 
-      grid.innerHTML = articles.map(newsCardHtml).join("");
+      const latestSix = articles.slice(0, 6);
+      grid.innerHTML = latestSix.map(newsCardHtml).join("");
 
-      // Rebuild category tabs from real data
-      const cats = [...new Set(articles.map(a => (a.category || "").trim()).filter(Boolean))].sort();
+      // Rebuild category tabs from the 6 berita yang tampil di homepage
+      const cats = [...new Set(latestSix.map(a => (a.category || "").trim()).filter(Boolean))].sort();
       tabsWrap.innerHTML = `<button class="tab-button active" data-filter="all">Semua</button>` +
         cats.map(c => `<button class="tab-button" data-filter="${safeText(slugFilter(c))}">${safeText(c)}</button>`).join("");
 
@@ -3699,7 +4109,7 @@
       ]);
       if(error) console.error('Gagal memuat homepage_content:',error);
       if(leagueError||teamError||fixtureError){console.error('Gagal memuat data olahraga:',leagueError||teamError||fixtureError);FIXTURES=[];}else{const leagueMap=new Map((leagues||[]).map(x=>[String(x.id),x]));const teamMap=new Map((teams||[]).map(x=>[String(x.id),x]));FIXTURES=(fixtures||[]).map(f=>{const l=leagueMap.get(String(f.league_id))||{};const h=teamMap.get(String(f.home_team_id))||{};const a=teamMap.get(String(f.away_team_id))||{};return {...f,league_name:l.name||'—',home_team_name:h.name||'—',home_team_logo:h.logo_url||'',away_team_name:a.name||'—',away_team_logo:a.logo_url||''};});}
-      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[]};
+      HOMEPAGE={trending:[],editor_picks:[],transfer:[],fixtures:[],standings:[],video:[]};
       (data||[]).forEach(row=>{if(HOMEPAGE[row.section])HOMEPAGE[row.section].push(row);});
       renderAllHomepage();
     }
@@ -3718,6 +4128,10 @@
     const toTop = document.getElementById('toTop');
     const newsletterForm = document.getElementById('newsletterForm');
     const scrollButtons = document.querySelectorAll('[data-scroll]');
+
+    document.getElementById('videoFeaturePlay')?.addEventListener('click',()=>{const el=document.getElementById('videoFeature');openVideoModal(el?.dataset.youtubeId,el?.dataset.videoTitle);});
+    document.querySelectorAll('[data-video-close]').forEach(el=>el.addEventListener('click',closeVideoModal));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVideoModal();});
 
     function openMobileMenu() {
       mobileMenu.classList.add('open');
