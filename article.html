@@ -1,22 +1,80 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
 
-  <title>Kancah Sports</title>
-  <meta name="description" content="Berita terbaru Kancah Sports." />
+  <meta name="google-adsense-account" content="ca-pub-6133782160601858">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Kancah Sports | Berita Olahraga</title>
+
+  <meta
+    name="description"
+    content="Berita olahraga terbaru Kancah Sports."
+  >
+
+  <meta
+    name="keywords"
+    content="Kancah Sports, berita olahraga, berita bola, sepak bola, timnas, transfer, jadwal bola"
+  >
+
+  <meta name="author" content="Kancah Sports">
+
+  <meta property="og:site_name" content="Kancah Sports">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Kancah Sports">
+  <meta property="og:description" content="Berita olahraga terbaru Kancah Sports.">
+  <meta property="og:image" content="">
+  <meta property="og:url" content="">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kancah Sports">
+  <meta name="twitter:description" content="Berita olahraga terbaru Kancah Sports.">
+  <meta name="twitter:image" content="">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
+
+    /* =========================================================
+       KANCAH SPORTS ARTICLE
+       ========================================================= */
+
     :root {
       --orange: #ff4d00;
+      --orange-dark: #c93b00;
+
       --black: #070707;
-      --line: rgba(255,255,255,.12);
+      --black-2: #0d0d0d;
+      --card: #151515;
+      --card-2: #1c1c1c;
+
+      --line: rgba(255,255,255,.11);
+      --line-strong: rgba(255,255,255,.18);
+
+      --text: #fff;
+      --soft: #e7e7e7;
       --muted: #a7a7a7;
+
+      --green: #23d18b;
+      --red: #ff3434;
+      --yellow: #ffd166;
+
+      --radius: 18px;
+      --shadow: 0 20px 70px rgba(0,0,0,.35);
+
+      --container: 1440px;
+
+      --article-width: 860px;
+      --sidebar-width: 340px;
+
+      --article-font-size: 18px;
     }
 
     * {
@@ -25,13 +83,36 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      font-family: Ubuntu, Arial, sans-serif;
+      font-family: "Ubuntu", Arial, sans-serif;
+
       background:
-        radial-gradient(circle at top left, rgba(255,77,0,.14), transparent 32vw),
+        radial-gradient(
+          circle at top left,
+          rgba(255,77,0,.12),
+          transparent 32vw
+        ),
+        radial-gradient(
+          circle at 80% 25%,
+          rgba(255,77,0,.07),
+          transparent 25vw
+        ),
         var(--black);
-      color: #fff;
-      line-height: 1.7;
+
+      color: var(--text);
+      min-height: 100vh;
+
+      -webkit-font-smoothing: antialiased;
+
+      overflow-x: hidden;
+    }
+
+    body.menu-open {
+      overflow: hidden;
     }
 
     a {
@@ -39,278 +120,6117 @@
       text-decoration: none;
     }
 
-    .container {
-      width: min(900px, calc(100% - 32px));
-      margin: 0 auto;
+    button,
+    input {
+      font: inherit;
     }
 
-    .header {
-      border-bottom: 1px solid var(--line);
-      background: rgba(7,7,7,.88);
-      backdrop-filter: blur(16px);
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    ::selection {
+      background: var(--orange);
+      color: #000;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #080808;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #2d2d2d;
+      border-radius: 99px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--orange);
+    }
+
+    /* =========================================================
+       READING PROGRESS
+       ========================================================= */
+
+    .reading-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+
+      width: 0%;
+      height: 3px;
+
+      background: var(--orange);
+
+      box-shadow:
+        0 0 12px rgba(255,77,0,.7);
+
+      transition: width .08s linear;
+    }
+
+    /* =========================================================
+       CONTAINER
+       ========================================================= */
+
+    .container {
+      width: min(
+        var(--container),
+        calc(100% - 32px)
+      );
+
+      margin-inline: auto;
+    }
+
+    /* =========================================================
+       TOP TICKER
+       ========================================================= */
+
+    .top-ticker {
+      min-height: 34px;
+
+      background: var(--orange);
+      color: #090909;
+
+      font-size: 11px;
+      line-height: 1;
+
+      letter-spacing: .12em;
+      text-transform: uppercase;
+
+      font-weight: 700;
+
+      overflow: hidden;
+    }
+
+    .top-ticker__inner {
+      min-height: 34px;
+
+      display: grid;
+
+      grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+      align-items: center;
+
+      gap: 18px;
+    }
+
+    .ticker-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      white-space: nowrap;
+
+      padding-right: 18px;
+
+      border-right:
+        1px solid rgba(0,0,0,.22);
+    }
+
+    .dot-live {
+      width: 8px;
+      height: 8px;
+
+      background: #050505;
+
+      border-radius: 50%;
+
+      animation: pulse 1.35s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow:
+          0 0 0 0 rgba(0,0,0,.5);
+      }
+
+      70% {
+        box-shadow:
+          0 0 0 8px rgba(0,0,0,0);
+      }
+
+      100% {
+        box-shadow:
+          0 0 0 0 rgba(0,0,0,0);
+      }
+    }
+
+    .ticker-content {
+      overflow: hidden;
+
+      white-space: nowrap;
+
+      text-overflow: ellipsis;
+    }
+
+    .ticker-network {
+      white-space: nowrap;
+
+      border-left:
+        1px solid rgba(0,0,0,.22);
+
+      padding-left: 18px;
+    }
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .main-header {
       position: sticky;
       top: 0;
-      z-index: 10;
+
+      z-index: 100;
+
+      background:
+        rgba(7,7,7,.88);
+
+      backdrop-filter: blur(18px);
+
+      border-bottom:
+        1px solid var(--line);
     }
 
-    .header-inner {
+    .main-header__inner {
       min-height: 72px;
-      display: flex;
+
+      display: grid;
+
+      grid-template-columns:
+        auto
+        1fr
+        auto;
+
       align-items: center;
-      justify-content: space-between;
+
+      gap: 24px;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 900;
-      font-size: 28px;
-      letter-spacing: -.07em;
-      text-transform: uppercase;
-      color: var(--orange);
+
+      min-width: max-content;
     }
 
-    .brand span:first-child {
-      background: var(--orange);
-      color: #050505;
-      padding: 7px 10px;
+    .brand img {
+      display: block;
+
+      height:
+        clamp(30px, 3vw, 42px);
+
+      width: auto;
+
+      transition:
+        opacity .25s ease,
+        transform .25s ease;
     }
 
-    .back {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .15em;
-      text-transform: uppercase;
+    .brand:hover img {
+      opacity: .86;
+      transform: translateY(-1px);
     }
 
-    .back:hover {
-      color: var(--orange);
-    }
-
-    .article {
-      padding: 42px 0 70px;
-    }
-
-    .category {
-      display: inline-flex;
-      background: var(--orange);
-      color: #050505;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-    }
-
-    h1 {
-      font-size: clamp(34px, 6vw, 72px);
-      line-height: .92;
-      letter-spacing: -.07em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
-    }
-
-    .meta {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .13em;
-      text-transform: uppercase;
-      margin-bottom: 26px;
+    .desktop-nav {
       display: flex;
-      flex-wrap: wrap;
+
+      justify-content: center;
+      align-items: center;
+
+      gap:
+        clamp(18px, 2.2vw, 38px);
+
+      color: var(--muted);
+
+      font-size: 11px;
+      font-weight: 700;
+
+      letter-spacing: .18em;
+
+      text-transform: uppercase;
+    }
+
+    .desktop-nav a {
+      position: relative;
+
+      padding: 28px 0;
+    }
+
+    .desktop-nav a::after {
+      content: "";
+
+      position: absolute;
+
+      left: 0;
+      right: 0;
+      bottom: 19px;
+
+      height: 2px;
+
+      background: var(--orange);
+
+      transform:
+        scaleX(0);
+
+      transform-origin: left;
+
+      transition:
+        transform .25s ease;
+    }
+
+    .desktop-nav a:hover,
+    .desktop-nav a.active {
+      color: #fff;
+    }
+
+    .desktop-nav a:hover::after,
+    .desktop-nav a.active::after {
+      transform:
+        scaleX(1);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+
       gap: 10px;
     }
 
-    .hero-img {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      margin-bottom: 32px;
-      background: #111;
+    .icon-button,
+    .menu-button {
+      width: 42px;
+      height: 42px;
+
+      border:
+        1px solid var(--line);
+
+      background: #101010;
+
+      color: #fff;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      cursor: pointer;
+
+      transition: .25s ease;
     }
 
-    .excerpt {
-      font-size: 20px;
-      color: #ddd;
-      font-weight: 500;
-      margin-bottom: 28px;
-      border-left: 4px solid var(--orange);
-      padding-left: 18px;
+    .icon-button:hover,
+    .menu-button:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+
+      transform:
+        translateY(-1px);
     }
 
-    .content {
-      color: #e9e9e9;
-      font-size: 17px;
+    .menu-button {
+      display: none;
     }
 
-    .content p {
-      margin-bottom: 18px;
+    /* =========================================================
+       MOBILE MENU
+       ========================================================= */
+
+    .mobile-menu {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 500;
+
+      background:
+        rgba(7,7,7,.98);
+
+      transform:
+        translateX(100%);
+
+      transition:
+        transform .35s ease;
+
+      padding: 24px;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 28px;
     }
 
-    .loading,
-    .error {
-      padding: 70px 0;
-      text-align: center;
-      color: var(--muted);
-      font-weight: 900;
-      letter-spacing: .12em;
+    .mobile-menu.open {
+      transform:
+        translateX(0);
+    }
+
+    .mobile-menu__top {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+    }
+
+    .mobile-menu__nav {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 16px;
+
+      margin-top: 20px;
+
+      font-size:
+        clamp(30px, 9vw, 58px);
+
+      font-weight: 700;
+
+      letter-spacing: -.05em;
+
       text-transform: uppercase;
     }
 
-    .error {
+    .mobile-menu__nav a {
+      padding-bottom: 14px;
+
+      border-bottom:
+        1px solid var(--line);
+    }
+
+    .mobile-menu__nav a:hover {
       color: var(--orange);
     }
 
-    @media (max-width: 620px) {
-      .brand {
-        font-size: 22px;
+    /* =========================================================
+       BREAKING
+       ========================================================= */
+
+    .breaking {
+      border-bottom:
+        1px solid var(--line);
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(255,77,0,.14),
+          transparent 40%,
+          rgba(255,77,0,.08)
+        );
+    }
+
+    .breaking__inner {
+      min-height: 44px;
+
+      display: grid;
+
+      grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+      gap: 16px;
+
+      align-items: center;
+
+      overflow: hidden;
+    }
+
+    .breaking__label {
+      background: var(--orange);
+
+      color: #000;
+
+      padding: 8px 10px;
+
+      font-size: 9px;
+      font-weight: 700;
+
+      letter-spacing: .16em;
+
+      text-transform: uppercase;
+
+      border-radius: 5px;
+
+      white-space: nowrap;
+    }
+
+    .breaking__content {
+      min-width: 0;
+
+      color: #e9e9e9;
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      white-space: nowrap;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+    }
+
+    .breaking__time {
+      color: var(--muted);
+
+      font-size: 10px;
+
+      font-weight: 700;
+
+      letter-spacing: .12em;
+
+      text-transform: uppercase;
+
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+       ADSENSE
+       ========================================================= */
+
+    .ad-slot-wrap {
+      width: 100%;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      overflow: hidden;
+
+      margin: 20px auto;
+    }
+
+    .top-ad {
+      min-height: 100px;
+
+      margin:
+        16px auto 8px;
+    }
+
+    .article-ad {
+      min-height: 140px;
+
+      margin:
+        34px auto;
+    }
+
+    .sidebar-ad {
+      min-height: 250px;
+
+      margin:
+        0 0 20px;
+    }
+
+    .ad-inner {
+      width: 100%;
+
+      text-align: center;
+    }
+
+    .ad-label {
+      display: block;
+
+      color: #555;
+
+      font-size: 8px;
+
+      letter-spacing: .14em;
+
+      text-transform: uppercase;
+
+      margin-bottom: 6px;
+    }
+
+    .adsbygoogle {
+      display: block;
+
+      width: 100%;
+    }
+
+    /* =========================================================
+       ARTICLE HEADER
+       ========================================================= */
+
+    .article-page {
+      padding:
+        38px 0 80px;
+    }
+
+    .article-breadcrumb {
+      display: flex;
+
+      align-items: center;
+
+      flex-wrap: wrap;
+
+      gap: 9px;
+
+      margin-bottom: 24px;
+
+      color: #777;
+
+      font-size: 10px;
+
+      font-weight: 700;
+
+      letter-spacing: .11em;
+
+      text-transform: uppercase;
+    }
+
+    .article-breadcrumb a:hover {
+      color: var(--orange);
+    }
+
+    .breadcrumb-current {
+      color: #aaa;
+
+      max-width: 450px;
+
+      white-space: nowrap;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+    }
+
+    .article-category {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      background: var(--orange);
+
+      color: #050505;
+
+      padding:
+        8px 11px;
+
+      border-radius: 5px;
+
+      font-size: 9px;
+
+      font-weight: 700;
+
+      letter-spacing: .15em;
+
+      text-transform: uppercase;
+
+      margin-bottom: 17px;
+    }
+
+    .article-category::before {
+      content: "";
+
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+
+      background: #000;
+    }
+
+    .article-title {
+      max-width: 1150px;
+
+      font-size:
+        clamp(40px, 6.4vw, 86px);
+
+      line-height:
+        .91;
+
+      letter-spacing:
+        -.075em;
+
+      text-transform:
+        uppercase;
+
+      text-wrap:
+        balance;
+
+      margin-bottom:
+        20px;
+    }
+
+    .article-lead {
+      max-width: 940px;
+
+      color: #cfcfcf;
+
+      font-size:
+        clamp(17px, 1.65vw, 23px);
+
+      line-height:
+        1.5;
+
+      font-weight: 500;
+
+      margin-bottom:
+        24px;
+    }
+
+    /* =========================================================
+       META
+       ========================================================= */
+
+    .article-meta {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      align-items: center;
+
+      gap: 12px;
+
+      color: var(--muted);
+
+      font-size: 10px;
+
+      font-weight: 700;
+
+      letter-spacing: .1em;
+
+      text-transform: uppercase;
+
+      margin-bottom: 24px;
+    }
+
+    .article-meta__author {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      color: #fff;
+    }
+
+    .author-dot {
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: var(--orange);
+
+      box-shadow:
+        0 0 0 4px rgba(255,77,0,.12);
+    }
+
+    .meta-separator {
+      color: #555;
+    }
+
+    /* =========================================================
+       ACTION BAR
+       ========================================================= */
+
+    .article-actions {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      align-items: center;
+
+      gap: 8px;
+
+      margin-bottom: 28px;
+    }
+
+    .article-action {
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 8px;
+
+      min-height: 40px;
+
+      padding:
+        9px 13px;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        rgba(255,255,255,.035);
+
+      color: #ddd;
+
+      border-radius: 999px;
+
+      font-size: 9px;
+
+      font-weight: 700;
+
+      letter-spacing: .11em;
+
+      text-transform: uppercase;
+
+      cursor: pointer;
+
+      transition: .2s ease;
+    }
+
+    .article-action:hover,
+    .article-action.active {
+      border-color:
+        var(--orange);
+
+      color:
+        var(--orange);
+
+      background:
+        rgba(255,77,0,.08);
+    }
+
+    .article-action svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* =========================================================
+       HERO IMAGE
+       ========================================================= */
+
+    .article-hero {
+      margin-bottom:
+        10px;
+    }
+
+    .article-hero__frame {
+      position: relative;
+
+      width: 100%;
+
+      aspect-ratio:
+        16 / 8.2;
+
+      min-height: 360px;
+
+      overflow: hidden;
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        22px;
+
+      background:
+        #111;
+
+      box-shadow:
+        var(--shadow);
+    }
+
+    .article-hero__frame::after {
+      content: "";
+
+      position: absolute;
+
+      inset: 0;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(0,0,0,0),
+          rgba(0,0,0,.15)
+        );
+    }
+
+    .article-hero img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .article-caption {
+      color: #777;
+
+      font-size: 10px;
+
+      line-height: 1.45;
+
+      margin-top: 8px;
+
+      padding-left: 4px;
+    }
+
+    /* =========================================================
+       MAIN ARTICLE LAYOUT
+       ========================================================= */
+
+    .article-layout {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1fr)
+        var(--sidebar-width);
+
+      gap: 38px;
+
+      align-items: start;
+    }
+
+    .article-main {
+      min-width: 0;
+    }
+
+    /* =========================================================
+       SHARE RAIL
+       ========================================================= */
+
+    .article-content-wrap {
+      position: relative;
+    }
+
+    .share-rail {
+      position: absolute;
+
+      left: -72px;
+
+      top: 0;
+
+      width: 48px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 8px;
+    }
+
+    .share-rail button {
+      width: 42px;
+      height: 42px;
+
+      display: grid;
+
+      place-items: center;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        #101010;
+
+      color: #aaa;
+
+      border-radius: 50%;
+
+      cursor: pointer;
+
+      transition: .2s ease;
+    }
+
+    .share-rail button:hover {
+      border-color:
+        var(--orange);
+
+      color:
+        var(--orange);
+
+      transform:
+        translateX(2px);
+    }
+
+    /* =========================================================
+       ARTICLE CONTENT
+       ========================================================= */
+
+    .article-content {
+      max-width:
+        var(--article-width);
+
+      color:
+        #e9e9e9;
+
+      font-size:
+        var(--article-font-size);
+
+      line-height:
+        1.82;
+
+      font-weight:
+        400;
+    }
+
+    .article-content p {
+      margin-bottom:
+        24px;
+    }
+
+    .article-content p:first-of-type::first-letter {
+      float: left;
+
+      font-size: 68px;
+
+      line-height: .82;
+
+      font-weight: 700;
+
+      color: var(--orange);
+
+      padding:
+        8px 10px 0 0;
+    }
+
+    .article-content h2,
+    .article-content h3 {
+      color: #fff;
+
+      line-height: 1.1;
+
+      letter-spacing: -.045em;
+
+      text-transform: uppercase;
+
+      margin:
+        42px 0 18px;
+    }
+
+    .article-content h2 {
+      font-size:
+        clamp(26px, 3vw, 40px);
+    }
+
+    .article-content h3 {
+      font-size:
+        clamp(21px, 2.5vw, 30px);
+    }
+
+    .article-content strong {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .article-content em {
+      color: #ddd;
+    }
+
+    .article-content a {
+      color: var(--orange);
+
+      text-decoration:
+        underline;
+
+      text-underline-offset:
+        3px;
+    }
+
+    .article-content a:hover {
+      color: #fff;
+    }
+
+    .article-content blockquote {
+      position: relative;
+
+      margin:
+        34px 0;
+
+      padding:
+        25px 26px 25px 30px;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(255,77,0,.13),
+          rgba(255,255,255,.035)
+        );
+
+      border-left:
+        4px solid var(--orange);
+
+      border-radius:
+        0 14px 14px 0;
+
+      color:
+        #fff;
+
+      font-size:
+        clamp(20px, 2.5vw, 29px);
+
+      line-height:
+        1.25;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        -.035em;
+    }
+
+    .article-content ul,
+    .article-content ol {
+      padding-left:
+        25px;
+
+      margin:
+        22px 0 28px;
+    }
+
+    .article-content li {
+      margin-bottom:
+        9px;
+    }
+
+    .article-content img {
+      width: 100%;
+
+      border-radius:
+        16px;
+
+      border:
+        1px solid var(--line);
+
+      margin:
+        30px 0;
+    }
+
+    .article-content hr {
+      border: 0;
+
+      border-top:
+        1px solid var(--line);
+
+      margin:
+        38px 0;
+    }
+
+    /* =========================================================
+       TABLE OF CONTENTS
+       ========================================================= */
+
+    .toc {
+      max-width:
+        var(--article-width);
+
+      margin:
+        0 0 34px;
+
+      padding:
+        18px;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        rgba(255,255,255,.035);
+
+      border-radius:
+        16px;
+    }
+
+    .toc__head {
+      display: flex;
+
+      justify-content:
+        space-between;
+
+      align-items:
+        center;
+
+      gap: 10px;
+
+      margin-bottom:
+        13px;
+    }
+
+    .toc__title {
+      font-size:
+        10px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .15em;
+
+      text-transform:
+        uppercase;
+
+      color:
+        #fff;
+    }
+
+    .toc__list {
+      display:
+        grid;
+
+      gap:
+        8px;
+    }
+
+    .toc__list a {
+      color:
+        #aaa;
+
+      font-size:
+        12px;
+
+      line-height:
+        1.35;
+
+      padding-left:
+        12px;
+
+      border-left:
+        2px solid transparent;
+    }
+
+    .toc__list a:hover {
+      color:
+        var(--orange);
+
+      border-left-color:
+        var(--orange);
+    }
+
+    /* =========================================================
+       IN ARTICLE AD
+       ========================================================= */
+
+    .content-ad {
+      margin:
+        34px 0;
+    }
+
+    /* =========================================================
+       ARTICLE FOOTER
+       ========================================================= */
+
+    .article-footer {
+      max-width:
+        var(--article-width);
+
+      margin-top:
+        45px;
+
+      padding-top:
+        24px;
+
+      border-top:
+        1px solid var(--line);
+    }
+
+    .article-tags {
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        8px;
+
+      margin-bottom:
+        25px;
+    }
+
+    .article-tag {
+      display:
+        inline-flex;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        #101010;
+
+      color:
+        #aaa;
+
+      padding:
+        8px 11px;
+
+      border-radius:
+        999px;
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .article-tag:hover {
+      color:
+        var(--orange);
+
+      border-color:
+        var(--orange);
+    }
+
+    .author-box {
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        15px;
+
+      padding:
+        18px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        16px;
+
+      background:
+        rgba(255,255,255,.035);
+
+      margin-bottom:
+        25px;
+    }
+
+    .author-avatar {
+      width:
+        54px;
+
+      height:
+        54px;
+
+      flex:
+        0 0 auto;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border-radius:
+        50%;
+
+      background:
+        var(--orange);
+
+      color:
+        #000;
+
+      font-weight:
+        700;
+
+      font-size:
+        19px;
+    }
+
+    .author-info strong {
+      display:
+        block;
+
+      color:
+        #fff;
+
+      font-size:
+        14px;
+    }
+
+    .author-info span {
+      display:
+        block;
+
+      margin-top:
+        4px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        10px;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+    }
+
+    /* =========================================================
+       PREV / NEXT
+       ========================================================= */
+
+    .article-navigation {
+      display:
+        grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap:
+        12px;
+
+      margin-top:
+        25px;
+    }
+
+    .article-nav-card {
+      min-width:
+        0;
+
+      padding:
+        16px;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        rgba(255,255,255,.035);
+
+      border-radius:
+        15px;
+
+      transition:
+        .2s ease;
+    }
+
+    .article-nav-card:hover {
+      border-color:
+        var(--orange);
+
+      transform:
+        translateY(-2px);
+    }
+
+    .article-nav-card small {
+      display:
+        block;
+
+      color:
+        var(--orange);
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .14em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        8px;
+    }
+
+    .article-nav-card strong {
+      display:
+        block;
+
+      color:
+        #fff;
+
+      font-size:
+        13px;
+
+      line-height:
+        1.3;
+    }
+
+    .article-nav-card.next {
+      text-align:
+        right;
+    }
+
+    /* =========================================================
+       SIDEBAR
+       ========================================================= */
+
+    .article-sidebar {
+      position:
+        sticky;
+
+      top:
+        94px;
+
+      display:
+        grid;
+
+      gap:
+        18px;
+    }
+
+    .side-panel {
+      background:
+        rgba(21,21,21,.86);
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        var(--radius);
+
+      overflow:
+        hidden;
+
+      box-shadow:
+        var(--shadow);
+    }
+
+    .panel-head {
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        10px;
+
+      padding:
+        15px 16px;
+
+      border-bottom:
+        1px solid var(--line);
+    }
+
+    .panel-title {
+      font-size:
+        11px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .16em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .panel-link {
+      color:
+        var(--orange);
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .latest-list {
+      padding:
+        12px;
+
+      display:
+        grid;
+
+      gap:
+        10px;
+    }
+
+    .latest-item {
+      display:
+        grid;
+
+      grid-template-columns:
+        88px 1fr;
+
+      gap:
+        11px;
+
+      padding-bottom:
+        11px;
+
+      border-bottom:
+        1px solid var(--line);
+    }
+
+    .latest-item:last-child {
+      border-bottom:
+        0;
+
+      padding-bottom:
+        0;
+    }
+
+    .latest-item__image {
+      width:
+        88px;
+
+      height:
+        66px;
+
+      overflow:
+        hidden;
+
+      border-radius:
+        9px;
+
+      background:
+        #111;
+    }
+
+    .latest-item__image img {
+      width:
+        100%;
+
+      height:
+        100%;
+
+      object-fit:
+        cover;
+
+      transition:
+        transform .4s ease;
+    }
+
+    .latest-item:hover img {
+      transform:
+        scale(1.06);
+    }
+
+    .latest-item__cat {
+      color:
+        var(--orange);
+
+      font-size:
+        8px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        5px;
+    }
+
+    .latest-item h4 {
+      font-size:
+        12px;
+
+      line-height:
+        1.25;
+
+      text-transform:
+        uppercase;
+
+      letter-spacing:
+        -.02em;
+    }
+
+    .latest-item__time {
+      color:
+        #777;
+
+      font-size:
+        8px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .08em;
+
+      text-transform:
+        uppercase;
+
+      margin-top:
+        5px;
+    }
+
+    /* =========================================================
+       TRENDING
+       ========================================================= */
+
+    .trending-panel {
+      padding:
+        14px;
+    }
+
+    .trending-tags {
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        7px;
+    }
+
+    .trending-tags a {
+      border:
+        1px solid var(--line);
+
+      background:
+        #0b0b0b;
+
+      color:
+        #ddd;
+
+      border-radius:
+        999px;
+
+      padding:
+        8px 10px;
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .08em;
+
+      text-transform:
+        uppercase;
+
+      transition:
+        .2s ease;
+    }
+
+    .trending-tags a:hover {
+      background:
+        var(--orange);
+
+      color:
+        #050505;
+
+      border-color:
+        var(--orange);
+    }
+
+    /* =========================================================
+       FONT CONTROLS
+       ========================================================= */
+
+    .reading-tools {
+      padding:
+        14px;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        10px;
+    }
+
+    .reading-tools__label {
+      color:
+        var(--muted);
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .font-controls {
+      display:
+        flex;
+
+      gap:
+        6px;
+    }
+
+    .font-controls button {
+      width:
+        34px;
+
+      height:
+        34px;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        #0b0b0b;
+
+      color:
+        #fff;
+
+      border-radius:
+        8px;
+
+      cursor:
+        pointer;
+    }
+
+    .font-controls button:hover {
+      color:
+        var(--orange);
+
+      border-color:
+        var(--orange);
+    }
+
+    /* =========================================================
+       SEARCH MODAL
+       ========================================================= */
+
+    .search-modal {
+      position:
+        fixed;
+
+      inset:
+        0;
+
+      z-index:
+        1000;
+
+      display:
+        none;
+
+      place-items:
+        center;
+
+      background:
+        rgba(0,0,0,.78);
+
+      backdrop-filter:
+        blur(14px);
+
+      padding:
+        20px;
+    }
+
+    .search-modal.open {
+      display:
+        grid;
+    }
+
+    .search-box {
+      width:
+        min(760px, 100%);
+
+      background:
+        var(--card);
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        24px;
+
+      box-shadow:
+        var(--shadow);
+
+      padding:
+        18px;
+    }
+
+    .search-box__top {
+      display:
+        grid;
+
+      grid-template-columns:
+        1fr auto;
+
+      gap:
+        10px;
+    }
+
+    .search-box input {
+      width:
+        100%;
+
+      background:
+        #0b0b0b;
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        14px;
+
+      color:
+        #fff;
+
+      padding:
+        15px;
+
+      outline:
+        none;
+    }
+
+    .search-box input:focus {
+      border-color:
+        var(--orange);
+    }
+
+    .search-results {
+      display:
+        grid;
+
+      gap:
+        7px;
+
+      margin-top:
+        14px;
+
+      max-height:
+        60vh;
+
+      overflow:
+        auto;
+    }
+
+    .search-result {
+      padding:
+        12px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        10px;
+
+      background:
+        #101010;
+    }
+
+    .search-result:hover {
+      border-color:
+        var(--orange);
+    }
+
+    .search-result span {
+      display:
+        block;
+
+      color:
+        var(--orange);
+
+      font-size:
+        8px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        5px;
+    }
+
+    .search-result strong {
+      display:
+        block;
+
+      font-size:
+        13px;
+
+      line-height:
+        1.3;
+    }
+
+    /* =========================================================
+       RELATED ARTICLES
+       ========================================================= */
+
+    .related-section {
+      padding:
+        58px 0;
+
+      border-top:
+        1px solid rgba(255,255,255,.06);
+    }
+
+    .section-eyebrow {
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      gap:
+        8px;
+
+      color:
+        var(--orange);
+
+      font-size:
+        10px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .17em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        9px;
+    }
+
+    .section-eyebrow::before {
+      content:
+        "";
+
+      width:
+        8px;
+
+      height:
+        8px;
+
+      background:
+        var(--orange);
+
+      border-radius:
+        50%;
+    }
+
+    .section-title {
+      font-size:
+        clamp(28px, 4vw, 54px);
+
+      line-height:
+        .93;
+
+      letter-spacing:
+        -.07em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        22px;
+    }
+
+    .related-grid {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap:
+        16px;
+    }
+
+    .related-card {
+      background:
+        var(--card);
+
+      border:
+        1px solid var(--line);
+
+      border-radius:
+        var(--radius);
+
+      overflow:
+        hidden;
+
+      transition:
+        .25s ease;
+    }
+
+    .related-card:hover {
+      border-color:
+        rgba(255,77,0,.65);
+
+      transform:
+        translateY(-3px);
+    }
+
+    .related-card__image {
+      display:
+        block;
+
+      width:
+        100%;
+
+      aspect-ratio:
+        16 / 10;
+
+      overflow:
+        hidden;
+
+      background:
+        #111;
+    }
+
+    .related-card__image img {
+      width:
+        100%;
+
+      height:
+        100%;
+
+      object-fit:
+        cover;
+
+      transition:
+        transform .5s ease;
+    }
+
+    .related-card:hover img {
+      transform:
+        scale(1.06);
+    }
+
+    .related-card__body {
+      padding:
+        14px;
+    }
+
+    .related-card__cat {
+      color:
+        var(--orange);
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        7px;
+    }
+
+    .related-card h3 {
+      font-size:
+        15px;
+
+      line-height:
+        1.18;
+
+      text-transform:
+        uppercase;
+
+      letter-spacing:
+        -.025em;
+    }
+
+    .related-card__meta {
+      margin-top:
+        10px;
+
+      color:
+        #777;
+
+      font-size:
+        8px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .1em;
+
+      text-transform:
+        uppercase;
+    }
+
+    /* =========================================================
+       NEWSLETTER
+       ========================================================= */
+
+    .newsletter-section {
+      padding:
+        20px 0 65px;
+    }
+
+    .newsletter {
+      position:
+        relative;
+
+      overflow:
+        hidden;
+
+      border:
+        1px solid rgba(255,77,0,.35);
+
+      border-radius:
+        28px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,77,0,.94),
+          rgba(255,77,0,.58)
+        );
+
+      padding:
+        clamp(28px, 5vw, 60px);
+
+      color:
+        #050505;
+    }
+
+    .newsletter::after {
+      content:
+        "K";
+
+      position:
+        absolute;
+
+      right:
+        -25px;
+
+      bottom:
+        -100px;
+
+      font-size:
+        340px;
+
+      line-height:
+        1;
+
+      font-weight:
+        700;
+
+      opacity:
+        .1;
+
+      pointer-events:
+        none;
+    }
+
+    .newsletter-content {
+      position:
+        relative;
+
+      z-index:
+        1;
+
+      display:
+        grid;
+
+      grid-template-columns:
+        minmax(0,1fr)
+        minmax(300px,.5fr);
+
+      gap:
+        30px;
+
+      align-items:
+        center;
+    }
+
+    .newsletter h2 {
+      font-size:
+        clamp(34px, 5vw, 68px);
+
+      line-height:
+        .9;
+
+      letter-spacing:
+        -.08em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .newsletter p {
+      max-width:
+        620px;
+
+      margin-top:
+        14px;
+
+      line-height:
+        1.55;
+
+      font-weight:
+        700;
+
+      color:
+        rgba(0,0,0,.72);
+    }
+
+    .newsletter-form {
+      display:
+        grid;
+
+      gap:
+        10px;
+    }
+
+    .newsletter-form input {
+      width:
+        100%;
+
+      border:
+        1px solid rgba(0,0,0,.2);
+
+      background:
+        rgba(255,255,255,.88);
+
+      color:
+        #000;
+
+      border-radius:
+        12px;
+
+      padding:
+        15px;
+
+      outline:
+        none;
+    }
+
+    .newsletter-form button {
+      border:
+        0;
+
+      background:
+        #050505;
+
+      color:
+        #fff;
+
+      border-radius:
+        12px;
+
+      padding:
+        15px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+
+      cursor:
+        pointer;
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+
+    .site-footer {
+      background:
+        #050505;
+
+      border-top:
+        1px solid var(--line);
+
+      padding:
+        55px 0 28px;
+    }
+
+    .footer-grid {
+      display:
+        grid;
+
+      grid-template-columns:
+        1.3fr repeat(3, 1fr);
+
+      gap:
+        34px;
+
+      margin-bottom:
+        40px;
+    }
+
+    .footer-brand img {
+      height:
+        38px;
+
+      width:
+        auto;
+    }
+
+    .footer-description {
+      max-width:
+        390px;
+
+      margin-top:
+        17px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        13px;
+
+      line-height:
+        1.6;
+    }
+
+    .footer-title {
+      color:
+        #fff;
+
+      font-size:
+        12px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .15em;
+
+      text-transform:
+        uppercase;
+
+      margin-bottom:
+        15px;
+    }
+
+    .footer-links {
+      display:
+        grid;
+
+      gap:
+        9px;
+
+      color:
+        var(--muted);
+
+      font-size:
+        11px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .08em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .footer-links a:hover {
+      color:
+        var(--orange);
+    }
+
+    .footer-bottom {
+      display:
+        flex;
+
+      justify-content:
+        space-between;
+
+      gap:
+        15px;
+
+      flex-wrap:
+        wrap;
+
+      padding-top:
+        21px;
+
+      border-top:
+        1px solid var(--line);
+
+      color:
+        #777;
+
+      font-size:
+        9px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .11em;
+
+      text-transform:
+        uppercase;
+    }
+
+    /* =========================================================
+       BACK TO TOP
+       ========================================================= */
+
+    .back-top {
+      position:
+        fixed;
+
+      right:
+        20px;
+
+      bottom:
+        20px;
+
+      width:
+        44px;
+
+      height:
+        44px;
+
+      z-index:
+        200;
+
+      border:
+        1px solid var(--line);
+
+      background:
+        rgba(16,16,16,.92);
+
+      color:
+        #fff;
+
+      border-radius:
+        50%;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      cursor:
+        pointer;
+
+      opacity:
+        0;
+
+      pointer-events:
+        none;
+
+      transform:
+        translateY(10px);
+
+      transition:
+        .25s ease;
+    }
+
+    .back-top.show {
+      opacity:
+        1;
+
+      pointer-events:
+        auto;
+
+      transform:
+        translateY(0);
+    }
+
+    .back-top:hover {
+      border-color:
+        var(--orange);
+
+      color:
+        var(--orange);
+    }
+
+    /* =========================================================
+       LOADING / ERROR
+       ========================================================= */
+
+    .article-loading {
+      min-height:
+        65vh;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      color:
+        var(--muted);
+
+      font-size:
+        11px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .14em;
+
+      text-transform:
+        uppercase;
+    }
+
+    .article-error {
+      min-height:
+        65vh;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      text-align:
+        center;
+
+      color:
+        var(--orange);
+
+      font-size:
+        12px;
+
+      font-weight:
+        700;
+
+      letter-spacing:
+        .12em;
+
+      text-transform:
+        uppercase;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 1180px) {
+
+      .article-layout {
+        grid-template-columns:
+          minmax(0, 1fr)
+          300px;
+
+        gap:
+          25px;
       }
 
-      .header-inner {
-        min-height: 62px;
+      .desktop-nav {
+        gap:
+          17px;
+
+        font-size:
+          9px;
       }
 
-      h1 {
-        font-size: 36px;
+      .share-rail {
+        display:
+          none;
       }
 
-      .excerpt {
-        font-size: 16px;
+      .related-grid {
+        grid-template-columns:
+          repeat(2, minmax(0,1fr));
       }
 
-      .content {
-        font-size: 15px;
+      .footer-grid {
+        grid-template-columns:
+          1.5fr repeat(2, 1fr);
       }
     }
+
+    @media (max-width: 900px) {
+
+      .desktop-nav {
+        display:
+          none;
+      }
+
+      .main-header__inner {
+        grid-template-columns:
+          auto 1fr auto;
+      }
+
+      .menu-button {
+        display:
+          grid;
+      }
+
+      .article-layout {
+        grid-template-columns:
+          1fr;
+      }
+
+      .article-sidebar {
+        position:
+          static;
+
+        grid-template-columns:
+          repeat(2, minmax(0,1fr));
+      }
+
+      .sidebar-ad {
+        grid-column:
+          1 / -1;
+      }
+
+      .article-hero__frame {
+        min-height:
+          300px;
+      }
+
+      .newsletter-content {
+        grid-template-columns:
+          1fr;
+      }
+
+      .footer-grid {
+        grid-template-columns:
+          repeat(2,1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+
+      :root {
+        --article-font-size:
+          16px;
+      }
+
+      .container {
+        width:
+          min(
+            100% - 22px,
+            var(--container)
+          );
+      }
+
+      .top-ticker__inner {
+        grid-template-columns:
+          auto 1fr;
+      }
+
+      .ticker-network {
+        display:
+          none;
+      }
+
+      .breaking__inner {
+        grid-template-columns:
+          auto 1fr;
+      }
+
+      .breaking__time {
+        display:
+          none;
+      }
+
+      .article-page {
+        padding:
+          25px 0 55px;
+      }
+
+      .article-breadcrumb {
+        margin-bottom:
+          18px;
+      }
+
+      .article-title {
+        font-size:
+          38px;
+
+        line-height:
+          .94;
+      }
+
+      .article-lead {
+        font-size:
+          16px;
+      }
+
+      .article-meta {
+        gap:
+          8px;
+      }
+
+      .article-actions {
+        margin-bottom:
+          20px;
+      }
+
+      .article-action {
+        min-height:
+          38px;
+
+        padding:
+          8px 11px;
+      }
+
+      .article-hero__frame {
+        min-height:
+          230px;
+
+        border-radius:
+          15px;
+      }
+
+      .article-content {
+        font-size:
+          16px;
+
+        line-height:
+          1.78;
+      }
+
+      .article-content p:first-of-type::first-letter {
+        font-size:
+          55px;
+      }
+
+      .article-sidebar {
+        grid-template-columns:
+          1fr;
+      }
+
+      .related-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+      .article-navigation {
+        grid-template-columns:
+          1fr;
+      }
+
+      .article-nav-card.next {
+        text-align:
+          left;
+      }
+
+      .footer-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+      .footer-bottom {
+        flex-direction:
+          column;
+      }
+
+      .search-box__top {
+        grid-template-columns:
+          1fr;
+      }
+
+      .back-top {
+        right:
+          12px;
+
+        bottom:
+          12px;
+      }
+    }
+
   </style>
 </head>
 
 <body>
-  <header class="header">
-    <div class="container header-inner">
-      <a href="index.html" class="brand">
-        <span>K</span>
-        <span>Sports</span>
+
+  <!-- =======================================================
+       READING PROGRESS
+       ======================================================= -->
+
+  <div
+    class="reading-progress"
+    id="readingProgress"
+  ></div>
+
+
+  <!-- =======================================================
+       TOP TICKER
+       ======================================================= -->
+
+  <div class="top-ticker">
+
+    <div class="container top-ticker__inner">
+
+      <div class="ticker-live">
+        <span class="dot-live"></span>
+        <span>LIVE UPDATE</span>
+      </div>
+
+      <div
+        class="ticker-content"
+        id="topTicker"
+      >
+        Kancah Sports — Berita olahraga terbaru.
+      </div>
+
+      <div class="ticker-network">
+        KANCAH SPORTS
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       HEADER
+       ======================================================= -->
+
+  <header class="main-header">
+
+    <div class="container main-header__inner">
+
+      <a
+        href="index.html"
+        class="brand"
+        aria-label="Kancah Sports"
+      >
+        <img
+          src="logo-kancah.png"
+          alt="Kancah Sports"
+        >
       </a>
 
-      <a href="index.html" class="back">← Home</a>
+
+      <nav
+        class="desktop-nav"
+        aria-label="Navigasi utama"
+      >
+
+        <a href="index.html">
+          Berita
+        </a>
+
+        <a href="index.html#latest-news">
+          Terkini
+        </a>
+
+        <a href="index.html#timnas">
+          Timnas
+        </a>
+
+        <a href="index.html#transfer">
+          Transfer
+        </a>
+
+        <a href="index.html#fixtures">
+          Jadwal
+        </a>
+
+        <a href="index.html#standings">
+          Klasemen
+        </a>
+
+      </nav>
+
+
+      <div class="header-actions">
+
+        <button
+          class="icon-button"
+          id="openSearch"
+          aria-label="Cari artikel"
+          title="Cari"
+        >
+
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="7"
+            ></circle>
+
+            <path
+              d="m21 21-4.3-4.3"
+            ></path>
+          </svg>
+
+        </button>
+
+
+        <button
+          class="menu-button"
+          id="openMenu"
+          aria-label="Buka menu"
+        >
+
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 6h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 18h16"></path>
+          </svg>
+
+        </button>
+
+      </div>
+
     </div>
+
   </header>
 
-  <main class="container">
-    <div id="article-root" class="loading">Memuat artikel...</div>
+
+  <!-- =======================================================
+       MOBILE MENU
+       ======================================================= -->
+
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+  >
+
+    <div class="mobile-menu__top">
+
+      <a
+        href="index.html"
+        class="brand"
+      >
+        <img
+          src="logo-kancah.png"
+          alt="Kancah Sports"
+        >
+      </a>
+
+      <button
+        class="icon-button"
+        id="closeMenu"
+        aria-label="Tutup menu"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <nav class="mobile-menu__nav">
+
+      <a href="index.html">
+        Berita
+      </a>
+
+      <a href="index.html#latest-news">
+        Terkini
+      </a>
+
+      <a href="index.html#timnas">
+        Timnas
+      </a>
+
+      <a href="index.html#transfer">
+        Transfer
+      </a>
+
+      <a href="index.html#fixtures">
+        Jadwal
+      </a>
+
+      <a href="index.html#standings">
+        Klasemen
+      </a>
+
+    </nav>
+
+  </div>
+
+
+  <!-- =======================================================
+       BREAKING
+       ======================================================= -->
+
+  <div class="breaking">
+
+    <div class="container breaking__inner">
+
+      <span class="breaking__label">
+        Breaking
+      </span>
+
+      <div
+        class="breaking__content"
+        id="breakingText"
+      >
+        Memuat berita terbaru...
+      </div>
+
+      <span
+        class="breaking__time"
+        id="breakingTime"
+      >
+        Update
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       TOP ADSENSE
+       ======================================================= -->
+
+  <div class="container ad-slot-wrap top-ad">
+
+    <div class="ad-inner">
+
+      <span class="ad-label">
+        Advertisement
+      </span>
+
+      <ins
+        class="adsbygoogle"
+        data-ad-placement="top"
+        style="display:block"
+        data-ad-client="ca-pub-6133782160601858"
+        data-ad-slot="REPLACE_ME"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       ARTICLE
+       ======================================================= -->
+
+  <main
+    id="articleRoot"
+    class="article-loading"
+  >
+    Memuat artikel...
   </main>
+
+
+  <!-- =======================================================
+       RELATED
+       ======================================================= -->
+
+  <section
+    class="related-section"
+    id="relatedSection"
+    style="display:none"
+  >
+
+    <div class="container">
+
+      <span class="section-eyebrow">
+        Baca Juga
+      </span>
+
+      <h2 class="section-title">
+        Berita terkait
+      </h2>
+
+      <div
+        class="related-grid"
+        id="relatedGrid"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       NEWSLETTER
+       ======================================================= -->
+
+  <section class="newsletter-section">
+
+    <div class="container">
+
+      <div class="newsletter">
+
+        <div class="newsletter-content">
+
+          <div>
+
+            <h2>
+              Masuk ke ruang redaksi Kancah Sports
+            </h2>
+
+            <p>
+              Dapatkan rekap berita, jadwal besar,
+              rumor transfer, dan insight olahraga
+              langsung ke email.
+            </p>
+
+          </div>
+
+
+          <form
+            class="newsletter-form"
+            id="newsletterForm"
+          >
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Nama kamu"
+              required
+            >
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Email aktif"
+              required
+            >
+
+            <button type="submit">
+              Berlangganan
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       FOOTER
+       ======================================================= -->
+
+  <footer class="site-footer">
+
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <div>
+
+          <a
+            href="index.html"
+            class="brand footer-brand"
+          >
+            <img
+              src="logo-kancah.png"
+              alt="Kancah Sports"
+            >
+          </a>
+
+          <p class="footer-description">
+            Portal berita olahraga modern dari Kancah.
+            Fokus pada sepak bola, timnas, jadwal,
+            klasemen, transfer, dan kultur olahraga
+            yang mudah dipahami.
+          </p>
+
+        </div>
+
+
+        <div>
+
+          <h3 class="footer-title">
+            Navigasi
+          </h3>
+
+          <div class="footer-links">
+
+            <a href="index.html">
+              Berita
+            </a>
+
+            <a href="index.html#latest-news">
+              Terkini
+            </a>
+
+            <a href="index.html#timnas">
+              Timnas
+            </a>
+
+            <a href="index.html#transfer">
+              Transfer
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div>
+
+          <h3 class="footer-title">
+            Olahraga
+          </h3>
+
+          <div class="footer-links">
+
+            <a href="index.html#fixtures">
+              Jadwal
+            </a>
+
+            <a href="index.html#standings">
+              Klasemen
+            </a>
+
+            <a href="index.html#latest-news">
+              Berita Bola
+            </a>
+
+            <a href="index.html#timnas">
+              Timnas Indonesia
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div>
+
+          <h3 class="footer-title">
+            Kancah Network
+          </h3>
+
+          <div class="footer-links">
+
+            <a href="https://kancah.com" target="_blank">
+              Kancah Creative ↗
+            </a>
+
+            <a href="index.html">
+              Kancah Sports
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="footer-bottom">
+
+        <span>
+          © 2026 Kancah Sports
+        </span>
+
+        <span>
+          Media olahraga dari Kancah
+        </span>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =======================================================
+       BACK TO TOP
+       ======================================================= -->
+
+  <button
+    class="back-top"
+    id="backTop"
+    aria-label="Kembali ke atas"
+    title="Kembali ke atas"
+  >
+
+    ↑
+
+  </button>
+
+
+  <!-- =======================================================
+       SEARCH MODAL
+       ======================================================= -->
+
+  <div
+    class="search-modal"
+    id="searchModal"
+  >
+
+    <div class="search-box">
+
+      <div class="search-box__top">
+
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Cari berita..."
+          autocomplete="off"
+        >
+
+        <button
+          class="article-action"
+          id="closeSearch"
+        >
+          Tutup
+        </button>
+
+      </div>
+
+
+      <div
+        class="search-results"
+        id="searchResults"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       SUPABASE
+       ======================================================= -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
   <script>
-    const SUPABASE_URL = "https://tnaehvirowknfsjdsrer.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_1bbk42A04hdCCh1CBFTK1A_zES8rBia";
 
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    /* =========================================================
+       SUPABASE
+       ========================================================= */
 
-    const fallbackImage =
-      "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1200&auto=format&fit=crop";
+    const SUPABASE_URL =
+      "https://tnaehvirowknfsjdsrer.supabase.co";
 
-    function escapeHtml(text = "") {
+    const SUPABASE_ANON_KEY =
+      "sb_publishable_1bbk42A04hdCCh1CBFTK1A_zES8rBia";
+
+    const db =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+
+
+    /* =========================================================
+       FALLBACK
+       ========================================================= */
+
+    const FALLBACK_IMAGE =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect width='1200' height='700' fill='%23151515'/%3E%3Ctext x='50%25' y='50%25' fill='%23777777' text-anchor='middle' dominant-baseline='middle' font-family='Arial' font-size='40'%3EKancah Sports%3C/text%3E%3C/svg%3E";
+
+
+    /* =========================================================
+       HELPERS
+       ========================================================= */
+
+    function safeText(text = "") {
+
       return String(text)
+
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+
     }
+
+
+    function slugFilter(value = "") {
+
+      return String(value || "umum")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
+
+    }
+
+
+    function articleHref(article) {
+
+      return (
+        "article.html?slug=" +
+        encodeURIComponent(article.slug || "")
+      );
+
+    }
+
+
+    function articleImage(article) {
+
+      return (
+        article?.image_url ||
+        FALLBACK_IMAGE
+      );
+
+    }
+
 
     function formatDate(dateValue) {
-      if (!dateValue) return "Terbaru";
-      return new Date(dateValue).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      });
+
+      if (!dateValue) {
+        return "Terbaru";
+      }
+
+      const date =
+        new Date(dateValue);
+
+      return date.toLocaleDateString(
+        "id-ID",
+        {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        }
+      );
+
     }
+
+
+    function timeAgo(dateValue) {
+
+      if (!dateValue) {
+        return "";
+      }
+
+      const diff =
+        Date.now() -
+        new Date(dateValue).getTime();
+
+      const minutes =
+        Math.floor(diff / 60000);
+
+      if (minutes < 1) {
+        return "Baru saja";
+      }
+
+      if (minutes < 60) {
+        return `${minutes} menit lalu`;
+      }
+
+      const hours =
+        Math.floor(minutes / 60);
+
+      if (hours < 24) {
+        return `${hours} jam lalu`;
+      }
+
+      const days =
+        Math.floor(hours / 24);
+
+      if (days < 7) {
+        return `${days} hari lalu`;
+      }
+
+      return new Date(dateValue)
+        .toLocaleDateString(
+          "id-ID",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          }
+        );
+
+    }
+
+
+    function readTime(content = "") {
+
+      const words =
+        String(content)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .length;
+
+      return Math.max(
+        1,
+        Math.round(words / 200)
+      );
+
+    }
+
+
+    function initials(name = "Kancah Sports") {
+
+      return String(name)
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(x => x[0])
+        .join("")
+        .toUpperCase();
+
+    }
+
+
+    /* =========================================================
+       CONTENT PARSER
+       ========================================================= */
 
     function contentToHtml(content = "") {
-      return escapeHtml(content)
-        .split(/\n\s*\n/)
-        .filter(Boolean)
-        .map(paragraph => `<p>${paragraph.replaceAll("\n", "<br>")}</p>`)
-        .join("");
+
+      if (!content) {
+        return `
+          <p>
+            Artikel ini belum memiliki isi.
+          </p>
+        `;
+      }
+
+
+      const blocks =
+        String(content)
+          .replace(/\r\n/g, "\n")
+          .split(/\n\s*\n/)
+          .map(x => x.trim())
+          .filter(Boolean);
+
+
+      return blocks.map(block => {
+
+        const escaped =
+          safeText(block)
+            .replace(
+              /\n/g,
+              "<br>"
+            );
+
+
+        /*
+         * # Judul
+         */
+        if (
+          /^###\s+/.test(block)
+        ) {
+
+          return `
+            <h3>
+              ${safeText(
+                block.replace(
+                  /^###\s+/,
+                  ""
+                )
+              )}
+            </h3>
+          `;
+
+        }
+
+
+        if (
+          /^##\s+/.test(block)
+        ) {
+
+          return `
+            <h2>
+              ${safeText(
+                block.replace(
+                  /^##\s+/,
+                  ""
+                )
+              )}
+            </h2>
+          `;
+
+        }
+
+
+        /*
+         * Quote
+         */
+        if (
+          /^["“].*["”]$/.test(block)
+        ) {
+
+          return `
+            <blockquote>
+              ${escaped}
+            </blockquote>
+          `;
+
+        }
+
+
+        /*
+         * Bullet list
+         */
+        const lines =
+          block.split("\n");
+
+        if (
+          lines.length > 1 &&
+          lines.every(
+            line =>
+              /^[-•*]\s+/.test(line)
+          )
+        ) {
+
+          return `
+            <ul>
+              ${lines.map(line => `
+                <li>
+                  ${safeText(
+                    line.replace(
+                      /^[-•*]\s+/,
+                      ""
+                    )
+                  )}
+                </li>
+              `).join("")}
+            </ul>
+          `;
+
+        }
+
+
+        /*
+         * Normal paragraph
+         */
+
+        return `
+          <p>
+            ${escaped}
+          </p>
+        `;
+
+      }).join("");
+
     }
 
-    function updateMeta(article) {
-      const title = article.seo_title || article.title || "Kancah Sports";
-      const description = article.seo_description || article.excerpt || "Berita terbaru Kancah Sports.";
 
-      document.title = `${title} | Kancah Sports`;
+    /* =========================================================
+       SEO
+       ========================================================= */
 
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) metaDescription.setAttribute("content", description);
+    function updateSEO(article) {
 
-      const oldCanonical = document.querySelector('link[rel="canonical"]');
-      if (oldCanonical) oldCanonical.remove();
+      const title =
+        article.seo_title ||
+        article.title ||
+        "Kancah Sports";
 
-      const canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      canonical.href = window.location.href;
-      document.head.appendChild(canonical);
+
+      const description =
+        article.seo_description ||
+        article.excerpt ||
+        "Berita olahraga terbaru Kancah Sports.";
+
+
+      const image =
+        article.image_url ||
+        "";
+
+
+      document.title =
+        `${title} | Kancah Sports`;
+
+
+      const descriptionMeta =
+        document.querySelector(
+          'meta[name="description"]'
+        );
+
+      if (descriptionMeta) {
+
+        descriptionMeta.setAttribute(
+          "content",
+          description
+        );
+
+      }
+
+
+      document
+        .querySelector('meta[property="og:title"]')
+        ?.setAttribute(
+          "content",
+          title
+        );
+
+
+      document
+        .querySelector('meta[property="og:description"]')
+        ?.setAttribute(
+          "content",
+          description
+        );
+
+
+      document
+        .querySelector('meta[property="og:image"]')
+        ?.setAttribute(
+          "content",
+          image
+        );
+
+
+      document
+        .querySelector('meta[property="og:url"]')
+        ?.setAttribute(
+          "content",
+          window.location.href
+        );
+
+
+      document
+        .querySelector('meta[name="twitter:title"]')
+        ?.setAttribute(
+          "content",
+          title
+        );
+
+
+      document
+        .querySelector('meta[name="twitter:description"]')
+        ?.setAttribute(
+          "content",
+          description
+        );
+
+
+      document
+        .querySelector('meta[name="twitter:image"]')
+        ?.setAttribute(
+          "content",
+          image
+        );
+
+
+      document
+        .querySelector(
+          'link[rel="canonical"]'
+        )
+        ?.remove();
+
+
+      const canonical =
+        document.createElement("link");
+
+      canonical.rel =
+        "canonical";
+
+      canonical.href =
+        window.location.href;
+
+      document.head.appendChild(
+        canonical
+      );
+
+
+      /*
+       * JSON-LD
+       */
+
+      document
+        .querySelector(
+          "#articleSchema"
+        )
+        ?.remove();
+
+
+      const schema =
+        document.createElement("script");
+
+      schema.id =
+        "articleSchema";
+
+      schema.type =
+        "application/ld+json";
+
+
+      schema.textContent =
+        JSON.stringify({
+
+          "@context":
+            "https://schema.org",
+
+          "@type":
+            "NewsArticle",
+
+          headline:
+            article.title,
+
+          description:
+            description,
+
+          image:
+            image
+              ? [image]
+              : [],
+
+          datePublished:
+            article.published_at ||
+            article.created_at,
+
+          dateModified:
+            article.updated_at ||
+            article.published_at ||
+            article.created_at,
+
+          author: {
+            "@type":
+              "Person",
+
+            name:
+              article.author_name ||
+              article.author ||
+              "Kancah Sports"
+          },
+
+          publisher: {
+            "@type":
+              "Organization",
+
+            name:
+              "Kancah Sports",
+
+            logo: {
+              "@type":
+                "ImageObject",
+
+              url:
+                new URL(
+                  "logo-kancah.png",
+                  window.location.href
+                ).href
+            }
+          },
+
+          mainEntityOfPage: {
+            "@type":
+              "WebPage",
+
+            "@id":
+              window.location.href
+          }
+
+        });
+
+
+      document.head.appendChild(
+        schema
+      );
+
     }
+
+
+    /* =========================================================
+       TOC
+       ========================================================= */
+
+    function buildTOC() {
+
+      const content =
+        document.getElementById(
+          "articleContent"
+        );
+
+      const toc =
+        document.getElementById(
+          "toc"
+        );
+
+      const list =
+        document.getElementById(
+          "tocList"
+        );
+
+
+      if (
+        !content ||
+        !toc ||
+        !list
+      ) {
+        return;
+      }
+
+
+      const headings =
+        content.querySelectorAll(
+          "h2, h3"
+        );
+
+
+      if (!headings.length) {
+
+        toc.style.display =
+          "none";
+
+        return;
+
+      }
+
+
+      const items = [];
+
+
+      headings.forEach(
+        (heading, index) => {
+
+          const id =
+            "section-" +
+            (index + 1);
+
+          heading.id =
+            id;
+
+          items.push(`
+            <a href="#${id}">
+              ${safeText(
+                heading.textContent
+              )}
+            </a>
+          `);
+
+        }
+      );
+
+
+      list.innerHTML =
+        items.join("");
+
+      toc.style.display =
+        "block";
+
+    }
+
+
+    /* =========================================================
+       RELATED ARTICLES
+       ========================================================= */
+
+    async function loadRelatedArticles(article) {
+
+      const section =
+        document.getElementById(
+          "relatedSection"
+        );
+
+      const grid =
+        document.getElementById(
+          "relatedGrid"
+        );
+
+
+      if (!section || !grid) {
+        return;
+      }
+
+
+      let query =
+        db
+          .from("articles")
+          .select(
+            "id,title,slug,category,image_url,excerpt,published_at,created_at"
+          )
+          .eq(
+            "status",
+            "published"
+          )
+          .neq(
+            "id",
+            article.id
+          )
+          .order(
+            "published_at",
+            {
+              ascending: false,
+              nullsFirst: false
+            }
+          )
+          .limit(8);
+
+
+      const { data, error } =
+        await query;
+
+
+      if (
+        error ||
+        !data ||
+        !data.length
+      ) {
+
+        section.style.display =
+          "none";
+
+        return;
+
+      }
+
+
+      /*
+       * Prioritaskan kategori sama.
+       */
+
+      const sameCategory =
+        data.filter(
+          x =>
+            x.category &&
+            article.category &&
+            x.category.toLowerCase() ===
+            article.category.toLowerCase()
+        );
+
+
+      const other =
+        data.filter(
+          x =>
+            !sameCategory.includes(x)
+        );
+
+
+      const related =
+        [
+          ...sameCategory,
+          ...other
+        ].slice(0, 4);
+
+
+      grid.innerHTML =
+        related.map(item => `
+
+          <article class="related-card">
+
+            <a
+              class="related-card__image"
+              href="${articleHref(item)}"
+            >
+
+              <img
+                src="${safeText(
+                  articleImage(item)
+                )}"
+                alt="${safeText(
+                  item.title || ""
+                )}"
+                loading="lazy"
+              >
+
+            </a>
+
+            <div class="related-card__body">
+
+              <div class="related-card__cat">
+                ${safeText(
+                  item.category ||
+                  "Berita"
+                )}
+              </div>
+
+              <h3>
+                <a
+                  href="${articleHref(item)}"
+                >
+                  ${safeText(
+                    item.title ||
+                    "Berita Kancah Sports"
+                  )}
+                </a>
+              </h3>
+
+              <div class="related-card__meta">
+                ${timeAgo(
+                  item.published_at ||
+                  item.created_at
+                )}
+              </div>
+
+            </div>
+
+          </article>
+
+        `).join("");
+
+
+      section.style.display =
+        "block";
+
+    }
+
+
+    /* =========================================================
+       SIDEBAR
+       ========================================================= */
+
+    async function loadSidebar(article) {
+
+      const latest =
+        document.getElementById(
+          "latestList"
+        );
+
+      const trends =
+        document.getElementById(
+          "trendingTags"
+        );
+
+
+      if (!latest) {
+        return;
+      }
+
+
+      const { data } =
+        await db
+          .from("articles")
+          .select(
+            "id,title,slug,category,image_url,published_at,created_at"
+          )
+          .eq(
+            "status",
+            "published"
+          )
+          .neq(
+            "id",
+            article.id
+          )
+          .order(
+            "published_at",
+            {
+              ascending: false,
+              nullsFirst: false
+            }
+          )
+          .limit(7);
+
+
+      const articles =
+        data || [];
+
+
+      latest.innerHTML =
+        articles.map(item => `
+
+          <article class="latest-item">
+
+            <a
+              href="${articleHref(item)}"
+              class="latest-item__image"
+            >
+
+              <img
+                src="${safeText(
+                  articleImage(item)
+                )}"
+                alt="${safeText(
+                  item.title || ""
+                )}"
+                loading="lazy"
+              >
+
+            </a>
+
+
+            <div>
+
+              <div class="latest-item__cat">
+                ${safeText(
+                  item.category ||
+                  "Berita"
+                )}
+              </div>
+
+              <h4>
+                <a href="${articleHref(item)}">
+                  ${safeText(
+                    item.title ||
+                    "Berita"
+                  )}
+                </a>
+              </h4>
+
+              <div class="latest-item__time">
+                ${timeAgo(
+                  item.published_at ||
+                  item.created_at
+                )}
+              </div>
+
+            </div>
+
+          </article>
+
+        `).join("") ||
+        `
+          <div
+            style="
+              color:#777;
+              padding:15px;
+              font-size:10px;
+            "
+          >
+            Belum ada berita terbaru.
+          </div>
+        `;
+
+
+      if (trends) {
+
+        const counts = {};
+
+
+        articles.forEach(
+          item => {
+
+            const category =
+              String(
+                item.category ||
+                ""
+              ).trim();
+
+            if (category) {
+
+              counts[category] =
+                (counts[category] || 0) + 1;
+
+            }
+
+          }
+        );
+
+
+        const categories =
+          Object.keys(counts)
+            .sort(
+              (a,b) =>
+                counts[b] -
+                counts[a]
+            )
+            .slice(0,6);
+
+
+        trends.innerHTML =
+          categories.map(
+            category => `
+
+              <a
+                href="index.html#latest-news"
+              >
+                #${safeText(
+                  category.replace(
+                    /\s+/g,
+                    ""
+                  )
+                )}
+              </a>
+
+            `
+          ).join("");
+
+      }
+
+    }
+
+
+    /* =========================================================
+       BREAKING
+       ========================================================= */
+
+    async function loadBreaking() {
+
+      const text =
+        document.getElementById(
+          "breakingText"
+        );
+
+      const top =
+        document.getElementById(
+          "topTicker"
+        );
+
+
+      const time =
+        document.getElementById(
+          "breakingTime"
+        );
+
+
+      const { data } =
+        await db
+          .from("articles")
+          .select(
+            "title,published_at,created_at"
+          )
+          .eq(
+            "status",
+            "published"
+          )
+          .order(
+            "published_at",
+            {
+              ascending: false,
+              nullsFirst: false
+            }
+          )
+          .limit(4);
+
+
+      const articles =
+        data || [];
+
+
+      const titles =
+        articles
+          .map(x => x.title)
+          .filter(Boolean);
+
+
+      const message =
+        titles.length
+          ? titles.join(" • ")
+          : "Berita olahraga terbaru Kancah Sports.";
+
+
+      if (text) {
+        text.textContent =
+          message;
+      }
+
+
+      if (top) {
+        top.textContent =
+          message;
+      }
+
+
+      if (
+        time &&
+        articles[0]
+      ) {
+
+        time.textContent =
+          "Update " +
+          timeAgo(
+            articles[0].published_at ||
+            articles[0].created_at
+          );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       SEARCH
+       ========================================================= */
+
+    let SEARCH_INDEX = [];
+
+
+    async function buildSearchIndex() {
+
+      const { data } =
+        await db
+          .from("articles")
+          .select(
+            "title,slug,category"
+          )
+          .eq(
+            "status",
+            "published"
+          )
+          .order(
+            "published_at",
+            {
+              ascending: false,
+              nullsFirst: false
+            }
+          )
+          .limit(100);
+
+
+      SEARCH_INDEX =
+        data || [];
+
+    }
+
+
+    function renderSearch(query = "") {
+
+      const results =
+        document.getElementById(
+          "searchResults"
+        );
+
+
+      if (!results) {
+        return;
+      }
+
+
+      const q =
+        query
+          .trim()
+          .toLowerCase();
+
+
+      const found =
+        SEARCH_INDEX
+          .filter(item => {
+
+            if (!q) {
+              return true;
+            }
+
+            return (
+              String(item.title || "")
+                .toLowerCase()
+                .includes(q)
+              ||
+              String(item.category || "")
+                .toLowerCase()
+                .includes(q)
+            );
+
+          })
+          .slice(0,12);
+
+
+      results.innerHTML =
+        found.map(item => `
+
+          <a
+            href="${articleHref(item)}"
+            class="search-result"
+          >
+
+            <span>
+              ${safeText(
+                item.category ||
+                "Berita"
+              )}
+            </span>
+
+            <strong>
+              ${safeText(
+                item.title ||
+                "Tanpa Judul"
+              )}
+            </strong>
+
+          </a>
+
+        `).join("") ||
+
+        `
+          <div class="search-result">
+            <span>Tidak ditemukan</span>
+            <strong>
+              Coba kata kunci lain.
+            </strong>
+          </div>
+        `;
+
+    }
+
+
+    /* =========================================================
+       SHARE
+       ========================================================= */
+
+    async function shareArticle(article) {
+
+      const url =
+        window.location.href;
+
+
+      if (
+        navigator.share
+      ) {
+
+        try {
+
+          await navigator.share({
+
+            title:
+              article.title,
+
+            text:
+              article.excerpt ||
+              article.title,
+
+            url
+
+          });
+
+          return;
+
+        } catch (e) {}
+
+      }
+
+
+      await navigator.clipboard
+        ?.writeText(url);
+
+
+      alert(
+        "Link artikel berhasil disalin."
+      );
+
+    }
+
+
+    async function copyLink() {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        alert(
+          "Link artikel berhasil disalin."
+        );
+
+      } catch {
+
+        prompt(
+          "Salin link artikel:",
+          window.location.href
+        );
+
+      }
+
+    }
+
+
+    function socialShare(type, article) {
+
+      const url =
+        encodeURIComponent(
+          window.location.href
+        );
+
+      const title =
+        encodeURIComponent(
+          article.title || ""
+        );
+
+
+      let target = "";
+
+
+      if (type === "whatsapp") {
+
+        target =
+          `https://wa.me/?text=${title}%20${url}`;
+
+      }
+
+
+      if (type === "facebook") {
+
+        target =
+          `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+
+      }
+
+
+      if (type === "x") {
+
+        target =
+          `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+
+      }
+
+
+      if (target) {
+
+        window.open(
+          target,
+          "_blank",
+          "noopener,noreferrer,width=720,height=560"
+        );
+
+      }
+
+    }
+
+
+    /* =========================================================
+       BOOKMARK
+       ========================================================= */
+
+    function bookmarkArticle(article) {
+
+      const key =
+        "kancah_bookmarks";
+
+
+      let bookmarks =
+        JSON.parse(
+          localStorage.getItem(key) ||
+          "[]"
+        );
+
+
+      const exists =
+        bookmarks.some(
+          item =>
+            item.slug ===
+            article.slug
+        );
+
+
+      if (exists) {
+
+        bookmarks =
+          bookmarks.filter(
+            item =>
+              item.slug !==
+              article.slug
+          );
+
+      } else {
+
+        bookmarks.push({
+
+          slug:
+            article.slug,
+
+          title:
+            article.title,
+
+          image_url:
+            article.image_url,
+
+          saved_at:
+            new Date().toISOString()
+
+        });
+
+      }
+
+
+      localStorage.setItem(
+        key,
+        JSON.stringify(bookmarks)
+      );
+
+
+      updateBookmarkButton(
+        article
+      );
+
+    }
+
+
+    function updateBookmarkButton(article) {
+
+      const button =
+        document.getElementById(
+          "bookmarkButton"
+        );
+
+
+      if (!button) {
+        return;
+      }
+
+
+      const bookmarks =
+        JSON.parse(
+          localStorage.getItem(
+            "kancah_bookmarks"
+          ) ||
+          "[]"
+        );
+
+
+      const saved =
+        bookmarks.some(
+          item =>
+            item.slug ===
+            article.slug
+        );
+
+
+      button.classList.toggle(
+        "active",
+        saved
+      );
+
+
+      button.innerHTML =
+        saved
+          ? "★ Tersimpan"
+          : "☆ Simpan";
+
+    }
+
+
+    /* =========================================================
+       LOAD ARTICLE
+       ========================================================= */
 
     async function loadArticle() {
-      const root = document.getElementById("article-root");
-      const params = new URLSearchParams(window.location.search);
-      const slug = params.get("slug");
+
+      const root =
+        document.getElementById(
+          "articleRoot"
+        );
+
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const slug =
+        params.get("slug");
+
 
       if (!slug) {
-        root.className = "error";
-        root.textContent = "Slug artikel tidak ditemukan.";
+
+        root.className =
+          "article-error";
+
+        root.textContent =
+          "Slug artikel tidak ditemukan.";
+
         return;
+
       }
 
-     const { data, error } = await db
-  .from("articles")
-  .select("*")
-  .eq("slug", slug)
-  .maybeSingle();
 
-      if (error || !data) {
-        console.error(error);
-        root.className = "error";
-        root.textContent = "Artikel tidak ditemukan.";
+      const {
+        data: article,
+        error
+      } = await db
+        .from("articles")
+        .select("*")
+        .eq(
+          "slug",
+          slug
+        )
+        .eq(
+          "status",
+          "published"
+        )
+        .maybeSingle();
+
+
+      if (
+        error ||
+        !article
+      ) {
+
+        console.error(
+          error
+        );
+
+        root.className =
+          "article-error";
+
+        root.innerHTML = `
+          <div>
+            Artikel tidak ditemukan.
+            <br><br>
+            <a
+              href="index.html"
+              style="
+                color:#fff;
+                text-decoration:underline;
+              "
+            >
+              ← Kembali ke Kancah Sports
+            </a>
+          </div>
+        `;
+
         return;
+
       }
 
-      updateMeta(data);
 
-      root.className = "article";
+      updateSEO(
+        article
+      );
+
+
+      const publishedDate =
+        article.published_at ||
+        article.created_at;
+
+
+      const author =
+        article.author_name ||
+        article.author ||
+        "Kancah Sports";
+
+
+      const source =
+        article.source_name ||
+        "Kancah Sports";
+
+
+      const category =
+        article.category ||
+        "Football";
+
+
+      const minutes =
+        readTime(
+          article.content || ""
+        );
+
+
+      root.className =
+        "article-page";
+
+
       root.innerHTML = `
-        <span class="category">${escapeHtml(data.category || "Football")}</span>
 
-        <h1>${escapeHtml(data.title)}</h1>
+        <div class="container">
 
-        <div class="meta">
-          <span>Kancah Sports</span>
-          <span>${formatDate(data.published_at || data.created_at)}</span>
+          <!-- BREADCRUMB -->
+
+          <nav
+            class="article-breadcrumb"
+            aria-label="Breadcrumb"
+          >
+
+            <a href="index.html">
+              Home
+            </a>
+
+            <span>›</span>
+
+            <a href="index.html#latest-news">
+              ${safeText(category)}
+            </a>
+
+            <span>›</span>
+
+            <span class="breadcrumb-current">
+              ${safeText(
+                article.title
+              )}
+            </span>
+
+          </nav>
+
+
+          <!-- ARTICLE HEADER -->
+
+          <div class="article-category">
+            ${safeText(category)}
+          </div>
+
+
+          <h1 class="article-title">
+            ${safeText(
+              article.title ||
+              "Berita Kancah Sports"
+            )}
+          </h1>
+
+
+          ${
+            article.excerpt
+              ? `
+                <div class="article-lead">
+                  ${safeText(
+                    article.excerpt
+                  )}
+                </div>
+              `
+              : ""
+          }
+
+
+          <div class="article-meta">
+
+            <span class="article-meta__author">
+
+              <span class="author-dot"></span>
+
+              ${safeText(author)}
+
+            </span>
+
+
+            <span class="meta-separator">
+              •
+            </span>
+
+
+            <span>
+              ${safeText(source)}
+            </span>
+
+
+            <span class="meta-separator">
+              •
+            </span>
+
+
+            <span>
+              ${formatDate(
+                publishedDate
+              )}
+            </span>
+
+
+            <span class="meta-separator">
+              •
+            </span>
+
+
+            <span>
+              ${minutes} min read
+            </span>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="article-actions">
+
+            <button
+              class="article-action"
+              id="shareButton"
+            >
+              ↗ Bagikan
+            </button>
+
+
+            <button
+              class="article-action"
+              id="copyButton"
+            >
+              ⧉ Copy Link
+            </button>
+
+
+            <button
+              class="article-action"
+              id="bookmarkButton"
+            >
+              ☆ Simpan
+            </button>
+
+
+            <button
+              class="article-action"
+              id="printButton"
+            >
+              ⎙ Cetak
+            </button>
+
+          </div>
+
+
+          <!-- HERO -->
+
+          <figure class="article-hero">
+
+            <div class="article-hero__frame">
+
+              <img
+                src="${safeText(
+                  articleImage(article)
+                )}"
+                alt="${safeText(
+                  article.title || ""
+                )}"
+                fetchpriority="high"
+              >
+
+            </div>
+
+            <figcaption class="article-caption">
+              ${safeText(
+                article.image_caption ||
+                `Kancah Sports • ${category}`
+              )}
+            </figcaption>
+
+          </figure>
+
+
+          <!-- ARTICLE + SIDEBAR -->
+
+          <div class="article-layout">
+
+            <div class="article-main">
+
+
+              <!-- TOC -->
+
+              <div
+                class="toc"
+                id="toc"
+                style="display:none"
+              >
+
+                <div class="toc__head">
+
+                  <span class="toc__title">
+                    Daftar Isi
+                  </span>
+
+                  <span
+                    style="
+                      color:#777;
+                      font-size:9px;
+                    "
+                  >
+                    Artikel
+                  </span>
+
+                </div>
+
+                <div
+                  class="toc__list"
+                  id="tocList"
+                ></div>
+
+              </div>
+
+
+              <!-- READING TOOLS -->
+
+              <div
+                class="reading-tools"
+                style="
+                  border:1px solid var(--line);
+                  border-radius:14px;
+                  margin-bottom:24px;
+                "
+              >
+
+                <span class="reading-tools__label">
+                  Ukuran teks
+                </span>
+
+                <div class="font-controls">
+
+                  <button
+                    id="fontSmall"
+                    aria-label="Perkecil teks"
+                  >
+                    A-
+                  </button>
+
+                  <button
+                    id="fontNormal"
+                    aria-label="Ukuran normal"
+                  >
+                    A
+                  </button>
+
+                  <button
+                    id="fontLarge"
+                    aria-label="Perbesar teks"
+                  >
+                    A+
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div class="article-content-wrap">
+
+                <!-- SHARE RAIL -->
+
+                <div class="share-rail">
+
+                  <button
+                    data-social="whatsapp"
+                    title="WhatsApp"
+                  >
+                    W
+                  </button>
+
+                  <button
+                    data-social="facebook"
+                    title="Facebook"
+                  >
+                    f
+                  </button>
+
+                  <button
+                    data-social="x"
+                    title="X"
+                  >
+                    𝕏
+                  </button>
+
+                </div>
+
+
+                <article
+                  class="article-content"
+                  id="articleContent"
+                >
+
+                  ${contentToHtml(
+                    article.content || ""
+                  )}
+
+                </article>
+
+
+                <!-- MID ARTICLE AD -->
+
+                <div class="ad-slot-wrap article-ad">
+
+                  <div class="ad-inner">
+
+                    <span class="ad-label">
+                      Advertisement
+                    </span>
+
+                    <ins
+                      class="adsbygoogle"
+                      data-ad-placement="content"
+                      style="display:block"
+                      data-ad-client="ca-pub-6133782160601858"
+                      data-ad-slot="REPLACE_ME"
+                      data-ad-format="auto"
+                      data-full-width-responsive="true"
+                    ></ins>
+
+                  </div>
+
+                </div>
+
+
+                <!-- ARTICLE FOOTER -->
+
+                <div class="article-footer">
+
+
+                  <div class="article-tags">
+
+                    <a
+                      class="article-tag"
+                      href="index.html#latest-news"
+                    >
+                      #${safeText(
+                        category
+                      )}
+                    </a>
+
+                    <span class="article-tag">
+                      Kancah Sports
+                    </span>
+
+                  </div>
+
+
+                  <div class="author-box">
+
+                    <div class="author-avatar">
+                      ${safeText(
+                        initials(author)
+                      )}
+                    </div>
+
+                    <div class="author-info">
+
+                      <strong>
+                        ${safeText(author)}
+                      </strong>
+
+                      <span>
+                        ${safeText(source)}
+                        • Kancah Sports
+                      </span>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- PREV NEXT -->
+
+                  <div
+                    class="article-navigation"
+                    id="articleNavigation"
+                  ></div>
+
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- SIDEBAR -->
+
+            <aside class="article-sidebar">
+
+
+              <!-- SIDEBAR AD -->
+
+              <div class="ad-slot-wrap sidebar-ad">
+
+                <div class="ad-inner">
+
+                  <span class="ad-label">
+                    Advertisement
+                  </span>
+
+                  <ins
+                    class="adsbygoogle"
+                    data-ad-placement="sidebar"
+                    style="display:block"
+                    data-ad-client="ca-pub-6133782160601858"
+                    data-ad-slot="REPLACE_ME"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"
+                  ></ins>
+
+                </div>
+
+              </div>
+
+
+              <!-- LATEST -->
+
+              <section class="side-panel">
+
+                <div class="panel-head">
+
+                  <h2 class="panel-title">
+                    Berita Terbaru
+                  </h2>
+
+                  <a
+                    href="index.html#latest-news"
+                    class="panel-link"
+                  >
+                    Semua
+                  </a>
+
+                </div>
+
+
+                <div
+                  class="latest-list"
+                  id="latestList"
+                >
+                  <div
+                    style="
+                      padding:15px;
+                      color:#777;
+                      font-size:10px;
+                    "
+                  >
+                    Memuat...
+                  </div>
+                </div>
+
+              </section>
+
+
+              <!-- TRENDING -->
+
+              <section class="side-panel">
+
+                <div class="panel-head">
+
+                  <h2 class="panel-title">
+                    Trending
+                  </h2>
+
+                </div>
+
+
+                <div
+                  class="trending-panel"
+                  id="trendingTags"
+                >
+                  <span
+                    style="
+                      color:#777;
+                      font-size:10px;
+                    "
+                  >
+                    Memuat...
+                  </span>
+                </div>
+
+              </section>
+
+            </aside>
+
+          </div>
+
         </div>
 
-        <img class="hero-img" src="${data.image_url || fallbackImage}" alt="${escapeHtml(data.title)}">
-
-        ${data.excerpt ? `<div class="excerpt">${escapeHtml(data.excerpt)}</div>` : ""}
-
-        <article class="content">
-          ${contentToHtml(data.content || "")}
-        </article>
       `;
+
+
+      /*
+       * Build dynamic elements
+       */
+
+      buildTOC();
+
+      updateBookmarkButton(
+        article
+      );
+
+      await loadRelatedArticles(
+        article
+      );
+
+      await loadSidebar(
+        article
+      );
+
+
+      await loadPreviousNext(
+        article
+      );
+
+
+      /*
+       * Actions
+       */
+
+      document
+        .getElementById(
+          "shareButton"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            shareArticle(article)
+        );
+
+
+      document
+        .getElementById(
+          "copyButton"
+        )
+        ?.addEventListener(
+          "click",
+          copyLink
+        );
+
+
+      document
+        .getElementById(
+          "bookmarkButton"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            bookmarkArticle(article)
+        );
+
+
+      document
+        .getElementById(
+          "printButton"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            window.print()
+        );
+
+
+      document
+        .querySelectorAll(
+          "[data-social]"
+        )
+        .forEach(button => {
+
+          button.addEventListener(
+            "click",
+            () =>
+              socialShare(
+                button.dataset.social,
+                article
+              )
+          );
+
+        });
+
+
+      /*
+       * Font controls
+       */
+
+      const content =
+        document.getElementById(
+          "articleContent"
+        );
+
+
+      document
+        .getElementById(
+          "fontSmall"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            content.style.fontSize =
+              "16px"
+        );
+
+
+      document
+        .getElementById(
+          "fontNormal"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            content.style.fontSize =
+              "18px"
+        );
+
+
+      document
+        .getElementById(
+          "fontLarge"
+        )
+        ?.addEventListener(
+          "click",
+          () =>
+            content.style.fontSize =
+              "21px"
+        );
+
     }
 
-    document.addEventListener("DOMContentLoaded", loadArticle);
+
+    /* =========================================================
+       PREVIOUS / NEXT
+       ========================================================= */
+
+    async function loadPreviousNext(
+      article
+    ) {
+
+      const wrap =
+        document.getElementById(
+          "articleNavigation"
+        );
+
+
+      if (!wrap) {
+        return;
+      }
+
+
+      const { data } =
+        await db
+          .from("articles")
+          .select(
+            "id,title,slug,published_at,created_at"
+          )
+          .eq(
+            "status",
+            "published"
+          )
+          .order(
+            "published_at",
+            {
+              ascending: false,
+              nullsFirst: false
+            }
+          )
+          .limit(100);
+
+
+      const articles =
+        data || [];
+
+
+      const index =
+        articles.findIndex(
+          x =>
+            String(x.id) ===
+            String(article.id)
+        );
+
+
+      if (index === -1) {
+        return;
+      }
+
+
+      const newer =
+        articles[index - 1] ||
+        null;
+
+
+      const older =
+        articles[index + 1] ||
+        null;
+
+
+      wrap.innerHTML = `
+
+        ${
+          older
+            ? `
+              <a
+                class="article-nav-card"
+                href="${articleHref(older)}"
+              >
+
+                <small>
+                  ← Artikel sebelumnya
+                </small>
+
+                <strong>
+                  ${safeText(
+                    older.title
+                  )}
+                </strong>
+
+              </a>
+            `
+            : `
+              <div></div>
+            `
+        }
+
+
+        ${
+          newer
+            ? `
+              <a
+                class="article-nav-card next"
+                href="${articleHref(newer)}"
+              >
+
+                <small>
+                  Artikel berikutnya →
+                </small>
+
+                <strong>
+                  ${safeText(
+                    newer.title
+                  )}
+                </strong>
+
+              </a>
+            `
+            : `
+              <div></div>
+            `
+        }
+
+      `;
+
+    }
+
+
+    /* =========================================================
+       READING PROGRESS
+       ========================================================= */
+
+    function updateReadingProgress() {
+
+      const bar =
+        document.getElementById(
+          "readingProgress"
+        );
+
+
+      const content =
+        document.getElementById(
+          "articleContent"
+        );
+
+
+      if (
+        !bar ||
+        !content
+      ) {
+        return;
+      }
+
+
+      const rect =
+        content.getBoundingClientRect();
+
+
+      const start =
+        window.scrollY +
+        rect.top;
+
+
+      const total =
+        content.offsetHeight;
+
+
+      const current =
+        window.scrollY -
+        start +
+        window.innerHeight;
+
+
+      let percentage =
+        (current / total) * 100;
+
+
+      percentage =
+        Math.max(
+          0,
+          Math.min(
+            100,
+            percentage
+          )
+        );
+
+
+      bar.style.width =
+        percentage + "%";
+
+    }
+
+
+    /* =========================================================
+       SEARCH UI
+       ========================================================= */
+
+    function setupSearch() {
+
+      const modal =
+        document.getElementById(
+          "searchModal"
+        );
+
+      const input =
+        document.getElementById(
+          "searchInput"
+        );
+
+
+      document
+        .getElementById(
+          "openSearch"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            modal.classList.add(
+              "open"
+            );
+
+            input.focus();
+
+            renderSearch("");
+
+          }
+        );
+
+
+      document
+        .getElementById(
+          "closeSearch"
+        )
+        ?.addEventListener(
+          "click",
+          () => {
+
+            modal.classList.remove(
+              "open"
+            );
+
+          }
+        );
+
+
+      modal?.addEventListener(
+        "click",
+        event => {
+
+          if (
+            event.target === modal
+          ) {
+
+            modal.classList.remove(
+              "open"
+            );
+
+          }
+
+        }
+      );
+
+
+      input?.addEventListener(
+        "input",
+        () =>
+          renderSearch(
+            input.value
+          )
+      );
+
+    }
+
+
+    /* =========================================================
+       MOBILE MENU
+       ========================================================= */
+
+    function setupMobileMenu() {
+
+      const menu =
+        document.getElementById(
+          "mobileMenu"
+        );
+
+
+      const open =
+        document.getElementById(
+          "openMenu"
+        );
+
+
+      const close =
+        document.getElementById(
+          "closeMenu"
+        );
+
+
+      function openMenu() {
+
+        menu.classList.add(
+          "open"
+        );
+
+        document.body.classList.add(
+          "menu-open"
+        );
+
+      }
+
+
+      function closeMenu() {
+
+        menu.classList.remove(
+          "open"
+        );
+
+        document.body.classList.remove(
+          "menu-open"
+        );
+
+      }
+
+
+      open?.addEventListener(
+        "click",
+        openMenu
+      );
+
+
+      close?.addEventListener(
+        "click",
+        closeMenu
+      );
+
+
+      menu
+        ?.querySelectorAll("a")
+        .forEach(link => {
+
+          link.addEventListener(
+            "click",
+            closeMenu
+          );
+
+        });
+
+    }
+
+
+    /* =========================================================
+       BACK TOP
+       ========================================================= */
+
+    function setupBackTop() {
+
+      const button =
+        document.getElementById(
+          "backTop"
+        );
+
+
+      window.addEventListener(
+        "scroll",
+        () => {
+
+          button.classList.toggle(
+            "show",
+            window.scrollY > 600
+          );
+
+        }
+      );
+
+
+      button?.addEventListener(
+        "click",
+        () => {
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+        }
+      );
+
+    }
+
+
+    /* =========================================================
+       ADSENSE
+       ========================================================= */
+
+    function initAdsense() {
+
+      if (
+        window.__adsenseLoaded
+      ) {
+        return;
+      }
+
+
+      window.__adsenseLoaded =
+        true;
+
+
+      const script =
+        document.createElement(
+          "script"
+        );
+
+
+      script.async =
+        true;
+
+      script.src =
+        "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6133782160601858";
+
+      script.crossOrigin =
+        "anonymous";
+
+
+      document.head.appendChild(
+        script
+      );
+
+
+      document
+        .querySelectorAll(
+          ".adsbygoogle"
+        )
+        .forEach(ad => {
+
+          try {
+
+            (
+              window.adsbygoogle =
+              window.adsbygoogle ||
+              []
+            ).push({});
+
+          } catch(e) {
+
+            console.error(
+              "AdSense:",
+              e
+            );
+
+          }
+
+        });
+
+    }
+
+
+    /* =========================================================
+       NEWSLETTER
+       ========================================================= */
+
+    function setupNewsletter() {
+
+      document
+        .getElementById(
+          "newsletterForm"
+        )
+        ?.addEventListener(
+          "submit",
+          event => {
+
+            event.preventDefault();
+
+            alert(
+              "Form newsletter siap dihubungkan ke Supabase."
+            );
+
+          }
+        );
+
+    }
+
+
+    /* =========================================================
+       KEYBOARD
+       ========================================================= */
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+
+          document
+            .getElementById(
+              "searchModal"
+            )
+            ?.classList.remove(
+              "open"
+            );
+
+        }
+
+
+        /*
+         * Ctrl + K
+         * Search
+         */
+
+        if (
+          (event.ctrlKey ||
+            event.metaKey) &&
+          event.key.toLowerCase() === "k"
+        ) {
+
+          event.preventDefault();
+
+          document
+            .getElementById(
+              "openSearch"
+            )
+            ?.click();
+
+        }
+
+      }
+    );
+
+
+    /* =========================================================
+       INIT
+       ========================================================= */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      async () => {
+
+        setupSearch();
+
+        setupMobileMenu();
+
+        setupBackTop();
+
+        setupNewsletter();
+
+
+        window.addEventListener(
+          "scroll",
+          updateReadingProgress,
+          {
+            passive: true
+          }
+        );
+
+
+        window.addEventListener(
+          "resize",
+          updateReadingProgress
+        );
+
+
+        await Promise.all([
+          loadBreaking(),
+          buildSearchIndex(),
+          loadArticle()
+        ]);
+
+
+        initAdsense();
+
+        updateReadingProgress();
+
+      }
+    );
+
   </script>
+
 </body>
 </html>
