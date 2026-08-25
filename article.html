@@ -176,6 +176,7 @@
     ========================================================== */
 
     .top-ticker {
+      height: 34px;
       min-height: 34px;
 
       background: var(--orange);
@@ -193,6 +194,7 @@
     }
 
     .top-ticker__inner {
+      height: 34px;
       min-height: 34px;
 
       display: grid;
@@ -1931,6 +1933,152 @@
       z-index: 300;
     }
 
+
+    /* =========================================================
+       KANCAH NETWORK NAV — FIX
+    ========================================================== */
+    .nav-network {
+      position: relative;
+      flex: 0 0 auto;
+      height: 72px;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-network__button {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 72px;
+      padding: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .nav-network__button::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 19px;
+      height: 2px;
+      background: var(--orange);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .25s ease;
+    }
+
+    .nav-network:hover .nav-network__button,
+    .nav-network:focus-within .nav-network__button {
+      color: #fff;
+    }
+
+    .nav-network:hover .nav-network__button::after,
+    .nav-network:focus-within .nav-network__button::after {
+      transform: scaleX(1);
+    }
+
+    .network-menu {
+      position: absolute;
+      top: calc(100% + 1px);
+      right: 0;
+      width: 250px;
+      padding: 8px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 10px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.55);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+      z-index: 9999;
+    }
+
+    .nav-network:hover .network-menu,
+    .nav-network:focus-within .network-menu {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .network-item {
+      display: block;
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 8px;
+      white-space: normal;
+      transition: background .2s ease;
+    }
+
+    .network-item:hover,
+    .network-item.current {
+      background: rgba(255,77,0,.10);
+    }
+
+    .network-item span {
+      display: block;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .network-item.current span {
+      color: var(--orange);
+    }
+
+    .network-item small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.35;
+      font-weight: 500;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+    }
+
+    /* Header spacing: keep all desktop nav items on one clean baseline. */
+    .desktop-nav {
+      min-width: 0;
+      flex-wrap: nowrap;
+      gap: clamp(18px, 2vw, 34px);
+    }
+
+    .desktop-nav > a,
+    .desktop-nav .nav-network {
+      flex: 0 0 auto;
+    }
+
+    /* Mobile button uses .menu-button in this article file. */
+    @media (max-width: 900px) {
+      .menu-button {
+        display: inline-grid;
+      }
+      .nav-network {
+        display: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .main-header__inner {
+        min-height: 62px;
+      }
+      .nav-network {
+        display: none;
+      }
+    }
+
     /* =========================================================
        RESPONSIVE
     ========================================================== */
@@ -1944,6 +2092,7 @@
       .desktop-nav > a,
       .nav-network__button {
         font-size: 9px;
+        letter-spacing: .13em;
       }
 
       .article-layout {
