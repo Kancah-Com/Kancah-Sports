@@ -548,7 +548,7 @@
             <div class="spacer"></div>
             <span class="date-text" id="apiMatchCount">0 match</span>
           </div>
-          <div class="week-note">Semua <b>match, liga, klub, logo, skor, dan status</b> diambil otomatis dari <b>football-data.org</b> melalui tabel <b>football_matches</b>. Admin hanya dipakai untuk override bila diperlukan.</div>
+          <div class="week-note">Semua <b>match, liga, klub, logo, skor, dan status</b> diambil otomatis dari <b>footballdata.io</b> melalui tabel <b>football_matches</b>. Admin hanya dipakai untuk override bila diperlukan.</div>
           <div id="apiMatchRows" class="fixture-admin-list"></div>
         </div>
 
@@ -558,7 +558,7 @@
             <button class="btn btn-ghost" id="loadApiClubsBtn">Muat Klub API</button>
             <div class="spacer"></div><span class="date-text" id="apiClubCount">0 klub</span>
           </div>
-          <div class="week-note">Daftar klub di bawah dibentuk langsung dari data pertandingan <b>football-data.org</b>.</div>
+          <div class="week-note">Daftar klub di bawah dibentuk langsung dari data pertandingan <b>footballdata.io</b>.</div>
           <div id="apiClubRows" class="manager-items"></div>
           <div id="legacySportsManagers" style="display:none">
 
@@ -1144,7 +1144,7 @@
       const box=document.getElementById('apiClubRows');
       if(!box)return;
       box.innerHTML='<div class="loading-row" style="padding:30px">Memuat klub dari API…</div>';
-      const {data,error}=await db.from('football_matches').select('home_team_name,home_team_logo,away_team_name,away_team_logo,league_name').eq('source','football-data').limit(5000);
+      const {data,error}=await db.from('football_matches').select('home_team_name,home_team_logo,away_team_name,away_team_logo,league_name').eq('source','footballdata.io').limit(5000);
       if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Klub API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
       const map=new Map();
       (data||[]).forEach(f=>{
@@ -1235,10 +1235,10 @@
       const btn=document.getElementById('syncFootballDataBtn');
       if(btn){btn.disabled=true;btn.textContent='↻ Sinkronisasi…';}
       try{
-        const {data,error}=await db.functions.invoke('sync-football',{body:{}});
+        const {data,error}=await db.functions.invoke('sync-football',{body:{action:'fixtures'}});
         if(error) throw error;
         if(data?.error) throw new Error(data.error);
-        toast(`Sinkron selesai · ${Number(data?.count||0)} match diperbarui`);
+        toast(`Sinkron selesai · ${Number(data?.upserted ?? data?.total_fixtures ?? data?.total ?? 0)} match diperbarui`);
         await loadApiMatches();
       }catch(e){
         toast('Sinkron API gagal: '+(e.message||e),'error');
@@ -1254,7 +1254,7 @@
       box.innerHTML='<div class="loading-row" style="padding:30px">Memuat pertandingan dari API…</div>';
       const start=new Date(`${date}T00:00:00`);
       const end=new Date(`${date}T23:59:59.999`);
-      const {data,error}=await db.from('football_matches').select('*').eq('source','football-data').gte('match_date',start.toISOString()).lte('match_date',end.toISOString()).order('match_date',{ascending:true}).limit(200);
+      const {data,error}=await db.from('football_matches').select('*').eq('source','footballdata.io').gte('match_date',start.toISOString()).lte('match_date',end.toISOString()).order('match_date',{ascending:true}).limit(200);
       if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Match API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
       const matches=data||[];
       apiMatchCache=matches;
