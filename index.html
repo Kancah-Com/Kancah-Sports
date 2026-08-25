@@ -3654,7 +3654,7 @@
           </div>
           <div class="table-wrap">
             <table class="fixture-table">
-              <thead><tr><th>Waktu</th><th>Kompetisi</th><th>Home</th><th>Away</th><th>Status</th></tr></thead>
+              <thead><tr><th>Waktu</th><th>Kompetisi</th><th>Home</th><th>Skor</th><th>Away</th><th>Status</th></tr></thead>
               <tbody id="fixturesBody"></tbody>
             </table>
           </div>
@@ -3957,11 +3957,12 @@
         return `<tr>
           <td><span class="time-badge">${safeText(dt.time)}</span><small class="fixture-date-small">${safeText(dt.date)}</small></td>
           <td><span class="league-badge">${safeText(f.league_name||'—')}</span></td>
-          <td>${teamChip(f.home_team_name,f.home_team_logo)}${scoreAvailable?`<small class="fixture-score">${safeText(homeScore)} - ${safeText(awayScore)}</small>`:''}</td>
+          <td>${teamChip(f.home_team_name,f.home_team_logo)}</td>
+          <td class="fixture-score-cell">${scoreAvailable?`<strong class="fixture-score-main">${safeText(homeScore)} - ${safeText(awayScore)}</strong>`:`<span class="fixture-score-upcoming">—</span>`}</td>
           <td>${teamChip(f.away_team_name,f.away_team_logo)}</td>
           <td>${fixtureStatusHtml(f)}</td>
         </tr>`;
-      }).join('')||`<tr><td colspan="5" style="text-align:center;color:#777;padding:30px;">Belum ada jadwal atau hasil pertandingan.</td></tr>`;
+      }).join('')||`<tr><td colspan="6" style="text-align:center;color:#777;padding:30px;">Belum ada jadwal atau hasil pertandingan.</td></tr>`;
     }
 
     // ================== RENDER: JADWAL DI SIDEBAR HERO ==================
@@ -3999,7 +4000,7 @@
         const isLive = f.is_live===true || ['LIVE','1H','2H','ET','P','BT'].includes(st);
         const isFinished = f.is_finished===true || ['FT','FINISHED','AET','PEN'].includes(st);
         let homeScore=null, awayScore=null;
-        if(isLive){ homeScore=f.live_home_score??f.home_score??null; awayScore=f.live_away_score??f.away_score??null; }
+        if(isLive || f.is_half_time===true || ['HT','PAUSED'].includes(st)){ homeScore=f.live_home_score??f.home_score??null; awayScore=f.live_away_score??f.away_score??null; }
         else if(isFinished){ homeScore=f.final_home_score??f.home_score??null; awayScore=f.final_away_score??f.away_score??null; }
         const hasScore = homeScore!==null && homeScore!==undefined && awayScore!==null && awayScore!==undefined;
 
@@ -4437,7 +4438,7 @@
         {data:matchOverrides,error:overrideError}
       ]=await Promise.all([ 
         db.from('homepage_content').select('*').eq('is_active',true).neq('section','fixtures').order('section').order('sort_order'), 
-        db.from('football_matches').select('*').eq('source','football-data').gte('match_date',startOfDay.toISOString()).lte('match_date',endOfDay.toISOString()).order('match_date',{ascending:true}).limit(100), 
+        db.from('football_matches').select('*').eq('source','footballdata.io').gte('match_date',startOfDay.toISOString()).lte('match_date',endOfDay.toISOString()).order('match_date',{ascending:true}).limit(100), 
         db.from('sports_fixtures').select('*').gte('fixture_date',startOfDay.toISOString()).lte('fixture_date',endOfDay.toISOString()).order('fixture_date',{ascending:true}).limit(100), 
         db.from('sports_leagues').select('id,name,logo_url'), 
         db.from('sports_teams').select('id,name,short_name,logo_url,league_id'),
@@ -4493,7 +4494,7 @@
           is_live:live,is_finished:finished,is_half_time:half,
           live_home_score:live||half?currentHome:null,live_away_score:live||half?currentAway:null,
           final_home_score:finished?finalHome:null,final_away_score:finished?finalAway:null,
-          home_score:live||half?currentHome:(finished?finalHome:null),away_score:live||half?currentAway:(finished?finalAway:null),source:'football-data',
+          home_score:live||half?currentHome:(finished?finalHome:null),away_score:live||half?currentAway:(finished?finalAway:null),source:'footballdata.io',
           _key:fixtureKey(f.home_team_name,f.away_team_name,f.match_date)
         };
       }); 
@@ -4726,6 +4727,10 @@
     @keyframes fixtureLivePulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}} 
 
     .fixture-score{display:block;color:#ff4d00;margin-top:3px;font-weight:900;font-family:var(--mono);font-size:11px;}
+ .fixture-score-cell{width:92px;text-align:center;white-space:nowrap;}
+    .fixture-score-main{display:inline-block;color:#fff;font-family:var(--mono);font-size:15px;font-weight:900;letter-spacing:.02em;}
+    .fixture-score-upcoming{color:#666;font-family:var(--mono);font-weight:800;}
+
     .fixture-date-small{display:block;color:#777;margin-top:2px;font-size:8px;}
 </style> 
  
