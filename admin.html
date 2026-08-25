@@ -544,11 +544,11 @@
           <div class="sports-toolbar">
             <div class="field compact"><label>Tanggal API</label><input type="date" id="apiMatchDate"></div>
             <div class="field compact"><label>Filter</label><input type="search" id="apiMatchSearch" placeholder="Cari klub / liga..." style="min-width:220px"></div>
-            <button class="btn btn-ghost" id="loadApiMatchesBtn">Muat Match API</button>
+            <button class="btn btn-ghost" id="syncFootballDataBtn">↻ Sinkronkan API</button><button class="btn btn-ghost" id="loadApiMatchesBtn">Muat Match</button>
             <div class="spacer"></div>
             <span class="date-text" id="apiMatchCount">0 match</span>
           </div>
-          <div class="week-note">Semua <b>match, liga, klub, dan logo</b> diambil dari <b>API-Football</b> melalui tabel <b>football_matches</b>. Admin hanya mengedit status/skor sebagai override. Tidak perlu membuat klub atau pertandingan manual.</div>
+          <div class="week-note">Semua <b>match, liga, klub, logo, skor, dan status</b> diambil otomatis dari <b>football-data.org</b> melalui tabel <b>football_matches</b>. Admin hanya dipakai untuk override bila diperlukan.</div>
           <div id="apiMatchRows" class="fixture-admin-list"></div>
         </div>
 
@@ -558,7 +558,7 @@
             <button class="btn btn-ghost" id="loadApiClubsBtn">Muat Klub API</button>
             <div class="spacer"></div><span class="date-text" id="apiClubCount">0 klub</span>
           </div>
-          <div class="week-note">Daftar klub di bawah <b>dibentuk langsung dari data pertandingan API-Football</b>. Nama, logo, dan kompetisi tidak dibuat manual di admin.</div>
+          <div class="week-note">Daftar klub di bawah dibentuk langsung dari data pertandingan <b>football-data.org</b>.</div>
           <div id="apiClubRows" class="manager-items"></div>
           <div id="legacySportsManagers" style="display:none">
 
@@ -1138,13 +1138,13 @@
 
     function updateLogoPreview(id,url){const img=document.getElementById(id);if(!img)return;if(url){img.src=url;img.classList.add('show');}else{img.removeAttribute('src');img.classList.remove('show');}}
 
-    // ---------- API-FOOTBALL CLUB DIRECTORY ----------
+    // ---------- FOOTBALL-DATA CLUB DIRECTORY ----------
     let apiClubCache=[];
     async function loadApiClubs(){
       const box=document.getElementById('apiClubRows');
       if(!box)return;
       box.innerHTML='<div class="loading-row" style="padding:30px">Memuat klub dari API…</div>';
-      const {data,error}=await db.from('football_matches').select('home_team_name,home_team_logo,away_team_name,away_team_logo,league_name').limit(5000);
+      const {data,error}=await db.from('football_matches').select('home_team_name,home_team_logo,away_team_name,away_team_logo,league_name').eq('source','football-data').limit(5000);
       if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Klub API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
       const map=new Map();
       (data||[]).forEach(f=>{
@@ -1169,7 +1169,7 @@
       box.innerHTML=rows.map(t=>`<div class="manager-item"><div class="club-avatar">${t.logo?`<img src="${escapeHtml(t.logo)}" alt="">`:'⚽'}</div><div class="manager-copy"><strong>${escapeHtml(t.name)}</strong><small>${escapeHtml([...t.leagues].join(' · ')||'Kompetisi dari API')}</small></div><span class="date-text">API</span></div>`).join('');
     }
 
-    // ---------- API-FOOTBALL MATCH MANAGER ----------
+    // ---------- FOOTBALL-DATA MATCH MANAGER ----------
     let apiMatchCache=[];
 
     function apiDateValue(){
@@ -1181,10 +1181,10 @@
 
     function apiStatusLabel(status){
       const s=String(status||'').toUpperCase();
-      if(['LIVE','1H','2H','ET','P','BT'].includes(s)) return 'LIVE';
-      if(s==='HT') return 'HALF TIME';
+      if(['LIVE','IN_PLAY','1H','2H','ET','P','BT'].includes(s)) return 'LIVE';
+      if(['HT','PAUSED'].includes(s)) return 'HALF TIME';
       if(['FT','FINISHED','AET','PEN'].includes(s)) return 'SELESAI';
-      if(['PST','POSTPONED'].includes(s)) return 'DITUNDA';
+      if(['PST','POSTPONED','SUSPENDED'].includes(s)) return 'DITUNDA';
       if(['CANC','CANCELLED','ABD','AWD','WO'].includes(s)) return 'DIBATALKAN';
       return 'AKAN DATANG';
     }
@@ -1204,7 +1204,7 @@
     }
 
     function apiMatchRowHtml(f,override={}){
-      const apiStatus=String(f.status_short||'').toUpperCase();
+      const apiStatus=String(f.status_short||f.status||'').toUpperCase();
       const effectiveStatus=override.status_override||'';
       const statusText=effectiveStatus?apiStatusLabel(effectiveStatus):apiStatusLabel(apiStatus);
       const liveHome=override.live_home_score??(f.is_live?f.home_goals:null);
@@ -1212,7 +1212,7 @@
       const finalHome=override.final_home_score??(f.is_finished?(f.home_ft_goals??f.home_goals):null);
       const finalAway=override.final_away_score??(f.is_finished?(f.away_ft_goals??f.away_goals):null);
       const apiMinute=f.elapsed??null;
-      return `<div class="api-match-card" data-match-id="${escapeHtml(String(f.id))}" data-live-started-at="${escapeHtml(override.live_started_at||'')}" data-original-override-status="${escapeHtml(override.status_override||'')}">
+      return `<div class="api-match-card" data-match-id="${escapeHtml(String(f.source_match_id??f.id))}" data-live-started-at="${escapeHtml(override.live_started_at||'')}" data-original-override-status="${escapeHtml(override.status_override||'')}">
         <div class="api-match-head">
           <div><span class="api-match-id">API MATCH #${escapeHtml(f.id)}</span><strong>${escapeHtml(apiMatchDateLabel(f.match_date))} · ${escapeHtml(apiMatchTime(f.match_date))} WIB</strong></div>
           <div class="api-match-meta"><span class="api-league-pill">${escapeHtml(f.league_name||'—')}</span><span class="api-status-pill">API: ${escapeHtml(apiStatusLabel(apiStatus))}${apiMinute!==null&&apiMinute!==undefined?' · '+escapeHtml(apiMinute)+"'":''}</span></div>
@@ -1231,6 +1231,22 @@
       </div>`;
     }
 
+    async function syncFootballData(){
+      const btn=document.getElementById('syncFootballDataBtn');
+      if(btn){btn.disabled=true;btn.textContent='↻ Sinkronisasi…';}
+      try{
+        const {data,error}=await db.functions.invoke('sync-football-data',{body:{}});
+        if(error) throw error;
+        if(data?.error) throw new Error(data.error);
+        toast(`Sinkron selesai · ${Number(data?.count||0)} match diperbarui`);
+        await loadApiMatches();
+      }catch(e){
+        toast('Sinkron API gagal: '+(e.message||e),'error');
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent='↻ Sinkronkan API';}
+      }
+    }
+
     async function loadApiMatches(){
       const box=document.getElementById('apiMatchRows');
       const date=apiDateValue();
@@ -1238,13 +1254,13 @@
       box.innerHTML='<div class="loading-row" style="padding:30px">Memuat pertandingan dari API…</div>';
       const start=new Date(`${date}T00:00:00`);
       const end=new Date(`${date}T23:59:59.999`);
-      const {data,error}=await db.from('football_matches').select('*').gte('match_date',start.toISOString()).lte('match_date',end.toISOString()).order('match_date',{ascending:true}).limit(200);
+      const {data,error}=await db.from('football_matches').select('*').eq('source','football-data').gte('match_date',start.toISOString()).lte('match_date',end.toISOString()).order('match_date',{ascending:true}).limit(200);
       if(error){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Match API</h3><p>${escapeHtml(error.message)}</p></div>`;return;}
       const matches=data||[];
       apiMatchCache=matches;
       let overrides=[];
       if(matches.length){
-        const {data:ov,error:ovError}=await db.from('football_match_overrides').select('*').in('match_id',matches.map(m=>String(m.id)));
+        const {data:ov,error:ovError}=await db.from('football_match_overrides').select('*').in('match_id',matches.map(m=>String(m.source_match_id??m.id)));
         if(ovError){box.innerHTML=`<div class="empty-state"><h3>Gagal Memuat Override</h3><p>${escapeHtml(ovError.message)}</p><small>Pastikan SQL football_match_overrides sudah dijalankan.</small></div>`;return;}
         overrides=ov||[];
       }
@@ -1332,6 +1348,7 @@
     function switchSportsView(view){document.querySelectorAll('.sports-tab').forEach(b=>b.classList.toggle('active',b.dataset.sportsView===view));document.getElementById('sportsFixturesPanel').style.display=view==='fixtures'?'block':'none';document.getElementById('sportsTeamsPanel').style.display=view==='teams'?'block':'none';document.getElementById('sportsContentPanel').style.display=view==='content'?'block':'none';if(view==='fixtures')loadApiMatches();if(view==='teams')loadApiClubs();if(view==='content')loadHomepageManager();}
     document.querySelectorAll('.sports-tab').forEach(btn=>btn.addEventListener('click',()=>switchSportsView(btn.dataset.sportsView)));
     document.querySelectorAll('.subtab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active',b===btn));const leagues=btn.dataset.teamView==='leagues';document.getElementById('leagueManager').style.display=leagues?'grid':'none';document.getElementById('clubManager').style.display=leagues?'none':'grid';if(!leagues){renderTeamLeagueOptions();renderTeamItems();}}));
+    document.getElementById('syncFootballDataBtn')?.addEventListener('click',syncFootballData);
     document.getElementById('loadApiMatchesBtn')?.addEventListener('click',loadApiMatches);
     document.getElementById('apiMatchSearch')?.addEventListener('input',()=>{const q=(document.getElementById('apiMatchSearch').value||'').trim().toLowerCase();const filtered=apiMatchCache.filter(f=>`${f.home_team_name||''} ${f.away_team_name||''} ${f.league_name||''}`.toLowerCase().includes(q));const ids=filtered.map(f=>String(f.id));db.from('football_match_overrides').select('*').in('match_id',ids.length?ids:['__none__']).then(({data})=>renderApiMatches(filtered,new Map((data||[]).map(o=>[String(o.match_id),o]))));});
     document.getElementById('apiMatchDate')?.addEventListener('change',loadApiMatches);
