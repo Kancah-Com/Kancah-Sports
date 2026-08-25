@@ -1235,7 +1235,7 @@
       const btn=document.getElementById('syncFootballDataBtn');
       if(btn){btn.disabled=true;btn.textContent='↻ Sinkronisasi…';}
       try{
-        const {data,error}=await db.functions.invoke('sync-football-data',{body:{}});
+        const {data,error}=await db.functions.invoke('sync-football',{body:{}});
         if(error) throw error;
         if(data?.error) throw new Error(data.error);
         toast(`Sinkron selesai · ${Number(data?.count||0)} match diperbarui`);
