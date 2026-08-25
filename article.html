@@ -284,236 +284,172 @@
     .main-header {
       position: sticky;
       top: 0;
-
       z-index: 80;
-
-      background:
-        rgba(7,7,7,.88);
-
-      backdrop-filter:
-        blur(18px);
-
-      border-bottom:
-        1px solid var(--line);
+      background: rgba(7,7,7,.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
     }
 
     .main-header__inner {
-
       min-height: 72px;
-
       display: grid;
-
-      grid-template-columns:
-        auto
-        1fr
-        auto;
-
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-
       gap: 24px;
     }
 
     .brand {
       display: inline-flex;
-
       align-items: center;
-
       min-width: max-content;
     }
 
     .brand__logo {
-      width: 165px;
-      height: auto;
-      object-fit: contain;
+      display: block;
+      height: clamp(30px, 3vw, 42px);
+      width: auto;
+      transition: .25s ease;
+    }
+
+    .brand:hover .brand__logo {
+      opacity: .85;
     }
 
     .desktop-nav {
       display: flex;
-
-      align-items: center;
       justify-content: center;
-
-      gap: 24px;
-    }
-
-    .desktop-nav > a,
-    .nav-network__button {
-
-      color: #bdbdbd;
-
-      font-size: 11px;
+      align-items: center;
+      gap: clamp(18px, 2.2vw, 38px);
+      color: var(--muted);
+      font-size: 12px;
       font-weight: 700;
-
-      letter-spacing: .10em;
-
+      letter-spacing: .22em;
       text-transform: uppercase;
-
-      transition: .2s ease;
     }
 
-    .desktop-nav > a:hover,
-    .desktop-nav > a.active,
-    .nav-network__button:hover {
+    .desktop-nav a {
+      position: relative;
+      padding: 28px 0;
+    }
+
+    .desktop-nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 19px;
+      height: 2px;
+      background: var(--orange);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .25s ease;
+    }
+
+    .desktop-nav a:hover,
+    .desktop-nav a.active {
       color: #fff;
     }
 
-    .nav-network {
-      position: relative;
-    }
-
-    .network-menu {
-
-      position: absolute;
-
-      top: calc(100% + 14px);
-      right: 0;
-
-      width: 220px;
-
-      background: #111;
-
-      border:
-        1px solid var(--line);
-
-      border-radius: 12px;
-
-      padding: 8px;
-
-      opacity: 0;
-      visibility: hidden;
-
-      transform:
-        translateY(-8px);
-
-      transition: .2s ease;
-
-      box-shadow: var(--shadow);
-    }
-
-    .nav-network:hover .network-menu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .network-item {
-
-      display: block;
-
-      padding: 12px;
-
-      border-radius: 8px;
-    }
-
-    .network-item:hover,
-    .network-item.current {
-      background: #1b1b1b;
-    }
-
-    .network-item span {
-      display: block;
-
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .network-item small {
-      display: block;
-
-      color: var(--muted);
-
-      margin-top: 4px;
-
-      font-size: 10px;
+    .desktop-nav a:hover::after,
+    .desktop-nav a.active::after {
+      transform: scaleX(1);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      justify-content: flex-end;
     }
 
-    .icon-button {
-
-      width: 40px;
-      height: 40px;
-
-      display: inline-flex;
-
-      align-items: center;
-      justify-content: center;
-
-      border:
-        1px solid var(--line);
-
-      background:
-        rgba(255,255,255,.03);
-
+    .icon-button,
+    .menu-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      background: #101010;
       color: #fff;
-
-      border-radius: 9px;
-
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
       cursor: pointer;
-
-      transition: .2s ease;
+      transition: .25s ease;
     }
 
-    .icon-button:hover {
+    .icon-button:hover,
+    .menu-button:hover {
       border-color: var(--orange);
+      color: var(--orange);
+      transform: translateY(-1px);
+    }
+
+    .subscribe-btn {
+      border: 0;
+      border-radius: 999px;
+      background: var(--orange);
+      color: #050505;
+      padding: 14px 22px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .25s ease;
+      white-space: nowrap;
+    }
+
+    .subscribe-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .menu-button {
+      display: none;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(7,7,7,.98);
+      transform: translateX(100%);
+      transition: transform .36s ease;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .mobile-menu.open {
+      transform: translateX(0);
+    }
+
+    .mobile-menu__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mobile-menu__nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 30px;
+      font-size: clamp(28px, 8vw, 58px);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      text-transform: uppercase;
+    }
+
+    .mobile-menu__nav a {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+    }
+
+    .mobile-menu__nav a:hover {
       color: var(--orange);
     }
 
-    .mobile-menu-button {
-      display: none;
-    }
-
-    /* =========================================================
-       MOBILE NAV
-    ========================================================== */
-
-    .mobile-nav {
-
-      position: fixed;
-
-      inset: 106px 0 auto 0;
-
-      z-index: 79;
-
-      background:
-        rgba(7,7,7,.98);
-
-      border-bottom:
-        1px solid var(--line);
-
-      padding: 20px;
-
-      display: none;
-
-      box-shadow:
-        0 30px 60px rgba(0,0,0,.45);
-    }
-
-    .mobile-nav.open {
-      display: block;
-    }
-
-    .mobile-nav a {
-
-      display: block;
-
-      padding: 14px 0;
-
-      border-bottom:
-        1px solid var(--line);
-
-      color: #ddd;
-
-      font-size: 13px;
-      font-weight: 700;
-
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
 
     /* =========================================================
        PAGE
@@ -2223,151 +2159,69 @@
        HEADER
   ======================================================== -->
 
-  <header class="main-header">
-
-    <div class="container main-header__inner">
-
-      <a
-        href="index.html"
-        class="brand"
-        aria-label="Kancah Sports Home"
-      >
-        <img
-          class="brand__logo"
-          src="logo-kancah.png"
-          alt="Kancah Sports"
-        >
-      </a>
-
-
-      <nav
-        class="desktop-nav"
-        aria-label="Main navigation"
-      >
-
-        <a
-          href="index.html"
-          class="active"
-        >
-          Berita
+  <header class="main-header" id="mainHeader">
+      <div class="container main-header__inner">
+        <a href="index.html" class="brand" aria-label="Kancah Sports Home">
+          <img class="brand__logo" src="logo-kancah.png" alt="Kancah Sports" />
         </a>
 
-        <a href="index.html#latest-news">
-          Terkini
-        </a>
-
-        <a href="index.html#timnas">
-          Timnas
-        </a>
-
-        <a href="index.html#transfer">
-          Transfer
-        </a>
-
-        <a href="index.html#fixtures">
-          Jadwal
-        </a>
-
-        <a href="index.html#standings">
-          Klasemen
-        </a>
-
-
+        <nav class="desktop-nav" aria-label="Main navigation">
+          <a href="index.html#top-stories" class="active">Berita</a>
+          <a href="index.html#latest-news">Terkini</a>
+          <a href="index.html#timnas">Timnas</a>
+          <a href="index.html#transfer">Transfer</a>
+          <a href="index.html#fixtures">Jadwal</a>
+          <a href="index.html#standings">Klasemen</a>
         <div class="nav-network">
+  <a href="javascript:void(0)" class="nav-network__button">
+    Kancah Network ▾
+  </a>
 
-          <a
-            href="javascript:void(0)"
-            class="nav-network__button"
-          >
-            Kancah Network ▾
-          </a>
-
-          <div class="network-menu">
-
-            <a
-              href="index.html"
-              class="network-item current"
-            >
-              <span>Kancah Sports</span>
-              <small>Media Olahraga</small>
-            </a>
-
-            <a
-              href="https://kancah.com"
-              target="_blank"
-              class="network-item"
-            >
-              <span>Kancah Creative ↗</span>
-              <small>Creative Agency</small>
-            </a>
-
-          </div>
-
-        </div>
-
-      </nav>
-
-
-      <div class="header-actions">
-
-        <button
-          class="icon-button"
-          id="openSearch"
-          aria-label="Buka pencarian"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-        </button>
-
-
-        <button
-          class="icon-button mobile-menu-button"
-          id="mobileMenuButton"
-          aria-label="Menu"
-        >
-          ☰
-        </button>
-
-      </div>
-
-    </div>
-
-  </header>
-
-
-  <!-- =======================================================
-       MOBILE NAV
-  ======================================================== -->
-
-  <nav
-    class="mobile-nav"
-    id="mobileNav"
-  >
-
-    <a href="index.html">Berita</a>
-    <a href="index.html#latest-news">Terkini</a>
-    <a href="index.html#timnas">Timnas</a>
-    <a href="index.html#transfer">Transfer</a>
-    <a href="index.html#fixtures">Jadwal</a>
-    <a href="index.html#standings">Klasemen</a>
-    <a
-      href="https://kancah.com"
-      target="_blank"
-    >
-      Kancah Creative ↗
+  <div class="network-menu">
+    <a href="index.html" class="network-item current">
+      <span>Kancah Sports</span>
+      <small>Media Olahraga</small>
     </a>
 
-  </nav>
+    <a href="https://kancah.com" target="_blank" class="network-item">
+      <span>Kancah Creative ↗</span>
+      <small>Creative Agency</small>
+    </a>
+  </div>
+</div>
+        </nav>
 
+        <div class="header-actions">
+          <button class="icon-button" id="openSearch" aria-label="Buka pencarian">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="subscribe-btn" onclick="window.location.href='index.html#newsletter'">Subscribe</button>
+          <button class="menu-button" id="openMenu" aria-label="Buka menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <aside class="mobile-menu" id="mobileMenu" aria-label="Mobile menu">
+      <div class="mobile-menu__top">
+        <a href="index.html" class="brand">
+          <img class="brand__logo" src="logo-kancah.png" alt="Kancah Sports" />
+        </a>
+        <button class="icon-button" id="closeMenu" aria-label="Tutup menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="mobile-menu__nav">
+        <a href="index.html#top-stories">Berita Utama</a>
+        <a href="index.html#latest-news">Update Terkini</a>
+        <a href="index.html#timnas">Timnas</a>
+        <a href="index.html#transfer">Transfer Hub</a>
+        <a href="index.html#fixtures">Jadwal</a>
+        <a href="index.html#standings">Klasemen</a>
+        <a href="https://kancah.com" target="_blank" rel="noopener">Kancah Creative ↗</a>
+      </nav>
+    </aside>
 
   <!-- =======================================================
        MAIN
@@ -5044,51 +4898,29 @@
   ========================================================== */
 
   function initMobileMenu() {
+    const menu = document.getElementById("mobileMenu");
+    const openBtn = document.getElementById("openMenu");
+    const closeBtn = document.getElementById("closeMenu");
 
-    const button =
-      document.getElementById(
-        "mobileMenuButton"
-      );
+    if (!menu || !openBtn || !closeBtn) return;
 
-    const nav =
-      document.getElementById(
-        "mobileNav"
-      );
+    openBtn.addEventListener("click", () => {
+      menu.classList.add("open");
+      document.body.classList.add("menu-open");
+    });
 
+    closeBtn.addEventListener("click", () => {
+      menu.classList.remove("open");
+      document.body.classList.remove("menu-open");
+    });
 
-    button.addEventListener(
-      "click",
-      () => {
-
-        nav.classList.toggle(
-          "open"
-        );
-
-      }
-    );
-
-
-    nav
-      .querySelectorAll("a")
-      .forEach(
-        link => {
-
-          link.addEventListener(
-            "click",
-            () => {
-
-              nav.classList.remove(
-                "open"
-              );
-
-            }
-          );
-
-        }
-      );
-
+    menu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        menu.classList.remove("open");
+        document.body.classList.remove("menu-open");
+      });
+    });
   }
-
 
   /* =========================================================
      ADSENSE
