@@ -1495,6 +1495,51 @@
       min-height: 140px;
     }
 
+    /* Advertisement placed between Previous/Next and Related Articles */
+    .article-between-ad {
+      width: 100%;
+      margin: 34px 0 0;
+    }
+
+    .article-between-ad__label {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      line-height: 1;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .article-between-ad__box {
+      width: 100%;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(10,10,10,.45);
+    }
+
+    .article-between-ad__box .adsbygoogle {
+      width: 100% !important;
+      min-height: 180px;
+    }
+
+    @media (max-width: 620px) {
+      .article-between-ad {
+        margin-top: 24px;
+      }
+
+      .article-between-ad__box,
+      .article-between-ad__box .adsbygoogle {
+        min-height: 140px;
+      }
+    }
+
     /* =========================================================
        FOOTER
     ========================================================== */
@@ -3827,19 +3872,20 @@
           ></div>
 
 
-          <!-- IN CONTENT AD -->
+          <!-- ADVERTISEMENT BETWEEN PREVIOUS / NEXT AND RELATED -->
 
-          <div class="ad-slot-wrap in-content-ad">
-
-            <ins
-              class="adsbygoogle"
-              style="display:block;width:100%;min-height:120px"
-              data-ad-placement="content"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            ></ins>
-
-          </div>
+          <section class="article-between-ad" aria-label="Advertisement">
+            <div class="article-between-ad__label">Advertisement</div>
+            <div class="article-between-ad__box">
+              <ins
+                class="adsbygoogle"
+                style="display:block;width:100%;min-height:180px"
+                data-ad-placement="content"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
+            </div>
+          </section>
 
 
           <!-- RELATED -->
