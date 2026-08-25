@@ -1935,7 +1935,8 @@
 
 
     /* =========================================================
-       KANCAH NETWORK NAV — FIX
+       KANCAH NETWORK NAV — FINAL
+       Dropdown mengikuti navbar homepage: lebar, posisi, dan hierarchy.
     ========================================================== */
     .nav-network {
       position: relative;
@@ -1958,6 +1959,7 @@
       letter-spacing: .16em;
       text-transform: uppercase;
       white-space: nowrap;
+      text-decoration: none;
     }
 
     .nav-network__button::after {
@@ -1970,7 +1972,7 @@
       background: var(--orange);
       transform: scaleX(0);
       transform-origin: left;
-      transition: transform .25s ease;
+      transition: transform .2s ease;
     }
 
     .nav-network:hover .nav-network__button,
@@ -1985,19 +1987,20 @@
 
     .network-menu {
       position: absolute;
-      top: calc(100% + 1px);
+      top: calc(100% - 9px);
       right: 0;
-      width: 250px;
-      padding: 8px;
+      width: 330px;
+      box-sizing: border-box;
+      padding: 14px;
       background: #111;
-      border: 1px solid rgba(255,255,255,.22);
-      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 18px;
       box-shadow: 0 22px 60px rgba(0,0,0,.55);
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transform: translateY(8px);
-      transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+      transform: translateY(7px);
+      transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
       z-index: 9999;
     }
 
@@ -2012,15 +2015,16 @@
     .network-item {
       display: block;
       width: 100%;
-      padding: 12px 13px;
-      border-radius: 8px;
+      box-sizing: border-box;
+      padding: 18px 0;
+      border-radius: 12px;
       white-space: normal;
-      transition: background .2s ease;
+      text-decoration: none;
+      background: transparent !important;
     }
 
-    .network-item:hover,
-    .network-item.current {
-      background: rgba(255,77,0,.10);
+    .network-item + .network-item {
+      margin-top: 2px;
     }
 
     .network-item span {
@@ -2029,7 +2033,7 @@
       font-size: 12px;
       line-height: 1.25;
       font-weight: 700;
-      letter-spacing: .13em;
+      letter-spacing: .14em;
       text-transform: uppercase;
     }
 
@@ -2039,13 +2043,21 @@
 
     .network-item small {
       display: block;
-      margin-top: 5px;
-      color: var(--muted);
+      margin-top: 6px;
+      color: #999;
       font-size: 9px;
       line-height: 1.35;
-      font-weight: 500;
-      letter-spacing: .10em;
+      font-weight: 600;
+      letter-spacing: .08em;
       text-transform: uppercase;
+    }
+
+    .network-item:hover span {
+      color: #fff;
+    }
+
+    .network-item.current:hover span {
+      color: var(--orange);
     }
 
     /* Header spacing: keep all desktop nav items on one clean baseline. */
@@ -2266,7 +2278,118 @@
 
     }
 
-  </style>
+  
+    /* =========================================================
+       KANCAH NETWORK — EXACT INDEX.HTML DIMENSIONS
+       Jangan ubah ukuran/spacing dropdown ini di article.
+    ========================================================== */
+    .desktop-nav {
+      gap: clamp(18px, 2.2vw, 38px) !important;
+    }
+
+    .nav-network {
+      position: relative !important;
+    }
+
+    .nav-network__button {
+      position: relative !important;
+      display: block !important;
+      height: auto !important;
+      padding: 28px 0 !important;
+      color: var(--muted) !important;
+      font-size: 12px !important;
+      line-height: normal !important;
+      font-weight: 700 !important;
+      letter-spacing: .22em !important;
+      text-transform: uppercase !important;
+      white-space: nowrap !important;
+    }
+
+    .nav-network__button:hover {
+      color: #fff !important;
+    }
+
+    .nav-network__button::after {
+      content: none !important;
+    }
+
+    .network-menu {
+      position: absolute !important;
+      top: calc(100% - 6px) !important;
+      right: 0 !important;
+      width: 220px !important;
+      padding: 10px !important;
+      box-sizing: border-box !important;
+      background: #101010 !important;
+      border: 1px solid var(--line) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45) !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      transform: translateY(8px) !important;
+      transition: .22s ease !important;
+      z-index: 9999 !important;
+    }
+
+    .nav-network:hover .network-menu,
+    .nav-network:focus-within .network-menu {
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transform: translateY(0) !important;
+    }
+
+    .desktop-nav .network-menu a {
+      padding: 12px !important;
+      display: block !important;
+    }
+
+    .desktop-nav .network-menu a::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    .network-item {
+      width: auto !important;
+      border-radius: 10px !important;
+      background: transparent !important;
+    }
+
+    .network-item:hover {
+      background: rgba(255,77,0,.12) !important;
+    }
+
+    .network-item span {
+      display: block !important;
+      color: #fff !important;
+      font-size: 11px !important;
+      line-height: normal !important;
+      font-weight: 800 !important;
+      letter-spacing: .14em !important;
+      text-transform: uppercase !important;
+    }
+
+    .network-item small {
+      display: block !important;
+      margin-top: 4px !important;
+      color: var(--muted) !important;
+      font-size: 9px !important;
+      line-height: normal !important;
+      font-weight: 700 !important;
+      letter-spacing: .1em !important;
+      text-transform: uppercase !important;
+    }
+
+    .network-item.current span {
+      color: var(--orange) !important;
+    }
+
+    .network-item.current:hover span {
+      color: var(--orange) !important;
+    }
+
+</style>
 </head>
 
 <body>
