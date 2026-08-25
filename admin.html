@@ -544,11 +544,11 @@
           <div class="sports-toolbar">
             <div class="field compact"><label>Tanggal API</label><input type="date" id="apiMatchDate"></div>
             <div class="field compact"><label>Filter</label><input type="search" id="apiMatchSearch" placeholder="Cari klub / liga..." style="min-width:220px"></div>
-            <button class="btn btn-ghost" id="syncFootballDataBtn">↻ Sinkronkan API</button><button class="btn btn-ghost" id="loadApiMatchesBtn">Muat Match</button>
+            <button class="btn btn-ghost" id="syncFootballDataBtn">↻ Sinkronkan API</button><button class="btn btn-ghost" id="syncStandingsBtn">↻ Sinkron Klasemen</button><button class="btn btn-ghost" id="loadApiMatchesBtn">Muat Match</button>
             <div class="spacer"></div>
             <span class="date-text" id="apiMatchCount">0 match</span>
           </div>
-          <div class="week-note">Semua <b>match, liga, klub, logo, skor, dan status</b> diambil otomatis dari <b>footballdata.io</b> melalui tabel <b>football_matches</b>. Admin hanya dipakai untuk override bila diperlukan.</div>
+          <div class="week-note">Semua <b>match, liga, klub, logo, skor, status, dan klasemen</b> diambil otomatis dari <b>footballdata.io</b>. Admin hanya dipakai untuk override skor/status bila diperlukan. Klasemen tidak diinput manual.</div>
           <div id="apiMatchRows" class="fixture-admin-list"></div>
         </div>
 
@@ -1235,15 +1235,43 @@
       const btn=document.getElementById('syncFootballDataBtn');
       if(btn){btn.disabled=true;btn.textContent='↻ Sinkronisasi…';}
       try{
-        const {data,error}=await db.functions.invoke('sync-football',{body:{action:'fixtures'}});
+        const {data,error}=await db.functions.invoke('sync-football',{body:{action:'sync'}});
         if(error) throw error;
-        if(data?.error) throw new Error(data.error);
-        toast(`Sinkron selesai · ${Number(data?.upserted ?? data?.total_fixtures ?? data?.total ?? 0)} match diperbarui`);
+        if(data?.success===false) throw new Error(data.error||'Sinkronisasi gagal');
+        const fixtures=data?.fixtures||{};
+        const standings=data?.standings||{};
+        const failed=(standings.diagnostics||[]).filter(x=>x.success===false);
+        if(failed.length && !standings.standings_received){
+          throw new Error('Klasemen gagal diambil: '+failed.map(x=>x.error||'unknown').join(' | '));
+        }
+        toast(`Sinkron selesai · ${Number(fixtures.upserted||0)} match · ${Number(standings.standings_received||0)} baris klasemen`);
         await loadApiMatches();
+        await loadHomepageManager();
       }catch(e){
         toast('Sinkron API gagal: '+(e.message||e),'error');
       }finally{
         if(btn){btn.disabled=false;btn.textContent='↻ Sinkronkan API';}
+      }
+    }
+
+    async function syncStandingsData(){
+      const btn=document.getElementById('syncStandingsBtn');
+      if(btn){btn.disabled=true;btn.textContent='↻ Mengambil klasemen…';}
+      try{
+        const {data,error}=await db.functions.invoke('sync-football',{body:{action:'standings'}});
+        if(error) throw error;
+        if(data?.success===false) throw new Error(data.error||'Sinkron klasemen gagal');
+        const result=data?.standings||{};
+        const failed=(result.diagnostics||[]).filter(x=>x.success===false);
+        if(!result.standings_received && failed.length){
+          throw new Error(failed.map(x=>x.error||'unknown').join(' | '));
+        }
+        toast(`Klasemen API diperbarui · ${Number(result.standings_received||0)} tim · ${Number(result.leagues_requested||0)} liga`);
+        await loadHomepageManager();
+      }catch(e){
+        toast('Gagal sinkron klasemen: '+(e.message||e),'error');
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent='↻ Sinkron Klasemen';}
       }
     }
 
@@ -1349,6 +1377,7 @@
     document.querySelectorAll('.sports-tab').forEach(btn=>btn.addEventListener('click',()=>switchSportsView(btn.dataset.sportsView)));
     document.querySelectorAll('.subtab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active',b===btn));const leagues=btn.dataset.teamView==='leagues';document.getElementById('leagueManager').style.display=leagues?'grid':'none';document.getElementById('clubManager').style.display=leagues?'none':'grid';if(!leagues){renderTeamLeagueOptions();renderTeamItems();}}));
     document.getElementById('syncFootballDataBtn')?.addEventListener('click',syncFootballData);
+    document.getElementById('syncStandingsBtn')?.addEventListener('click',syncStandingsData);
     document.getElementById('loadApiMatchesBtn')?.addEventListener('click',loadApiMatches);
     document.getElementById('apiMatchSearch')?.addEventListener('input',()=>{const q=(document.getElementById('apiMatchSearch').value||'').trim().toLowerCase();const filtered=apiMatchCache.filter(f=>`${f.home_team_name||''} ${f.away_team_name||''} ${f.league_name||''}`.toLowerCase().includes(q));const ids=filtered.map(f=>String(f.id));db.from('football_match_overrides').select('*').in('match_id',ids.length?ids:['__none__']).then(({data})=>renderApiMatches(filtered,new Map((data||[]).map(o=>[String(o.match_id),o]))));});
     document.getElementById('apiMatchDate')?.addEventListener('change',loadApiMatches);
