@@ -825,6 +825,11 @@
       transition: .2s ease;
     }
 
+    .share-button svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .share-button:hover {
 
       background: var(--orange);
@@ -988,8 +993,33 @@
 
     .nav-article {
 
+      display: flex;
+
+      align-items: center;
+
+      gap: 14px;
+
       padding:
-        24px 20px;
+        20px;
+    }
+
+    .nav-article-image {
+
+      width: 90px;
+      height: 64px;
+
+      flex: 0 0 90px;
+
+      object-fit: cover;
+
+      border-radius: 8px;
+
+      background: #181818;
+    }
+
+    .nav-article-text {
+      min-width: 0;
+      flex: 1;
     }
 
     .nav-article + .nav-article {
@@ -1143,66 +1173,6 @@
       text-transform: uppercase;
     }
 
-    .sidebar-title::after {
-
-      content: "";
-
-      width: 30px;
-      height: 2px;
-
-      background:
-        var(--orange);
-    }
-
-    /* SEARCH */
-
-    .sidebar-search {
-
-      display: flex;
-
-      padding: 12px;
-    }
-
-    .sidebar-search input {
-
-      flex: 1;
-
-      min-width: 0;
-
-      height: 42px;
-
-      padding:
-        0 12px;
-
-      border:
-        1px solid var(--line);
-
-      background:
-        #090909;
-
-      color: #fff;
-
-      outline: none;
-
-      font-size: 11px;
-    }
-
-    .sidebar-search button {
-
-      width: 45px;
-
-      border: 0;
-
-      background:
-        var(--orange);
-
-      color: #050505;
-
-      cursor: pointer;
-
-      font-weight: 900;
-    }
-
     /* ADS */
 
     .ad-box {
@@ -1244,9 +1214,6 @@
 
       padding:
         9px 0;
-
-      border-bottom:
-        1px dotted rgba(255,255,255,.12);
 
       color: #999;
 
@@ -3642,7 +3609,9 @@
               data-share="whatsapp"
               title="WhatsApp"
             >
-              WA
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.663.591 1.221.774 1.394.86.173.087.274.072.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.13.332.202.043.072.043.419-.101.824zm-3.423-13.416c-5.653 0-10.246 4.593-10.248 10.245-.001 1.806.472 3.572 1.371 5.127l-1.457 5.319 5.443-1.428c1.5.818 3.19 1.249 4.888 1.25h.004c5.652 0 10.246-4.594 10.248-10.246.001-2.738-1.064-5.312-3.001-7.25-1.937-1.939-4.51-3.017-7.248-3.017z"/>
+              </svg>
             </button>
 
             <button
@@ -3650,7 +3619,9 @@
               data-share="facebook"
               title="Facebook"
             >
-              f
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-3.99 3.87-3.99 1.12 0 2.3.2 2.3.2v2.5h-1.3c-1.28 0-1.68.79-1.68 1.61V12h2.86l-.46 2.89h-2.4v6.98A10 10 0 0 0 22 12z"/>
+              </svg>
             </button>
 
             <button
@@ -3658,7 +3629,9 @@
               data-share="x"
               title="X"
             >
-              X
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
             </button>
 
             <button
@@ -3666,7 +3639,10 @@
               data-share="copy"
               title="Copy Link"
             >
-              ↗
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
             </button>
 
           </div>
@@ -3785,36 +3761,6 @@
           class="article-sidebar"
           id="articleSidebar"
         >
-
-
-          <!-- SEARCH -->
-
-          <section class="sidebar-box">
-
-            <div class="sidebar-title">
-              Search
-            </div>
-
-            <form
-              class="sidebar-search"
-              id="sidebarSearchForm"
-            >
-
-              <input
-                id="sidebarSearchInput"
-                type="search"
-                placeholder="Cari berita..."
-              >
-
-              <button
-                type="submit"
-              >
-                ↗
-              </button>
-
-            </form>
-
-          </section>
 
 
           <!-- ADVERTISEMENT -->
@@ -3938,9 +3884,6 @@
 
     bindShareButtons();
 
-
-    bindSidebarSearch();
-
   }
 
 
@@ -4047,24 +3990,40 @@
         ${
           previous
             ? `
-              <div class="nav-label">
-                ← Artikel Sebelumnya
-              </div>
-
-              <a
-                class="nav-title"
-                href="${articleHref(previous)}"
+              <img
+                class="nav-article-image"
+                src="${articleImage(previous)}"
+                alt="${escapeHtml(previous.title)}"
+                loading="lazy"
+                onerror="this.src='${FALLBACK_IMAGE}'"
               >
-                ${escapeHtml(previous.title)}
-              </a>
+
+              <div class="nav-article-text">
+
+                <div class="nav-label">
+                  ← Artikel Sebelumnya
+                </div>
+
+                <a
+                  class="nav-title"
+                  href="${articleHref(previous)}"
+                >
+                  ${escapeHtml(previous.title)}
+                </a>
+
+              </div>
             `
             : `
-              <div class="nav-label">
-                Artikel Sebelumnya
-              </div>
+              <div class="nav-article-text">
 
-              <div class="nav-title">
-                Tidak ada artikel sebelumnya
+                <div class="nav-label">
+                  Artikel Sebelumnya
+                </div>
+
+                <div class="nav-title">
+                  Tidak ada artikel sebelumnya
+                </div>
+
               </div>
             `
         }
@@ -4077,24 +4036,40 @@
         ${
           next
             ? `
-              <div class="nav-label">
-                Artikel Berikutnya →
+              <div class="nav-article-text">
+
+                <div class="nav-label">
+                  Artikel Berikutnya →
+                </div>
+
+                <a
+                  class="nav-title"
+                  href="${articleHref(next)}"
+                >
+                  ${escapeHtml(next.title)}
+                </a>
+
               </div>
 
-              <a
-                class="nav-title"
-                href="${articleHref(next)}"
+              <img
+                class="nav-article-image"
+                src="${articleImage(next)}"
+                alt="${escapeHtml(next.title)}"
+                loading="lazy"
+                onerror="this.src='${FALLBACK_IMAGE}'"
               >
-                ${escapeHtml(next.title)}
-              </a>
             `
             : `
-              <div class="nav-label">
-                Artikel Berikutnya
-              </div>
+              <div class="nav-article-text">
 
-              <div class="nav-title">
-                Tidak ada artikel berikutnya
+                <div class="nav-label">
+                  Artikel Berikutnya
+                </div>
+
+                <div class="nav-title">
+                  Tidak ada artikel berikutnya
+                </div>
+
               </div>
             `
         }
@@ -4744,13 +4719,16 @@
                     url
                   );
 
-                  button.textContent =
+                  const icon =
+                    button.innerHTML;
+
+                  button.innerHTML =
                     "✓";
 
                   setTimeout(
                     () => {
-                      button.textContent =
-                        "↗";
+                      button.innerHTML =
+                        icon;
                     },
                     1500
                   );
@@ -4939,63 +4917,6 @@
           }
         )
         .join("");
-
-  }
-
-
-  /* =========================================================
-     SIDEBAR SEARCH
-  ========================================================== */
-
-  function bindSidebarSearch() {
-
-    const form =
-      document.getElementById(
-        "sidebarSearchForm"
-      );
-
-    const input =
-      document.getElementById(
-        "sidebarSearchInput"
-      );
-
-
-    if (!form) {
-      return;
-    }
-
-
-    form.addEventListener(
-      "submit",
-      event => {
-
-        event.preventDefault();
-
-        const query =
-          input.value.trim();
-
-
-        if (!query) {
-          return;
-        }
-
-
-        openSearch();
-
-        document
-          .getElementById(
-            "searchInput"
-          )
-          .value =
-          query;
-
-
-        performSearch(
-          query
-        );
-
-      }
-    );
 
   }
 
